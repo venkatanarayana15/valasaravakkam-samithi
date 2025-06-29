@@ -82,7 +82,7 @@
 </a>
 
         <a
-    href="https://wa.me/919876543210"
+    href="https://chat.whatsapp.com/FRGkXU2sH6X2AlEqkrvtlP"
     class="btn btn-success"
     target="_blank"
     style="font-weight: 600;"
@@ -110,7 +110,7 @@
             >
           </li> -->
           <li>
-            <a href="#portfolio"
+            <a href="#gallery"
               ><i class="bi bi-images navicon"></i> Memories</a
             >
           </li>
@@ -511,15 +511,11 @@
 
      
       <!-- Portfolio Section -->
-      <section id="portfolio" class="portfolio section light-background">
+      <section id="gallery" class="portfolio section light-background">
         <!-- Section Title -->
         <div class="container section-title" data-aos="fade-up">
           <h2 style="margin-top:-50px ;">Memories</h2>
-          <style>
-            #portfolio{
-              background-color: #ffffff;
-            }
-          </style>
+         
           <p>
             Explore divine moments and seva snapshots here.
 From soulful bhajans to heartfelt Narayana Seva, every photo reflects love in action.
@@ -528,385 +524,134 @@ Each image captures the spirit of Baba’s message: “Love All, Serve All.”
           </p>
         
         </div>
-        <!-- End Section Title -->
+        
+       
+<div class="row gy-4 isotope-container" id="memories-section" data-aos="fade-up" data-aos-delay="200">
+  
+</div>
 
-        <!-- <div class="container">
-          <div
-            class="isotope-layout"
-            data-default-filter="*"
-            data-layout="masonry"
-            data-sort="original-order"
-          >
-            <ul
-              class="portfolio-filters isotope-filters"
-              data-aos="fade-up"
-              data-aos-delay="100"
-            >
-              <li data-filter="*" class="filter-active">All</li>
-              <li data-filter=".filter-app">App</li>
-              <li data-filter=".filter-product">Product</li>
-              <li data-filter=".filter-branding">Branding</li>
-              <li data-filter=".filter-books">Books</li>
-            </ul> -->
-            <!-- End Portfolio Filters -->
+              <style>
+  .view-all-btn {
+    display: block;
+    margin: 30px auto;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
 
-            <div
-              class="row gy-4 isotope-container"
-              data-aos="fade-up"
-              data-aos-delay="200"
-            >
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/app-1.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Balvikas</h4>
-                    <p>New Balvikas center in Ramar Temple</p>
-                    <a
-                      href="assets/img/portfolio/app-1.jpg"
-                      title="Balvikas"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/app-1.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i>
-</a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
+  .view-all-btn:hover {
+    background-color: #0056b3;
+  }
+ 
+      body {
+        background-color: #f8f9fa;
+      }
+      .back-btn {
+        display: inline-block;
+        margin: 20px;
+        padding: 10px 16px;
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+      }
+      .back-btn:hover {
+        background-color: hsl(211, 100%, 35%);
+      }
+      
+      .gallery-title {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .portfolio-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+      }
+      .portfolio-item img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        transition: 0.3s ease;
+      }
+      .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        opacity: 0;
+        transition: 0.3s ease;
+        padding: 10px;
+        pointer-events: none;
+      }
+      .portfolio-item:hover .image-overlay {
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.4);
+      }
+      .event-title {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: #007bff;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 15px;
+        max-width: 90%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        z-index: 2;
+      }
+      .event-description {
+        position: absolute;
+        bottom: 20px;
+        left: 10px;
+        color: #ffffff;
+        background-color: rgba(25, 24, 24, 0.6);
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+        max-width: 90%;
+        z-index: 2;
+      }
+      .download-icon {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        font-size: 20px;
+        background: rgba(0, 123, 255, 0.8);
+        padding: 10px;
+        border-radius: 50%;
+        color: white;
+        z-index: 2;
+        pointer-events: all;
+      }
+      .gslide-title {
+        font-weight: bold;
+        font-size: 20px;
+        margin-bottom: 10px;
+      }
+    
+</style>
 
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/product-1.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Summer Camp</h4>
-                    <p>summer camp in venkateshwara school</p>
-                    <a
-                      href="assets/img/portfolio/product-1.jpg"
-                      title="summer camp in venkateshwarlu school on 8th june 2025 "
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/product-1.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i>
-</a>
-                   
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/branding-1.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Christmas Celebration</h4>
-                    <p>Celebrating Christmas with santa claus in samithi</p>
-                    <a
-                      href="assets/img/portfolio/branding-1.jpg"
-                      title="Christmas Celebration"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/branding-1.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i>
-</a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-books"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/books-1.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Temple Cleaning</h4>
-                    <p>Temple Cleaning by valasaravakkam samithi youth</p>
-                    <a
-                      href="assets/img/portfolio/books-1.jpg"
-                      title="Temple Cleaning"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                     <a
-                      href="assets/img/portfolio/books-1.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i>
-</a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/app-2.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Sai Saptaham</h4>
-                    <p>Group 4 students talk about sathyam shivam sundaram</p>
-                    <a
-                      href="assets/img/portfolio/app-2.jpg"
-                      title="Sai Saptaham on 1st june 2025"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/app-2.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i></a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/product-2.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Special bhajans</h4>
-                    <p>Special Bhajans on every Month</p>
-                    <a
-                      href="assets/img/portfolio/product-2.jpg"
-                      title="Special bhajans"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                     <a
-                      href="assets/img/portfolio/product-2.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i></a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/branding-2.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Buttermilk Seva</h4>
-                    <p>Buttermilk service on every year in the month of may</p>
-                    <a
-                      href="assets/img/portfolio/branding-2.jpg"
-                      title="Buttermilk Seva"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/branding-2.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i></a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-books"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/books-2.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Temple Cleaning</h4>
-                    <p>Temple Cleaning By Valasaravakkam samithi Youth Gents and Mahilas</p>
-                    <a
-                      href="assets/img/portfolio/books-2.jpg"
-                      title="Temple Cleaning"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/books-2.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i></a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-app"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/app-3.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Narayana Seva</h4>
-                    <p>Distribution of food by samithi members</p>
-                    <a
-                      href="assets/img/portfolio/app-3.jpg"
-                      title="Narayana Seva"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/app-3.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i></a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-product"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/product-3.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Navarathri Celebration</h4>
-                    <p>Live golu Navarathri Celebrations by Balvikas Childrens</p>
-                    <a
-                      href="assets/img/portfolio/product-3.jpg"
-                      title="Navarathri Celebration"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/product-3.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i></a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-branding"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/branding-3.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Sai Protein</h4>
-                    <p>Sai Protein Distribution on hospital</p>
-                    <a
-                      href="assets/img/portfolio/branding-3.jpg"
-                      title="Sai Protein"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/branding-3.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i></a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
-
-              <div
-                class="col-lg-4 col-md-6 portfolio-item isotope-item filter-books"
-              >
-                <div class="portfolio-content h-100">
-                  <img
-                    src="assets/img/portfolio/books-3.jpg"
-                    class="img-fluid"
-                    alt=""
-                  />
-                  <div class="portfolio-info">
-                    <h4>Nagarsankirtan</h4>
-                    <p>Margazhi Nagarsankirtan in devotees area</p>
-                    <a
-                      href="assets/img/portfolio/books-3.jpg"
-                      title="Nagarsankirtan"
-                      data-gallery="portfolio-gallery-app"
-                      class="glightbox preview-link"
-                      ><i class="bi bi-zoom-in"></i
-                    ></a>
-                    <a
-                      href="assets/img/portfolio/books-3.jpg" download=""
-                      title="More Details"
-                      class="details-link"
-                      ><i class="fas fa-download"></i></a>
-                  </div>
-                </div>
-              </div>
-              <!-- End Portfolio Item -->
+              
             </div>
             <!-- End Portfolio Container -->
           </div>
@@ -1262,6 +1007,30 @@ Their focus is to build character, unity, and commitment among the younger gener
                 </div>
               </div>
               <!-- End testimonial item -->
+               <div class="swiper-slide">
+                <div class="testimonial-item">
+                  <p>
+                    <i class="bi bi-quote quote-icon-left"></i>
+                    <span
+                      >The Youth Coordinator guides Sai youth in spiritual, service, and leadership activities.
+They inspire young minds to live Baba’s message through discipline, seva, and devotion.
+They organize youth satsangs, service projects, and training sessions.
+Their focus is to build character, unity, and commitment among the younger generation.
+
+</span
+                    >
+                    <i class="bi bi-quote quote-icon-right"></i>
+                  </p>
+                  <img
+                    src="./assets/img/testimonials/download.jpeg"
+                    class="testimonial-img"
+                    alt=""
+                  />
+                  <h3>Rajeshwari</h3>
+                  <h4>Mahilas Spiritual <br> Co-ordinator </h4>
+                </div>
+              </div>
+              <!-- End testimonial item -->
               <div class="swiper-slide">
                 <div class="testimonial-item">
                   <p>
@@ -1279,8 +1048,8 @@ Inspiring inner transformation through collective prayer and devotion is their c
                     class="testimonial-img"
                     alt=""
                   />
-                  <h3>Chandran</h3>
-                  <h4>spiritual <br> Co-ordinator</h4>
+                  <h3>Rajesh</h3>
+                  <h4>Gents spiritual <br> Co-ordinator</h4>
                 </div>
               </div>
               <!-- End testimonial item -->
@@ -1633,10 +1402,10 @@ Contact the Valasaravakkam Samithi today – Love All, Serve All.
       </div>
 
       <div class="col-md-12 text-center">
-        <div class="loading">Loading</div>
+        <div class="loading"></div>
         <div class="error-message"></div>
-        <div class="sent-message">Your message has been sent. Thank you!</div>
-        <button type="submit">Send Message</button>
+        <div class="sent-message">We appreciate your message — it will be very helpful to us. Thank you!</div>
+        <button type="submit" style="background-color: #007BFF; color: #ffffff;">Send Message</button>
       </div>
     </div>
   </form>
@@ -1720,6 +1489,109 @@ Contact the Valasaravakkam Samithi today – Love All, Serve All.
 
     <!-- Main JS File -->
     <script src="assets/js/main.js"></script>
+
+    <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const portfolioItems = document.querySelectorAll('#memories-section .portfolio-item');
+    portfolioItems.forEach((item, index) => {
+      if (index >= 3) {
+        item.style.display = 'none';
+      }
+    });
+
+    // Create "View All Images" button
+    const button = document.createElement("button");
+    button.innerText = "View All Images";
+    button.classList.add("view-all-btn");
+    button.onclick = function () {
+      window.location.href = "gallery.html"; // Change this if your full gallery page has another path
+    };
+
+    // Append the button after the image grid
+    document.getElementById("memories-section").parentElement.appendChild(button);
+  });
+</script>
+
+
+<div class="row gy-4 isotope-container" id="memories-section" data-aos="fade-up" data-aos-delay="200"></div>
+
+<script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+<script>
+  // Define global Lightbox variable
+  let balvikasLightbox;
+
+  // Your image data
+  const galleryImages = [
+    {
+      src: "assets/img/gallery/balvikas/balvikas1.jpg",
+      title: "Balvikas",
+      description: "Balvikas class for Group 1 children "
+    },
+    {
+      src: "assets/img/gallery/balvikas/summer camp.jpg",
+      title: "Summer Camp",
+      description: "Summer camp in venkateswara school"
+    },
+    {
+      src: "assets/img/gallery/balvikas/navarathri.jpg",
+      title: "navarathri celebration",
+      description: "navarathri celebration by Balvikas children"
+    }
+    // Add more...
+  ];
+
+  // Load gallery
+  function loadGallery() {
+    const container = document.getElementById("memories-section");
+    container.innerHTML = ""; // Clear old content
+
+    galleryImages.forEach((img) => {
+      const col = document.createElement("div");
+      col.className = "col-lg-4 col-md-6";
+      col.innerHTML = `
+        <div class="portfolio-item">
+          <a
+            href="${img.src}"
+            class="glightbox-item"
+            data-gallery="balvikas-gallery"
+            data-title="${img.title}"
+            data-description="${img.description}"
+          >
+            <img src="${img.src}" alt="${img.title}" class="img-fluid" />
+            <div class="image-overlay">
+              <div class="event-title">${img.title}</div>
+              <div class="event-description">${img.description}</div>
+              <a href="${img.src}" download class="download-icon" title="Download">
+                <i class="fas fa-download"></i>
+              </a>
+            </div>
+          </a>
+        </div>
+      `;
+      container.appendChild(col);
+    });
+
+    // Destroy any existing lightbox instance
+    if (balvikasLightbox && typeof balvikasLightbox.destroy === "function") {
+      balvikasLightbox.destroy();
+    }
+
+    // Create new lightbox instance
+    balvikasLightbox = GLightbox({
+      selector: '.glightbox-item',
+      touchNavigation: true,
+      loop: true,
+      zoomable: true,
+      closeButton: true,
+      openEffect: "zoom",
+      closeEffect: "fade",
+    });
+  }
+
+  // Call this once when page loads
+  loadGallery();
+</script>
+
 
 
   </body>

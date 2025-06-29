@@ -21,7 +21,7 @@
 
 /* Global Colors - The following color variables are used throughout the website. Updating them here will change the color scheme of the entire website */
 :root {
-  --background-color: #b3b3b382; /* Background color for the entire website, including individual sections */
+  --background-color: #c4d1dbda; /* Background color for the entire website, including individual sections */
   --default-color: #272829; /* Default color used for the majority of the text content across the entire website */
   --heading-color: #050d18; /* Color for headings, subheadings and title throughout the website */
   --accent-color: #149ddd; /* Accent color that represents your brand on the website. It's used for buttons, links, and other elements that need to stand out */
@@ -1054,7 +1054,8 @@ section,
 # Contact Section
 --------------------------------------------------------------*/
 #contact {
-  margin-top: -70px;
+  margin-top: -90px;
+  background-color: #fdfeff;
 }
 
 .contact .info-wrap {

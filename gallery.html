@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gallery Folders - Valasaravakkam Samithi</title>
+    <link
+      rel="stylesheet"
+      href="assets/vendor/bootstrap/css/bootstrap.min.css"
+    />
+
+    <style>
+      body {
+        background-color: #f8f9fa;
+        font-family: Arial, sans-serif;
+      }
+      .back-btn {
+        display: inline-block;
+        margin: 20px;
+        padding: 10px 16px;
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+      }
+      .back-btn:hover {
+        background-color: #0056b3;
+      }
+      .folder-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        padding: 40px 20px;
+      }
+      .folder-card {
+        width: 220px;
+        height: 220px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        perspective: 1000px;
+        text-align: center;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        cursor: pointer;
+      }
+      .folder-card:hover {
+        transform: rotateY(15deg) scale(1.05);
+      }
+      .folder-card h4 {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .folder-icon {
+        font-size: 64px;
+        margin-top: 30px;
+        color: #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="index.html" class="back-btn">← Back to Home</a>
+    <div class="container text-center">
+      <h2 class="mt-5">Gallery Folders</h2>
+      <div class="folder-grid">
+        <a
+          href="balvikas.html"
+          class="folder-card text-decoration-none text-dark"
+        >
+          <div class="folder-icon">📁</div>
+          <h4>Balvikas</h4>
+        </a>
+        <a
+          href="temple-cleaning.html"
+          class="folder-card text-decoration-none text-dark"
+        >
+          <div class="folder-icon">📁</div>
+          <h4>Temple Cleaning</h4>
+        </a>
+        <a
+          href="bhajans.html"
+          class="folder-card text-decoration-none text-dark"
+        >
+          <div class="folder-icon">📁</div>
+          <h4>Bhajans</h4>
+        </a>
+        <a href="other.html" class="folder-card text-decoration-none text-dark">
+          <div class="folder-icon">📁</div>
+          <h4>Other Services</h4>
+        </a>
+      </div>
+    </div>
+  </body>
+</html>
