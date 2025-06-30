@@ -1107,13 +1107,13 @@ section,
 /*--------------------------------------------------------------
 # footer Section
 --------------------------------------------------------------*/
-.footer .social-media {
+.footer .fsocial {
   margin-top: 20px;
 }
 #footer {
   margin-bottom: -95px;
 }
-.footer .social-media a {
+.footer .fsocial a {
   display: inline-block;
   margin: 0 8px;
   font-size: 20px;
@@ -1127,18 +1127,18 @@ section,
   transition: all 0.3s ease;
 }
 
-.footer .social-media a:hover {
+.footer .fsocial a:hover {
   color: #fff;
   background: #007bff;
   transform: translateY(-4px);
 }
 
 /* Platform hover colors */
-.footer .social-media .facebook:hover {
+.footer .fsocial .facebook:hover {
   background: #1877f2;
 }
 
-.footer .social-media .instagram:hover {
+.footer .fsocial .instagram:hover {
   background: radial-gradient(
     circle at 30% 107%,
     #fdf497 0%,
@@ -1149,14 +1149,14 @@ section,
   );
 }
 
-.footer .social-media .whatsapp:hover {
+.footer .fsocial .whatsapp:hover {
   background: #25d366;
 }
 
-.footer .social-media .twitter:hover {
+.footer .fsocial .twitter:hover {
   background: #000;
 }
 
-.footer .social-media .youtube:hover {
+.footer .fsocial .youtube:hover {
   background: #ff0000;
 }
