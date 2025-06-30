@@ -158,8 +158,12 @@
 
     <main class="main">
       <!-- Hero Section -->
-      <section id="hero" class="hero section dark-background">
-        <img src="assets/img/hero-bg.jpg" alt="" data-aos="fade-in" class="" />
+      <section id="hero" class="hero section dark-background" >
+        <img src="assets/img/sai-baba-.jpg"  data-aos="fade-in" class="" style="position: absolute;
+  inset: 0;
+  background: url('assets/img/hero-bg.jpg') center center / fill no-repeat;
+  z-index: 1;
+  background-color: #000; "/>
 
         <div class="container" data-aos="fade-up" data-aos-delay="100">
           <h1>Welcome to</h1>
@@ -176,7 +180,7 @@
 
     
       <!-- Stats Section -->
-      <section id="stats" class="stats section">
+      <section id="stats" class="stats section" >
         <div class="container" data-aos="fade-up" data-aos-delay="100">
           <div class="row gy-4">
             <div class="col-lg-3 col-md-6">
@@ -200,7 +204,7 @@
                 <i class="bi bi-journal-richtext"></i>
                 <span
                   data-purecounter-start="0"
-                  data-purecounter-end="50"
+                  data-purecounter-end="56"
                   data-purecounter-duration="1"
                   class="purecounter"
                 ></span>
@@ -217,7 +221,7 @@
                 <i class="bi bi-house"></i>
                 <span
                   data-purecounter-start="0"
-                  data-purecounter-end="5"
+                  data-purecounter-end="6"
                   data-purecounter-duration="1"
                   class="purecounter"
                 ></span>
@@ -251,7 +255,7 @@
       <!-- /Stats Section -->
 
       <!-- Skills Section -->
-      <section id="skills" class="skills section light-background">
+      <section id="skills" class="skills section light-background" >
         <!-- Section Title -->
         <div class="container section-title" data-aos="fade-up">
           <h2>Activities Level</h2>
@@ -372,146 +376,179 @@
 
 
 <!-- Events Section -->
-      <section id="Upcoming Events" class="Events section">
-        <!-- Section Title -->
-        <div class="container section-title" data-aos="fade-up">
-          <h2 style="margin-top:-20px ; margin-bottom: -20px;">Upcoming Events</h2>
-          
-          
-        </div>
-          <section id="testimonials" class="testimonials section light-background" >
-        <!-- Section Title -->
-        
-        <!-- End Section Title -->
-
-        <div class="container" data-aos="fade-up" data-aos-delay="100" style="background-color: rgba(162, 216, 247, 0.644); box-shadow: 5px; padding-top: 15px;">
-          <div class="swiper init-swiper" >
-            <script type="application/json" class="swiper-config" >
-              {
-                "loop": true,
-                "speed": 600,
-                "autoplay": {
-                  "delay": 2000
-                },
-                "slidesPerView": "auto",
-                "pagination": {
-                  "el": ".swiper-pagination",
-                  "type": "bullets",
-                  "clickable": true
-                },
-                "breakpoints": {
-                  "320": {
-                    "slidesPerView": 1,
-                    "spaceBetween": 40
-                  },
-                  "1200": {
-                    "slidesPerView": 3,
-                    "spaceBetween": 1
-                  }
-                }
-              }
-            </script>
-            <div class="swiper-wrapper" >
-              
-<div class="swiper-slide">
-  <div class="testimonial-item bg-slide">
-    <div class="overlay">
-      <p>
-        <span>
-          Coming 4th july 2025 Friday we have a Special bhajans in our samithi 
-        </span>
-      </p>
-    </div>
+      
+ <!-- ✅ Upcoming Events Section with 3D Coverflow -->
+<section id="Upcoming Events" class="events section" style="background-color: #c4d1dbda; padding: 40px 0;">
+  <!-- Section Title -->
+  <div class="container section-title" data-aos="fade-up">
+    <h2 style="color: rgb(0, 0, 0); margin-top: -20px; margin-bottom: 20px;">Upcoming Events</h2>
   </div>
-</div>
-<!-- End event item -->
-<div class="swiper-slide">
-  <div class="testimonial-item bg-slide">
-    <div class="overlay">
-      <p>
-        <span>
-          Coming 5th july 2025 saturday morning we have prema ratham rally from 7:00 to 10:00 AM
-        </span>
-      </p>
-    </div>
-  </div>
-</div>
-<!-- End event item -->
- <div class="swiper-slide">
-  <div class="testimonial-item bg-slide">
-    <div class="overlay">
-      <p>
-        <span>
-          Coming 6th july 2025 sunday Evening we have prema ratham rally from 3:30 to 7:30 PM
-        </span>
-      </p>
-    </div>
-  </div>
-</div>
-<!-- End event item -->
- <div class="swiper-slide">
-  <div class="testimonial-item bg-slide">
-    <div class="overlay">
-      <p>
-        <span>
-          Coming 28th and 29th we have procession in T.Nagar Samithi
-        </span>
-      </p>
-    </div>
-  </div>
-</div>
-<!-- End event item -->
 
-              <style>
-  .bg-slide {
-  background-image: url('./assets/img/ChatGPT\ Image\ Jun\ 27\,\ 2025\,\ 09_56_54\ AM\ \(1\).png'); /* Replace with correct path */
-  background-size: cover;
-  background-position: center;
-  height: 375px;
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  <div class="container" data-aos="fade-up" data-aos-delay="100"
+    style="background-color: #bbe0fd27; padding: 20px; border-radius: 10px; margin-top: -45px;" >
+    <div class="swiper init-swiper">
+      <!-- ✅ Updated Swiper Config with Coverflow -->
+      <script type="application/json" class="swiper-config">
+        {
+          "loop": true,
+          "speed": 600,
+          "autoplay": { "delay": 2000 },
+          "effect": "coverflow",
+          "coverflowEffect": {
+            "rotate": 30,
+            "stretch": 0,
+            "depth": 100,
+            "modifier": 1,
+            "slideShadows": true
+          },
+          "slidesPerView": "auto",
+          "pagination": {
+            "el": ".swiper-pagination",
+            "type": "bullets",
+            "clickable": true
+          },
+          "breakpoints": {
+            "320": { "slidesPerView": 1, "spaceBetween": 40 },
+            "1200": { "slidesPerView": 3, "spaceBetween": 40 }
+          }
+        }
+      </script>
 
-.bg-slide .overlay {
-  background-color: rgba(0, 0, 0, 0.6); /* Dark transparent overlay */
-  color: rgb(3, 3, 3);
-  padding: 20px;
-  text-align: center;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+      <!-- ✅ Slides -->
+      <div class="swiper-wrapper">
+        <div class="swiper-slide">
+          <div class="testimonial-item bg-slide">
+            <div class="overlay">
+            <p> <strong style="font-weight: 800;"> 🌺 Sri Sathya Sai Ratha Mahotsavam – Valasaravakkam Samithi 🌺</strong> <br>
 
-.bg-slide p {
-  font-size: 15px;
-  line-height: 1.5;
-  margin: 0;
-}
-</style>
-              
-
+                Join us for 3 days of divine celebrations with bhajans, Balvikas performances, poojas, cultural events, and the sacred Ratha Yatra!
+              </p>
              
+              
+      
+
+     
             </div>
-            <div class="swiper-pagination"></div>
           </div>
         </div>
-      </section>
 
+        <div class="swiper-slide">
+          <div class="testimonial-item bg-slide">
+            <div class="overlay">
+              <p><strong>🗓️ July 4 (Fri, 5:30 PM onwards)</strong> <br><a href="https://maps.app.goo.gl/8KXq7uX8tu13MUPb7" style="font-weight: 800;"><strong>📍Valasaravakkam Samithi</strong></a> <br>
+ Ashtotram,Bhajans, Balvikas Programs, and Narayana Seva.</p>
+            </div>
+          </div>
+        </div>
 
+        <div class="swiper-slide">
+          <div class="testimonial-item bg-slide">
+            <div class="overlay">
+              <p><strong>🗓️ July 5 (Sat, 7:00 AM onwards) </strong><br><a href="https://maps.app.goo.gl/oUpremDC6Yke7zAT8" style="font-weight: 800;"><strong>📍 Kankaiaman Temple</strong></a> <br>
+ Procession, Mangala Vadhyam, Sahasranamam,Vilakku Pooja,Bhajans, Maha Mangala Aarathi & Narayana Seva.</p>
+            </div>
+          </div>
+        </div>
 
+        <div class="swiper-slide">
+          <div class="testimonial-item bg-slide">
+            <div class="overlay">
+              <p><strong>🗓️ July 6 (Sun, 5:30 AM onwards)</strong> <br><a href="https://maps.app.goo.gl/8KXq7uX8tu13MUPb7" style="font-weight: 800;"><strong>📍Valasaravakkam Samithi</strong></a> <br>
+Ratham Procession, Mangala Vadhyam,Balvikas Cultural Program,Bhajans, Maha Mangala Aarathi & Narayana Seva.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        
+      <!-- ✅ Pagination below -->
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ✅ Slider Styles with Coverflow & Dots outside -->
+<style>
+ 
+  .bg-slide {
+    background-image: url('./assets/img/ChatGPT%20Image%20Jun%2027,%202025,%2009_56_54%20AM%20(1).png');
+    background-size: cover;
+    background-position: center;
+    height: 375px;
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bg-slide .overlay {
+    background-color: rgba(0, 0, 0, 0.393);
+    color: #ffffff;
+   font-weight: 300;
+   font-style: italic;
+    padding: 20px;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bg-slide p {
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .swiper {
+    position: relative;
+    padding-bottom: 60px; /* Space for dots */
+  
+  }
+
+  .swiper-pagination {
+    position: absolute;
+    bottom: 0;
+    text-align: center;
+    width: 100%;
+    
+  }
+
+  .swiper-slide {
+    transition: transform 0.5s ease;
+    
+  }
+
+  .swiper-slide-shadow-left,
+  .swiper-slide-shadow-right {
+    border-radius: 10px;
+  }
+  .swiper-pagination-bullet {
+  width: 11px;
+  height: 11px;
+  background: #ffffff;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  border: 2px solid #007bff;
+}
+
+.swiper-pagination-bullet-active {
+  background: #007bff;
+  transform: scale(1.5);
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.6);
+}
+
+</style>
+
 
 
      
       <!-- Portfolio Section -->
-      <section id="gallery" class="portfolio section light-background">
+      <section id="gallery" class="portfolio section light-background" >
         <!-- Section Title -->
         <div class="container section-title" data-aos="fade-up">
           <h2 style="margin-top:-50px ;">Memories</h2>
@@ -533,7 +570,8 @@ Each image captures the spirit of Baba’s message: “Love All, Serve All.”
               <style>
   .view-all-btn {
     display: block;
-    margin: 30px auto;
+    margin: 20px auto;
+    margin-bottom: -35px;
     padding: 10px 20px;
     background-color: #007BFF;
     color: white;
@@ -659,179 +697,134 @@ Each image captures the spirit of Baba’s message: “Love All, Serve All.”
       </section>
       <!-- /Portfolio Section -->
 
-      <!-- Services Section -->
-      <section id="services" class="services section">
-        <!-- Section Title -->
-        <div class="container section-title" data-aos="fade-up">
-          <h2>Services</h2>
-          <p>
-            At Sri Sathya Sai Seva Organisation – Valasaravakkam Samithi, we serve with love through spiritual activities, Narayana Seva, and community outreach.
-             Guided by Baba’s message of “Love All, Serve All,” our initiatives uplift hearts, homes, and humanity.
-          </p>
+     <!-- ✅ CSS for slide & 3D effect -->
+<style>
+  .service-item {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    
+    border-radius: 20px;
+    
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .service-item:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .service-item .description {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: scaleY(0.9);
+    transform-origin: top;
+    transition: all 0.4s ease;
+    margin-top: 10px;
+  }
+
+  .service-item.active .description {
+    max-height: 500px;
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .service-item .icon {
+    font-size: 32px;
+    margin-right: 15px;
+    color: #007BFF;
+  }
+
+  .service-item .title {
+    font-size: 20px;
+    margin: 0;
+  }
+</style>
+
+<!-- ✅ Services Section -->
+<section id="services" class="services section">
+  <div class="container section-title" data-aos="fade-up" style="margin-top: -40px;">
+    <h2>Services</h2>
+    <p>At Sri Sathya Sai Seva Organisation – Valasaravakkam Samithi, we serve with love through spiritual activities, Narayana Seva, and community outreach. Guided by Baba’s message of “Love All, Serve All,” our initiatives uplift hearts, homes, and humanity.</p>
+  </div>
+
+  <div class="container">
+    <div class="row gy-4">
+
+      <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="100">
+        <div class="icon flex-shrink-0"><i class="fas fa-om"></i></div>
+        <div>
+          <h4 class="title">Temple Cleaning</h4>
+          <p class="description">Temple cleaning Seva is held every 3rd Sunday from 9:00 to 11:00 AM. Devotees join hands to lovingly clean and sanctify the Samithi premises. It’s a humble offering of service, purity, and gratitude to Swami. All are welcome to participate in this act of devotion and unity.</p>
         </div>
-        
-        <!-- End Section Title -->
+      </div>
 
-        <div class="container">
-          <div class="row gy-4">
-            <div
-              class="col-lg-4 col-md-6 service-item d-flex"
-              data-aos="fade-up"
-              data-aos-delay="100"
-            >
-              <div class="icon flex-shrink-0">
-               <i class="fas fa-om"></i>
-
-              </div>
-              <div>
-               <h4 class="title">
-                  <a style="cursor: pointer;" class="stretched-link"
-                    >Temple Cleaning</a
-                  >
-                </h4>
-                <p class="description">
-                Temple cleaning Seva is held every 3rd Sunday from 9:00 to 11:00 AM.
-Devotees join hands to lovingly clean and sanctify the Samithi premises.
-It’s a humble offering of service, purity, and gratitude to Swami.
-All are welcome to participate in this act of devotion and unity.
-                </p>
-              </div>
-            </div>
-            <!-- End Service Item -->
-
-            <div
-              class="col-lg-4 col-md-6 service-item d-flex"
-              data-aos="fade-up"
-              data-aos-delay="200"
-            >
-              <div class="icon flex-shrink-0">
-                <i class="fas fa-drum"></i>
-              </div>
-              <div>
-                <h4 class="title">
-                  <a style="cursor: pointer;" class="stretched-link"
-                    >Bhajans</a
-                  >
-                </h4>
-                <p class="description">
-                  Bhajans are held every Saturday from 5:30 to 7:00 PM in the Samithi.
-Devotees gather to offer soulful singing at the Divine Lotus Feet.
-The atmosphere fills with peace, love, and spiritual energy.
-All are welcome to join this weekly satsang with Swami’s grace.
-
-
-                </p>
-              </div>
-            </div>
-            <!-- End Service Item -->
-
-            <div
-              class="col-lg-4 col-md-6 service-item d-flex"
-              data-aos="fade-up"
-              data-aos-delay="300"
-            >
-              <div class="icon flex-shrink-0">
-               <i class="fas fa-users"></i>
-              </div>
-              <div>
-                <h4 class="title">
-                  <a style="cursor: pointer;" class="stretched-link"
-                    >Balvikas</a
-                  >
-                </h4>
-                <p class="description">
-                  Balvikas classes are held every Sunday for 1 hour with love and care.
-Children engage in stories, bhajans, slokas, and value-based activities.
-These sessions build character, devotion, and discipline.
-It’s a joyful journey that brings them closer to Swami each week.
-
-
-                </p>
-              </div>
-            </div>
-            <!-- End Service Item -->
-
-            <div
-              class="col-lg-4 col-md-6 service-item d-flex"
-              data-aos="fade-up"
-              data-aos-delay="400"
-            >
-              <div class="icon flex-shrink-0">
-                <i class="fas fa-utensils"></i>
-              </div>
-              <div>
-                <h4 class="title">
-                  <a style="cursor: pointer;" class="stretched-link"
-                    >Narayana Seva</a
-                  >
-                </h4>
-                <p class="description">
-                  Every 20th of the month, we offer Narayana Seva with love and devotion.
-Freshly cooked food is distributed to the needy and hungry in nearby areas.
-It’s not just feeding the body—it’s feeding the soul through selfless service.
-This act of love reflects Swami’s message: “Love All, Serve All.”
-                </p>
-              </div>
-            </div>
-            <!-- End Service Item -->
-
-            <div
-              class="col-lg-4 col-md-6 service-item d-flex"
-              data-aos="fade-up"
-              data-aos-delay="500"
-            >
-              <div class="icon flex-shrink-0">
-                <i>🛍️</i>
-              </div>
-              <div>
-                <h4 class="title">
-                  <a style="cursor: pointer;" class="stretched-link"
-                    >Sai Protein</a
-                  >
-                </h4>
-                <p class="description">
-                  Every last Thursday of the month, Sai Protein is packed with love by devotees.
-These nutritious packets are offered to pregnant women and TB patients.
-They are distributed at Chinna Porur Government Hospital as part of our monthly seva.
-Each packet carries Swami’s blessings, care, and compassion.
-                </p>
-              </div>
-            </div>
-            <!-- End Service Item -->
-
-            <div
-              class="col-lg-4 col-md-6 service-item d-flex"
-              data-aos="fade-up"
-              data-aos-delay="600"
-            >
-              <div class="icon flex-shrink-0">
-                <i class="fas fa-book-open"></i>
-
-              </div>
-              <div>
-                <h4 class="title">
-                  <a style="cursor: pointer;" class="stretched-link"
-                    >Study Circle</a
-                  >
-                </h4>
-                <p class="description">
-                 Study Circle is held every 3rd Saturday from 5:30 to 7:00 PM in the Samithi.
-Devotees gather to discuss Swami’s teachings and explore their deeper meaning.
-It’s a space for reflection, learning, and spiritual growth through shared wisdom.
-Together, we walk the path of truth, guided by Sai’s divine message.
-                </p>
-              </div>
-            </div>
-            <!-- End Service Item -->
-          </div>
+      <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="200">
+        <div class="icon flex-shrink-0"><i class="fas fa-drum"></i></div>
+        <div>
+          <h4 class="title">Bhajans</h4>
+          <p class="description">Bhajans are held every Saturday from 5:30 to 7:00 PM in the Samithi. Devotees gather to offer soulful singing at the Divine Lotus Feet. The atmosphere fills with peace, love, and spiritual energy. All are welcome to join this weekly satsang with Swami’s grace.</p>
         </div>
-      </section>
-      <!-- /Services Section -->
+      </div>
+
+      <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="300">
+        <div class="icon flex-shrink-0"><i class="fas fa-users"></i></div>
+        <div>
+          <h4 class="title">Balvikas</h4>
+          <p class="description">Balvikas classes are held every Sunday for 1 hour with love and care. Children engage in stories, bhajans, slokas, and value-based activities. These sessions build character, devotion, and discipline. It’s a joyful journey that brings them closer to Swami each week.</p>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="400">
+        <div class="icon flex-shrink-0"><i class="fas fa-utensils"></i></div>
+        <div>
+          <h4 class="title">Narayana Seva</h4>
+          <p class="description">Every 20th of the month, we offer Narayana Seva with love and devotion. Freshly cooked food is distributed to the needy and hungry in nearby areas. It’s not just feeding the body—it’s feeding the soul through selfless service. This act of love reflects Swami’s message: “Love All, Serve All.”</p>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="500">
+        <div class="icon flex-shrink-0"><i>🛍️</i></div>
+        <div>
+          <h4 class="title">Sai Protein</h4>
+          <p class="description">Every last Thursday of the month, Sai Protein is packed with love by devotees. These nutritious packets are offered to pregnant women and TB patients. They are distributed at Chinna Porur Government Hospital as part of our monthly seva. Each packet carries Swami’s blessings, care, and compassion.</p>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="600">
+        <div class="icon flex-shrink-0"><i class="fas fa-book-open"></i></div>
+        <div>
+          <h4 class="title">Study Circle</h4>
+          <p class="description">Study Circle is held every 3rd Saturday from 5:30 to 7:00 PM in the Samithi. Devotees gather to discuss Swami’s teachings and explore their deeper meaning. It’s a space for reflection, learning, and spiritual growth through shared wisdom. Together, we walk the path of truth, guided by Sai’s divine message.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ✅ JavaScript to toggle open/close -->
+<script>
+  const serviceItems = document.querySelectorAll('.service-item');
+
+  serviceItems.forEach(item => {
+    item.addEventListener('click', () => {
+      serviceItems.forEach(i => {
+        if (i !== item) {
+          i.classList.remove('active');
+        }
+      });
+      item.classList.toggle('active');
+    });
+  });
+</script>
+
 
       <!-- Testimonials Section -->
-      <section id="testimonials" class="testimonials section light-background">
+      <section id="testimonials" class="testimonials section light-background" style="background-color:rgba(235, 233, 233, 0.219);" >
         <!-- Section Title -->
-        <div class="container section-title" data-aos="fade-up">
+        <div class="container section-title" data-aos="fade-up" style="margin-top: -40px;">
           <h2>Co-ordinators</h2>
           <p>
             Valasaravakkam Samithi's most Valuable Co-ordinators and their responsibilities
@@ -1060,44 +1053,89 @@ Inspiring inner transformation through collective prayer and devotion is their c
       </section>
       <!-- /Testimonials Section -->
 
-        <!-- About Section -->
-      <section id="about" class="about section">
-        <!-- Section Title -->
-        <div class="container section-title" data-aos="fade-up">
-          <h2>About</h2>
-          <p class="samithi1"><hr>
-            <em><strong> About Us</strong></em> – Valasaravakkam Samithi The Sri Sathya
-            Sai Seva Organisation is a spiritual, service-oriented organization
-            inspired by the teachings of Bhagawan Sri Sathya Sai Baba, who
-            emphasized the message: “Love All, Serve All. Help Ever, Hurt
-            Never.”Valasaravakkam Samithi has been actively serving the community
-            through seva (selfless service), spiritual activities, and
-            educational programs that embody Swami’s values of truth,
-            righteousness, peace, love, and non-violence. <br /><hr>
-            <em><strong> Core Activities Of Samithi:</strong></em> <br /><hr>
-            <em><strong>Bhajans and Study Circles:</strong></em> Weekly
-            devotional singing and satsangs.
-            <br />
-            <em><strong>Service Projects:</strong></em> Annadanam (free food
-            distribution), medical camps, blood donation, and Narayana Seva.
-            <br />
-            <em><strong>Balvikas:</strong></em> Spiritual education for children
-            to cultivate character and values. <br />
-            <em><strong>Youth Seva:</strong></em> Involvement of Sai Youth in
-            service, leadership, and social transformation initiatives. <br />
-            <em><strong>Festival Celebrations:</strong></em> Spiritual
-            celebrations including Gurupoornima, Swami’s Birthday, and
-            Mahashivaratri. <br /><hr>
-            <em><strong>Our Mission: </strong></em>To inspire individuals to live a
-            righteous and purposeful life through selfless service and devotion,
-            in alignment with Bhagawan’s vision of “Transforming Self to
-            Transform the World.” <br />
-            <em><strong>Join Us:</strong></em> Everyone is welcome to be a part of
-            this loving and spiritual journey. Whether through seva, devotion,
-            or learning, Valasaravakkam Samithi offers opportunities for all to
-            grow and serve together. <hr>
-          </p>
-        </div>
+   <!-- About Section with visible background image -->
+<section id="about" class="about section" style="position: relative; overflow: hidden; min-height: 1vh;">
+
+  <!-- ✅ FIX: Use correct class name and add min-height -->
+  <div class="about-g"></div>
+
+  <!-- Content Box -->
+  <div class="container about-content" data-aos="fade-up">
+    <h2>About</h2>
+    <p class="samithi1">
+      <hr>
+      <em><strong>About Us</strong></em> – Valasaravakkam Samithi The Sri Sathya Sai Seva Organisation is a spiritual, service-oriented organization inspired by the teachings of Bhagawan Sri Sathya Sai Baba, who emphasized the message: “Love All, Serve All. Help Ever, Hurt Never.”
+      Valasaravakkam Samithi has been actively serving the community through seva (selfless service), spiritual activities, and educational programs that embody Swami’s values of truth, righteousness, peace, love, and non-violence.<br /><hr>
+      <em><strong>Core Activities Of Samithi:</strong></em><br /><hr>
+      <em><strong>Bhajans and Study Circles:</strong></em> Weekly devotional singing and satsangs.<br />
+      <em><strong>Service Projects:</strong></em> Annadanam (free food distribution), medical camps, blood donation, and Narayana Seva.<br />
+      <em><strong>Balvikas:</strong></em> Spiritual education for children to cultivate character and values.<br />
+      <em><strong>Youth Seva:</strong></em> Involvement of Sai Youth in service, leadership, and social transformation initiatives.<br />
+      <em><strong>Festival Celebrations:</strong></em> Spiritual celebrations including Gurupoornima, Swami’s Birthday, and Mahashivaratri.<br /><hr>
+      <em><strong>Our Mission:</strong></em> To inspire individuals to live a righteous and purposeful life through selfless service and devotion, in alignment with Bhagawan’s vision of “Transforming Self to Transform the World.”<br />
+      <em><strong>Join Us:</strong></em> Everyone is welcome to be a part of this loving and spiritual journey. Whether through seva, devotion, or learning, Valasaravakkam Samithi offers opportunities for all to grow and serve together.
+      <hr>
+    </p>
+  </div>
+</section>
+
+<!-- Styles -->
+<style>
+.about-g {
+  position: absolute;
+  inset: 0;
+  background: url('assets/img/hero-bg.jpg') center center / cover no-repeat;
+  z-index: 1;
+  background-color: #000; /* Optional fallback color */
+}
+
+
+@media (max-width: 768px) {
+  .about-g {
+    background-size: cover;
+  }
+}
+
+
+  .about-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.7); /* semi-transparent */
+    backdrop-filter: blur(5px);
+    padding: 50px 30px;
+    border-radius: 10px;
+    color: #111;
+  }
+
+  .about-content h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .about-content p {
+    line-height: 1.7;
+    font-size: 1.1rem;
+  }
+
+  .about-content hr {
+    border: none;
+    border-top: 1px solid #555;
+    margin: 10px 0;
+  }
+</style>
+
+
+<!-- Parallax Scroll -->
+<script>
+  window.addEventListener('scroll', function() {
+    const scrolled = window.scrollY;
+    document.querySelector('.about-bg').style.transform = 'translateY(' + (scrolled * 0.3) + 'px)';
+  });
+</script>
+
+
         <!-- End Section Title -->
 
          <!-- Resume Section -->
@@ -1295,7 +1333,7 @@ Inspiring inner transformation through collective prayer and devotion is their c
       <!-- Contact Section -->
       <section id="contact" class="contact section">
         <!-- Section Title -->
-        <div class="container section-title" data-aos="fade-up">
+        <div class="container section-title" data-aos="fade-up" >
           <h2>Contact</h2>
           <p>
             Whether you have questions, wish to join our seva activities, or simply seek spiritual guidance, feel free to reach out.
@@ -1374,13 +1412,14 @@ Contact the Valasaravakkam Samithi today – Love All, Serve All.
     method="POST"
     data-aos="fade-up"
     data-aos-delay="200"
+
   >
     <!-- ✅ Hidden Fields for FormSubmit only -->
     <input type="hidden" name="_next" value="https://www.valasaravakkamsamithi.linkpc.net/thank-you.html">
     <input type="hidden" name="_template" value="table">
     <input type="hidden" name="_captcha" value="false">
 
-    <div class="row gy-4">
+    <div class="row gy-4" >
       <div class="col-md-6">
         <label for="name-field" class="pb-2">Your Name</label>
         <input type="text" name="name" id="name-field" class="form-control" required />
@@ -1409,8 +1448,8 @@ Contact the Valasaravakkam Samithi today – Love All, Serve All.
       </div>
     </div>
   </form>
-</div>
 
+  </section>
 <!-- ✅ Auto Fallback Script -->
 <script>
   const form = document.getElementById('contact-form');
@@ -1432,37 +1471,42 @@ Contact the Valasaravakkam Samithi today – Love All, Serve All.
       });
     });
 </script>
-
-
-
-            <!-- End Contact Form -->
-          </div>
-        </div>
-      </section>
+    
       <!-- /Contact Section -->
-    </main>
+   
 
-    <footer id="footer" class="footer position-relative light-background">
-      <div class="container">
-        <div class="copyright text-center">
-          <p>
-            © <span>Copyright</span>
-            <strong class="px-1 sitename">SSSSO</strong>
-            <span>All Rights Reserved</span>
-          </p>
-        </div>
-        <div class="credits">
-          <!-- All the links in the footer should remain intact. -->
-          <!-- You can delete the links only if you've purchased the pro version. -->
-          <!-- Licensing information: https://bootstrapmade.com/license/ -->
-          <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
-          Designed &amp; Distributed by
-          <a href="">Valasaravakkam Samithi Youth</a>
+   <footer id="footer" class="footer position-relative light-background">
+  <div class="container">
+    <div class="copyright text-center">
+      <p>
+        © <span>Copyright</span>
+        <strong class="px-1 sitename">SSSSO</strong>
+        <span>All Rights Reserved</span>
+      </p>
+    </div>
+    <div class="credits">
+      Designed &amp; Distributed by
+      <a href="#">Valasaravakkam Samithi Youth</a>
+    </div>
 
-          <a href="https://themewagon.com"></a>
-        </div>
-      </div>
-    </footer>
+    <div class="social-links text-center">
+      <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a>
+      <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+      <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+      <a href="https://www.youtube.com/@YourChannel" target="_blank" class="youtube">
+        <i class="bi bi-youtube"></i>
+      </a>
+      <a
+        href="https://chat.whatsapp.com/FRGkXU2sH6X2AlEqkrvtlP"
+        target="_blank"
+        class="whatsapp"
+      >
+        <i class="bi bi-whatsapp"></i>
+      </a>
+    </div>
+  </div>
+</footer>
+
 
     <!-- Scroll Top -->
     <a
