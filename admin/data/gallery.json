@@ -1,0 +1,109 @@
+[
+  {
+    "slug": "balvikas",
+    "label": "Balvikas",
+    "icon": "fa-children",
+    "description": "Spiritual education for children — stories, bhajans, slokas and value-based activities that build character.",
+    "images": [
+      {
+        "src": "/assets/img/gallery/balvikas/balvikas1.jpg",
+        "title": "Balvikas class",
+        "description": "New Balvikas center in Ramar temple"
+      },
+      {
+        "src": "/assets/img/gallery/balvikas/balvikas2.jpg",
+        "title": "Saptaham",
+        "description": "Sai Saptaham by past Balvikas"
+      },
+      {
+        "src": "/assets/img/gallery/balvikas/balvikas3.jpg",
+        "title": "Narayana seva",
+        "description": "Narayana seva by balvikas children"
+      },
+      {
+        "src": "/assets/img/gallery/balvikas/summer%20camp.jpg",
+        "title": "Summer camp",
+        "description": "Summer camp in venkateshwara school"
+      },
+      {
+        "src": "/assets/img/gallery/balvikas/navarathri.jpg",
+        "title": "Navarathri celebration",
+        "description": "Navarathri celebration by Balvikas children"
+      },
+      {
+        "src": "/assets/img/gallery/balvikas/sai%20protein.jpg",
+        "title": "Sai Protein",
+        "description": "Sai Protein packed with love by Balvikas children"
+      }
+    ]
+  },
+  {
+    "slug": "temple-cleaning",
+    "label": "Temple Cleaning",
+    "icon": "fa-broom",
+    "description": "Devotees join hands every 3rd Sunday to lovingly clean and sanctify temple premises.",
+    "images": [
+      {
+        "src": "/assets/img/gallery/balvikas/balvikas4.jpg",
+        "title": "Temple cleaning",
+        "description": "Temple cleaning in Ramar Temple"
+      },
+      {
+        "src": "/assets/img/gallery/balvikas/balvikas5.jpg",
+        "title": "Temple cleaning",
+        "description": "Temple cleaning in Shiva Temple"
+      },
+      {
+        "src": "/assets/img/gallery/temple-cleaning/temple-cleaning1.jpg",
+        "title": "Temple cleaning",
+        "description": "Seva with love, purity and gratitude"
+      }
+    ]
+  },
+  {
+    "slug": "bhajans",
+    "label": "Bhajans",
+    "icon": "fa-drum",
+    "description": "Weekly devotional singing and satsangs filled with peace, love and spiritual energy.",
+    "images": [
+      {
+        "src": "/assets/img/gallery/balvikas/bhajans.jpg",
+        "title": "Special Bhajans",
+        "description": "Special bhajans by sai members"
+      },
+      {
+        "src": "/assets/img/gallery/bhajans/bhajans1.jpg",
+        "title": "Bhajans",
+        "description": "Soulful singing at the Divine Lotus Feet"
+      }
+    ]
+  },
+  {
+    "slug": "other",
+    "label": "Other Services",
+    "icon": "fa-hand-holding-heart",
+    "description": "Community outreach and celebration moments — Nagarsankirtan, festivals and seva in action.",
+    "images": [
+      {
+        "src": "/assets/img/gallery/balvikas/christmas.jpg",
+        "title": "Christ celebrations",
+        "description": "Christ celebrations in samithi"
+      },
+      {
+        "src": "/assets/img/gallery/balvikas/nagarsankirtan.jpg",
+        "title": "Nagarsankirtan",
+        "description": "Nagarsankirtan on Margazhi month"
+      },
+      {
+        "src": "/assets/img/gallery/balvikas/buttermilk.jpg",
+        "title": "Buttermilk",
+        "description": "Buttermilk seva on may month"
+      },
+      {
+        "src": "/assets/img/gallery/other/other1.jpg",
+        "title": "Other services",
+        "description": "Community outreach in action"
+      }
+    ]
+  }
+]

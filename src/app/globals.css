@@ -1,0 +1,386 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #0d6efd;
+  --color-primary-dark: #0a58ca;
+  --color-accent: #149ddd;
+  --color-sidebar: #040b14;
+  --color-sidebar-deep: #02050a;
+  --color-muted: #5f6b7a;
+  --font-sans: var(--font-poppins);
+  --font-display: var(--font-raleway);
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+body {
+  background-color: #ffffff;
+  color: #272829;
+  font-family: var(--font-poppins), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Anchor offset for fixed headers (mobile bar + desktop top navbar) */
+section[id] {
+  scroll-margin-top: 4.5rem;
+}
+@media (min-width: 1024px) {
+  section[id] {
+    scroll-margin-top: 5.5rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reveal-on-scroll
+--------------------------------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------------------------------------------------------------------------
+   Typography helpers
+--------------------------------------------------------------------------- */
+.text-gradient {
+  background-image: linear-gradient(90deg, #149ddd, #4facfe 45%, #7dd3fc 70%, #149ddd);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-pan 7s linear infinite;
+}
+.text-gradient-static {
+  background-image: linear-gradient(90deg, #149ddd, #0d6efd);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@keyframes gradient-pan {
+  to {
+    background-position: 220% center;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   3D helpers
+--------------------------------------------------------------------------- */
+.tilt-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.tilt-pop {
+  transform: translateZ(34px);
+  transform-style: preserve-3d;
+}
+.tilt-pop-2 {
+  transform: translateZ(52px);
+}
+
+/* ---------------------------------------------------------------------------
+   Animations
+--------------------------------------------------------------------------- */
+@keyframes float3d {
+  0%,
+  100% {
+    transform: translateY(0) rotateY(0deg);
+  }
+  50% {
+    transform: translateY(-9px) rotateY(20deg);
+  }
+}
+.animate-float-3d {
+  animation: float3d 4.5s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+@keyframes kenburns {
+  0% {
+    transform: scale(1.02) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.18) translate(1.2%, 1%);
+  }
+}
+.animate-kenburns {
+  animation: kenburns 20s ease-out forwards;
+}
+
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(42px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.hero-enter {
+  opacity: 0;
+  animation: hero-fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(20, 157, 221, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(20, 157, 221, 0);
+  }
+}
+.animate-glow {
+  animation: glow-pulse 2.6s ease-in-out infinite;
+}
+
+/* 3D emblem */
+@keyframes spin3d {
+  from {
+    transform: rotateX(64deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(64deg) rotateZ(360deg);
+  }
+}
+@keyframes emblem-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+.emblem {
+  position: relative;
+  transform-style: preserve-3d;
+  animation: emblem-float 6s ease-in-out infinite;
+}
+.emblem-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  transform-style: preserve-3d;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+}
+.emblem-ring.r1 {
+  animation: spin3d 16s linear infinite;
+  border-style: dashed;
+}
+.emblem-ring.r2 {
+  inset: 16px;
+  animation: spin3d 11s linear infinite reverse;
+  border-style: dotted;
+}
+.emblem-ring.r3 {
+  inset: 32px;
+  animation: spin3d 8s linear infinite;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+}
+.emblem-core {
+  position: absolute;
+  inset: 34px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.95), rgba(20, 157, 221, 0.85));
+  box-shadow:
+    0 0 44px rgba(20, 157, 221, 0.65),
+    inset 0 0 20px rgba(13, 110, 253, 0.4);
+  transform: translateZ(30px);
+}
+
+/* Floating particles */
+@keyframes particle-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-46vh);
+    opacity: 0;
+  }
+}
+.particle {
+  position: absolute;
+  bottom: -12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.55);
+  animation: particle-rise linear infinite;
+  pointer-events: none;
+}
+
+/* Shine sweep */
+.shine {
+  position: relative;
+  overflow: hidden;
+}
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 60%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.75s ease;
+  pointer-events: none;
+}
+.shine:hover::after {
+  transform: translateX(130%);
+}
+
+/* Shimmer on progress bars */
+@keyframes shimmer-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+.bar-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.bar-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  animation: shimmer-sweep 2.4s ease-in-out infinite;
+}
+
+/* Divider line for section titles */
+.divider-dot {
+  animation: dot-breathe 2.2s ease-in-out infinite;
+}
+@keyframes dot-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(20, 157, 221, 0.4);
+  }
+  50% {
+    transform: scale(1.35);
+    box-shadow: 0 0 0 8px rgba(20, 157, 221, 0);
+  }
+}
+
+/* Swiper pagination (light) */
+.events-swiper .swiper-pagination-bullet,
+.coordinators-swiper .swiper-pagination-bullet {
+  width: 11px;
+  height: 11px;
+  background: #ffffff;
+  opacity: 0.6;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  transition: all 0.3s ease;
+}
+.events-swiper .swiper-pagination-bullet-active,
+.coordinators-swiper .swiper-pagination-bullet-active {
+  background: var(--color-primary);
+  transform: scale(1.5);
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.6);
+}
+
+.coordinators-swiper .swiper-pagination-bullet {
+  background: #d0d0d0;
+  border-color: var(--color-primary);
+}
+
+/* Lightbox entrance */
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.lightbox-enter {
+  animation: lightbox-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Bottom nav entrance */
+@keyframes bottom-nav-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.bottom-nav-enter {
+  animation: bottom-nav-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+/* ---------------------------------------------------------------------------
+   Accessibility: respect reduced motion
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .hero-enter {
+    opacity: 1;
+  }
+}

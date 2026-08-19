@@ -1,0 +1,41 @@
+{
+  "siteConfig": {
+    "name": "Valasaravakkam Samithi",
+    "shortName": "SSSSO",
+    "orgName": "Sri Sathya Sai Seva Organisation",
+    "zone": "Chennai Metro West",
+    "tagline": "Love All, Serve All. Help Ever, Hurt Never.",
+    "email": "valasaravakkamsamithi1@gmail.com",
+    "phone": "+91 9087951742",
+    "address": "17, Chintamani Vinayagar Koil St, Alwartirunagar, Chennai, Tamil Nadu 600087",
+    "whatsapp": "https://chat.whatsapp.com/FRGkXU2sH6X2AlEqkrvtlP",
+    "youtube": "https://www.youtube.com/@YourChannel",
+    "mapsEmbed": "https://www.google.com/maps/embed?pb=!3m2!1sen!2sin!4v1750933518873!5m2!1sen!2sin!6m8!1m7!1sP4jWgzof6Ux6vpfU3vEHDw!2m2!1d13.0471520360607!2d80.18547745868291!3f43.769612503958435!4f12.22431640817625!5f1.3357077677436555"
+  },
+  "socialLinks": [
+    {
+      "label": "Twitter",
+      "icon": "bi-twitter-x",
+      "href": "#",
+      "color": "text-white"
+    },
+    {
+      "label": "Facebook",
+      "icon": "bi-facebook",
+      "href": "#",
+      "color": "text-[#1a6ab0]"
+    },
+    {
+      "label": "Instagram",
+      "icon": "bi-instagram",
+      "href": "#",
+      "color": "text-[#f262d8]"
+    },
+    {
+      "label": "YouTube",
+      "icon": "fab-youtube",
+      "href": "https://www.youtube.com/@YourChannel",
+      "color": "text-[#ef0000]"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "samithi-admin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "seed": "node seed.mjs"
+  }
+}

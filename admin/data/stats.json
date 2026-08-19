@@ -1,0 +1,26 @@
+[
+  {
+    "icon": "bi-emoji-smile",
+    "value": 132,
+    "label": "Total Members",
+    "suffix": "In our samithi"
+  },
+  {
+    "icon": "bi-journal-richtext",
+    "value": 56,
+    "label": "Balvikas Childrens",
+    "suffix": "In our samithi"
+  },
+  {
+    "icon": "bi-house",
+    "value": 6,
+    "label": "Balvikas Centers",
+    "suffix": "in valasaravakkam"
+  },
+  {
+    "icon": "bi-people",
+    "value": 20,
+    "label": "Youth",
+    "suffix": "members in samithi"
+  }
+]

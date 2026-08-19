@@ -1,0 +1,28 @@
+[
+  {
+    "title": "Sri Sathya Sai Ratha Mahotsavam – Valasaravakkam Samithi",
+    "description": "Join us for 3 days of divine celebrations with bhajans, Balvikas performances, poojas, cultural events, and the sacred Ratha Yatra!",
+    "image": "/assets/img/ratha-mahotsavam-bg.png"
+  },
+  {
+    "title": "July 4 (Fri, 5:30 PM onwards)",
+    "location": "Valasaravakkam Samithi",
+    "mapsUrl": "https://maps.app.goo.gl/8KXq7uX8tu13MUPb7",
+    "description": "Ashtotram, Bhajans, Balvikas Programs, and Narayana Seva.",
+    "image": "/assets/img/ratha-mahotsavam-bg.png"
+  },
+  {
+    "title": "July 5 (Sat, 7:00 AM onwards)",
+    "location": "Kankaiaman Temple",
+    "mapsUrl": "https://maps.app.goo.gl/oUpremDC6Yke7zAT8",
+    "description": "Procession, Mangala Vadhyam, Sahasranamam, Vilakku Pooja, Bhajans, Maha Mangala Aarathi & Narayana Seva.",
+    "image": "/assets/img/ratha-mahotsavam-bg.png"
+  },
+  {
+    "title": "July 6 (Sun, 5:30 AM onwards)",
+    "location": "Valasaravakkam Samithi",
+    "mapsUrl": "https://maps.app.goo.gl/8KXq7uX8tu13MUPb7",
+    "description": "Ratham Procession, Mangala Vadhyam, Balvikas Cultural Program, Bhajans, Maha Mangala Aarathi & Narayana Seva.",
+    "image": "/assets/img/ratha-mahotsavam-bg.png"
+  }
+]
