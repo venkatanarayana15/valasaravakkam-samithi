@@ -113,6 +113,22 @@
   color: var(--text);
 }
 
+[data-theme="dark"] .item-checkbox .checkmark {
+  background: var(--panel);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .item-checkbox input[type="checkbox"]:checked + .checkmark {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+[data-theme="dark"] .bulk-toolbar {
+  background: var(--primary-light);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
 [data-theme="dark"] input[type="text"],
 [data-theme="dark"] input[type="number"],
 [data-theme="dark"] input[type="email"],
@@ -468,6 +484,109 @@ body {
   color: var(--muted);
   font-weight: 500;
   margin-top: 2px;
+}
+
+/* ================================================================
+   Checkboxes & Bulk Actions
+   ================================================================ */
+
+.item-checkbox {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.item-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1;
+  margin: 0;
+}
+
+.item-checkbox .checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: var(--panel);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: transparent;
+}
+
+.item-checkbox input[type="checkbox"]:checked + .checkmark {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.item-checkbox input[type="checkbox"]:hover + .checkmark {
+  border-color: var(--primary);
+}
+
+.row.selected {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.select-all-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+.select-all-checkbox label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bulk-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--primary-light);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+  animation: slide-down 0.2s ease;
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bulk-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.bulk-toolbar .btn {
+  font-size: 12px;
+  padding: 6px 12px;
 }
 
 /* Quick actions */

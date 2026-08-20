@@ -116,6 +116,7 @@ function selectCollection(name) {
   activeCollection = name;
   searchQuery = "";
   sortBy = "default";
+  selectedItems = new Set();
   $("#sidebar").classList.remove("open");
   buildNav();
   render();
@@ -430,6 +431,7 @@ function clearDirty(msg) {
 
 let searchQuery = "";
 let sortBy = "default";
+let selectedItems = new Set(); // Set of original indices for current collection
 
 function getSortOptions(name) {
   const opts = [
@@ -489,15 +491,65 @@ function renderCollection(view, name, meta) {
 
   const card = el("div", { class: "card" });
 
-  // Header with count + add button
+  // Bulk toolbar placeholder (shown when items selected)
+  const bulkToolbar = el("div", { class: "bulk-toolbar", style: { display: "none" } });
+  const bulkCount = el("span", { class: "bulk-count" }, "0 selected");
+  const bulkActions = el("div", { class: "bulk-actions" });
+  bulkToolbar.append(bulkCount, bulkActions);
+
+  function updateBulkToolbar() {
+    const count = selectedItems.size;
+    if (count === 0) {
+      bulkToolbar.style.display = "none";
+    } else {
+      bulkToolbar.style.display = "flex";
+      bulkCount.textContent = `${count} selected`;
+      bulkActions.innerHTML = "";
+
+      bulkActions.append(
+        el("button", { class: "btn btn-ghost btn-sm", onclick: () => exportSelectedJSON(name, meta) }, "📥 Export JSON"),
+        el("button", { class: "btn btn-danger btn-sm", onclick: () => bulkDelete(name) }, "🗑️ Delete Selected")
+      );
+    }
+  }
+
+  // Header with count + select all + add button
+  const headerRight = el("div", { style: { display: "flex", alignItems: "center", gap: "12px" } });
+
+  if (allItems.length > 0) {
+    const selectAllWrap = el("div", { class: "select-all-checkbox" });
+    const selectAllCb = el("input", { type: "checkbox" });
+    const selectAllLabel = el("label", null, "Select all");
+    selectAllLabel.setAttribute("for", `select-all-${name}`);
+    selectAllCb.id = `select-all-${name}`;
+    selectAllCb.addEventListener("change", () => {
+      if (selectAllCb.checked) {
+        filtered.forEach((item) => selectedItems.add(allItems.indexOf(item)));
+      } else {
+        filtered.forEach((item) => selectedItems.delete(allItems.indexOf(item)));
+      }
+      updateBulkToolbar();
+      renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, resultsCount, updateBulkToolbar);
+    });
+    selectAllWrap.append(selectAllCb, selectAllLabel);
+    headerRight.append(selectAllWrap);
+  }
+
+  if (allItems.length > 0) {
+    headerRight.append(el("button", { class: "btn btn-ghost btn-sm", onclick: () => exportSelectedJSON(name, meta) }, "📥 Export JSON"));
+  }
+  headerRight.append(el("button", { class: "btn btn-primary btn-sm", onclick: () => { searchQuery = ""; sortBy = "default"; selectedItems = new Set(); editItem(name, null); } }, "+ Add Item"));
+
   card.append(
     el(
       "div",
       { class: "card-head" },
       el("div", null, el("h3", null, `${meta.icon} ${meta.label}`), el("p", null, `${allItems.length} item(s) total`)),
-      el("button", { class: "btn btn-primary btn-sm", onclick: () => { searchQuery = ""; sortBy = "default"; editItem(name, null); } }, "+ Add Item")
+      headerRight
     )
   );
+
+  card.append(bulkToolbar);
 
   // Search & filter toolbar (only show if there are items)
   if (allItems.length > 0) {
@@ -523,7 +575,7 @@ function renderCollection(view, name, meta) {
     searchInput.addEventListener("input", (e) => {
       searchQuery = e.target.value;
       clearBtn.classList.toggle("visible", searchQuery.length > 0);
-      renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, resultsCount);
+      renderCollectionGrid(grid, emptyState, name, allItems, sortItems(filterItems(allItems, searchQuery), sortBy), meta, resultsCount, updateBulkToolbar);
     });
 
     searchBox.append(searchIcon, searchInput, clearBtn);
@@ -540,7 +592,7 @@ function renderCollection(view, name, meta) {
       }
       select.addEventListener("change", (e) => {
         sortBy = e.target.value;
-        renderCollectionGrid(grid, emptyState, name, allItems, sortItems(filterItems(allItems, searchQuery), sortBy), meta, resultsCount);
+        renderCollectionGrid(grid, emptyState, name, allItems, sortItems(filterItems(allItems, searchQuery), sortBy), meta, resultsCount, updateBulkToolbar);
       });
       filterGroup.append(select);
       toolbar.append(filterGroup);
@@ -557,14 +609,14 @@ function renderCollection(view, name, meta) {
   const grid = el("div", { class: "grid" });
   const emptyState = el("div", { class: "empty" });
 
-  renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, allItems.length > 0 ? el("span", { class: "results-count" }, `${filtered.length} shown`) : null);
+  renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, allItems.length > 0 ? el("span", { class: "results-count" }, `${filtered.length} shown`) : null, updateBulkToolbar);
 
   card.append(grid);
   card.append(emptyState);
   view.append(card);
 }
 
-function renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, resultsCount) {
+function renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, resultsCount, updateBulkToolbar) {
   grid.innerHTML = "";
   emptyState.innerHTML = "";
 
@@ -595,17 +647,32 @@ function renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, 
   // Re-find original indices for edit/delete
   filtered.forEach((item) => {
     const originalIndex = allItems.indexOf(item);
-    grid.append(collectionCard(name, item, originalIndex));
+    grid.append(collectionCard(name, item, originalIndex, updateBulkToolbar));
   });
 }
 
-function collectionCard(name, item, index) {
+function collectionCard(name, item, index, updateBulkToolbar) {
   const title = pickTitle(item);
   const sub = pickSub(item);
   const preview = pickPreview(item);
+  const isSelected = selectedItems.has(index);
+
+  const checkbox = el("input", { type: "checkbox" });
+  checkbox.checked = isSelected;
+  checkbox.addEventListener("change", () => {
+    if (checkbox.checked) selectedItems.add(index);
+    else selectedItems.delete(index);
+    box.classList.toggle("selected", checkbox.checked);
+    if (updateBulkToolbar) updateBulkToolbar();
+  });
+
+  const checkmark = el("span", { class: "checkmark" }, "✓");
+  const checkboxWrap = el("label", { class: "item-checkbox" }, checkbox, checkmark);
+
   const box = el(
     "div",
-    { class: "row" },
+    { class: `row${isSelected ? " selected" : ""}` },
+    checkboxWrap,
     preview !== null
       ? el("img", { class: "thumb", src: preview, alt: "", onerror: "this.style.display='none'" })
       : null,
@@ -645,6 +712,46 @@ function pickSub(item) {
 function pickPreview(item) {
   if (typeof item !== "object") return null;
   return item.image || (item.images && item.images[0] && item.images[0].src) || item.src || null;
+}
+
+/* ---------- Bulk actions ---------- */
+
+function bulkDelete(name) {
+  const count = selectedItems.size;
+  if (count === 0) return;
+  if (!confirm(`Delete ${count} item(s)? This cannot be undone.`)) return;
+
+  // Sort indices descending so splicing doesn't shift
+  const indices = [...selectedItems].sort((a, b) => b - a);
+  for (const i of indices) {
+    if (Array.isArray(store[name]) && i >= 0 && i < store[name].length) {
+      store[name].splice(i, 1);
+    }
+  }
+  selectedItems = new Set();
+  markDirty();
+  toast(`🗑️ Deleted ${count} item(s)`);
+  render();
+}
+
+function exportSelectedJSON(name, meta) {
+  const items = Array.isArray(store[name]) ? store[name] : [];
+  const selected = [...selectedItems]
+    .filter((i) => i >= 0 && i < items.length)
+    .map((i) => items[i]);
+
+  const data = selected.length > 0 ? selected : items;
+  const label = selected.length > 0 ? `${selected.length} selected` : `all ${items.length}`;
+
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `samithi-${name}-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast(`📥 Exported ${label} ${meta.label} as JSON`);
 }
 
 /* ---------- Edit / create ---------- */
