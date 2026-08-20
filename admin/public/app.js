@@ -1260,4 +1260,36 @@ $("#menu-btn").addEventListener("click", () => $("#sidebar").classList.toggle("o
 $("#save-all").addEventListener("click", saveAll);
 $("#open-site").addEventListener("click", () => window.open("/", "_blank"));
 
+/* ================================================================
+   Theme Toggle (Light / Dark)
+   ================================================================ */
+
+function getPreferredTheme() {
+  const saved = localStorage.getItem("samithi-admin-theme");
+  if (saved) return saved;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("samithi-admin-theme", theme);
+  const thumb = $(".theme-toggle-thumb");
+  const label = $("#theme-label");
+  if (theme === "dark") {
+    thumb.textContent = "🌙";
+    label.textContent = "🌙";
+  } else {
+    thumb.textContent = "☀️";
+    label.textContent = "☀️";
+  }
+}
+
+// Apply theme immediately to avoid flash
+applyTheme(getPreferredTheme());
+
+$("#theme-toggle").addEventListener("click", () => {
+  const current = document.documentElement.getAttribute("data-theme") || "light";
+  applyTheme(current === "dark" ? "light" : "dark");
+});
+
 loadAll().catch((err) => toast("Failed to load: " + err.message, "err"));
