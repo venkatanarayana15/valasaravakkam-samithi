@@ -433,6 +433,7 @@ let searchQuery = "";
 let sortBy = "default";
 let selectedItems = new Set(); // Set of original indices for current collection
 let dragSourceIndex = null; // Track the index being dragged
+let isSaving = false; // Guard against double-save
 
 function getSortOptions(name) {
   const opts = [
@@ -656,10 +657,15 @@ function renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, 
   });
 
   // Set up drag-over and drop handlers on the grid
+  // Remove old listeners first to prevent accumulation
+  grid.removeEventListener("dragover", handleDragOver);
+  grid.removeEventListener("dragleave", handleDragLeave);
+  if (grid._dropHandler) grid.removeEventListener("drop", grid._dropHandler);
   if (canDrag) {
     grid.addEventListener("dragover", handleDragOver);
     grid.addEventListener("dragleave", handleDragLeave);
-    grid.addEventListener("drop", (e) => handleDrop(e, name));
+    grid._dropHandler = (e) => handleDrop(e, name);
+    grid.addEventListener("drop", grid._dropHandler);
   }
 }
 
@@ -812,21 +818,22 @@ function collectionCard(name, item, index, updateBulkToolbar) {
   return box;
 }
 
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 function pickTitle(item) {
-  if (typeof item !== "object") return String(item);
-  return (
-    item.title ||
-    item.label ||
-    item.name ||
-    item.heading ||
-    item.strong ||
-    JSON.stringify(item).slice(0, 60)
-  );
+  if (typeof item !== "object") return escapeHtml(String(item));
+  const raw = item.title || item.label || item.name || item.heading || item.strong || JSON.stringify(item).slice(0, 60);
+  return escapeHtml(String(raw));
 }
 
 function pickSub(item) {
   if (typeof item !== "object") return "";
-  return item.description || item.role || item.text || item.href || "";
+  const raw = item.description || item.role || item.text || item.href || "";
+  return escapeHtml(String(raw));
 }
 
 function pickPreview(item) {
@@ -869,7 +876,9 @@ function exportSelectedJSON(name, meta) {
   const a = document.createElement("a");
   a.href = url;
   a.download = `samithi-${name}-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.append(a);
   a.click();
+  a.remove();
   URL.revokeObjectURL(url);
   toast(`📥 Exported ${label} ${meta.label} as JSON`);
 }
@@ -878,6 +887,10 @@ function exportSelectedJSON(name, meta) {
 
 function editItem(name, index) {
   const isNew = index === null;
+  if (!isNew && (!Array.isArray(store[name]) || index < 0 || index >= store[name].length)) {
+    toast("Invalid item index", "err");
+    return;
+  }
   const item = isNew ? {} : { ...store[name][index] };
   if (name === "gallery") {
     editGalleryItem(index);
@@ -1736,7 +1749,7 @@ document.addEventListener("keydown", (e) => {
   // Ctrl+S or Cmd+S — Save All
   if ((e.ctrlKey || e.metaKey) && e.key === "s") {
     e.preventDefault();
-    if (dirty) saveAll();
+    if (dirty && !isSaving) saveAll();
     return;
   }
 
@@ -1919,11 +1932,14 @@ async function handleImportFile(file, overlay) {
 
 const _originalSaveAll = saveAll;
 async function saveAll() {
+  if (isSaving) return;
+  isSaving = true;
   const spinner = showSpinner("Saving all changes...");
   try {
     await _originalSaveAll();
     logActivity("save", "All changes saved successfully");
   } finally {
+    isSaving = false;
     spinner.remove();
   }
 }
