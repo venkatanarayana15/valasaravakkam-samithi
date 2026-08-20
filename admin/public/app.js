@@ -114,6 +114,8 @@ function buildNav() {
 
 function selectCollection(name) {
   activeCollection = name;
+  searchQuery = "";
+  sortBy = "default";
   $("#sidebar").classList.remove("open");
   buildNav();
   render();
@@ -426,33 +428,175 @@ function clearDirty(msg) {
    Generic collection editor (arrays of objects)
    ================================================================ */
 
+let searchQuery = "";
+let sortBy = "default";
+
+function getSortOptions(name) {
+  const opts = [
+    { value: "default", label: "Default order" },
+    { value: "az", label: "A → Z" },
+    { value: "za", label: "Z → A" },
+  ];
+  // Add date-based sort for collections that likely have time-based data
+  if (["events", "gallery", "homegallery"].includes(name)) {
+    opts.push({ value: "newest", label: "Newest first" });
+    opts.push({ value: "oldest", label: "Oldest first" });
+  }
+  return opts;
+}
+
+function filterItems(items, query) {
+  if (!query.trim()) return items;
+  const q = query.toLowerCase().trim();
+  return items.filter((item) => {
+    const searchable = [
+      pickTitle(item),
+      pickSub(item),
+      item?.role,
+      item?.name,
+      item?.label,
+      item?.slug,
+      item?.heading,
+      item?.icon,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return searchable.includes(q);
+  });
+}
+
+function sortItems(items, sort) {
+  if (sort === "default") return items;
+  const sorted = [...items];
+  switch (sort) {
+    case "az":
+      return sorted.sort((a, b) => pickTitle(a).localeCompare(pickTitle(b)));
+    case "za":
+      return sorted.sort((a, b) => pickTitle(b).localeCompare(pickTitle(a)));
+    case "newest":
+      return sorted.reverse(); // newest = last added
+    case "oldest":
+      return sorted;
+    default:
+      return sorted;
+  }
+}
+
 function renderCollection(view, name, meta) {
-  const items = Array.isArray(store[name]) ? store[name] : [];
+  const allItems = Array.isArray(store[name]) ? store[name] : [];
+  const filtered = sortItems(filterItems(allItems, searchQuery), sortBy);
+
   const card = el("div", { class: "card" });
+
+  // Header with count + add button
   card.append(
     el(
       "div",
       { class: "card-head" },
-      el("div", null, el("h3", null, `${meta.icon} ${meta.label}`), el("p", null, `${items.length} item(s)`)),
-      el("button", { class: "btn btn-primary btn-sm", onclick: () => editItem(name, null) }, "+ Add Item")
+      el("div", null, el("h3", null, `${meta.icon} ${meta.label}`), el("p", null, `${allItems.length} item(s) total`)),
+      el("button", { class: "btn btn-primary btn-sm", onclick: () => { searchQuery = ""; sortBy = "default"; editItem(name, null); } }, "+ Add Item")
     )
   );
 
-  if (items.length === 0) {
-    card.append(
-      el("div", { class: "empty" },
-        el("div", { class: "empty-icon" }, meta.icon),
-        "No items yet. Click \"+ Add Item\" to create one."
-      )
-    );
-  } else {
-    const grid = el("div", { class: "grid" });
-    items.forEach((item, i) => {
-      grid.append(collectionCard(name, item, i));
+  // Search & filter toolbar (only show if there are items)
+  if (allItems.length > 0) {
+    const toolbar = el("div", { class: "toolbar" });
+
+    // Search box
+    const searchBox = el("div", { class: "search-box" });
+    const searchIcon = el("span", { class: "search-icon" }, "🔍");
+    const searchInput = el("input", {
+      type: "text",
+      placeholder: `Search ${meta.label.toLowerCase()}...`,
+      value: searchQuery,
     });
-    card.append(grid);
+    const clearBtn = el("button", {
+      class: `search-clear ${searchQuery ? "visible" : ""}`,
+      onclick: () => {
+        searchInput.value = "";
+        searchQuery = "";
+        renderCollection(view, name, meta);
+      },
+    }, "✕");
+
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      clearBtn.classList.toggle("visible", searchQuery.length > 0);
+      renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, resultsCount);
+    });
+
+    searchBox.append(searchIcon, searchInput, clearBtn);
+    toolbar.append(searchBox);
+
+    // Sort dropdown
+    const sortOpts = getSortOptions(name);
+    if (sortOpts.length > 1) {
+      const filterGroup = el("div", { class: "filter-group" });
+      filterGroup.append(el("label", null, "Sort:"));
+      const select = el("select", { class: "filter-select" });
+      for (const opt of sortOpts) {
+        select.append(el("option", { value: opt.value, selected: sortBy === opt.value ? "selected" : null }, opt.label));
+      }
+      select.addEventListener("change", (e) => {
+        sortBy = e.target.value;
+        renderCollectionGrid(grid, emptyState, name, allItems, sortItems(filterItems(allItems, searchQuery), sortBy), meta, resultsCount);
+      });
+      filterGroup.append(select);
+      toolbar.append(filterGroup);
+    }
+
+    // Results count
+    const resultsCount = el("span", { class: "results-count" }, `${filtered.length} shown`);
+    toolbar.append(resultsCount);
+
+    card.append(toolbar);
   }
+
+  // Grid of items
+  const grid = el("div", { class: "grid" });
+  const emptyState = el("div", { class: "empty" });
+
+  renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, allItems.length > 0 ? el("span", { class: "results-count" }, `${filtered.length} shown`) : null);
+
+  card.append(grid);
+  card.append(emptyState);
   view.append(card);
+}
+
+function renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, resultsCount) {
+  grid.innerHTML = "";
+  emptyState.innerHTML = "";
+
+  if (allItems.length === 0) {
+    emptyState.append(
+      el("div", { class: "empty-icon" }, meta.icon),
+      "No items yet. Click \"+ Add Item\" to create one."
+    );
+    emptyState.style.display = "block";
+    return;
+  }
+
+  if (filtered.length === 0) {
+    emptyState.append(
+      el("div", { class: "no-results-icon" }, "🔍"),
+      el("div", {}, `No results for `),
+      el("span", { class: "no-results-query" }, `"${searchQuery}"`),
+      el("div", { style: { marginTop: "6px", fontSize: "12px" } }, `Try a different search term or clear the filter.`)
+    );
+    emptyState.style.display = "block";
+    if (resultsCount) resultsCount.textContent = `0 shown`;
+    return;
+  }
+
+  emptyState.style.display = "none";
+  if (resultsCount) resultsCount.textContent = `${filtered.length} shown`;
+
+  // Re-find original indices for edit/delete
+  filtered.forEach((item) => {
+    const originalIndex = allItems.indexOf(item);
+    grid.append(collectionCard(name, item, originalIndex));
+  });
 }
 
 function collectionCard(name, item, index) {
