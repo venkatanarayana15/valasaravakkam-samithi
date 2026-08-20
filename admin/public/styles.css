@@ -386,6 +386,52 @@ body {
   background: var(--red-light);
 }
 
+/* Undo / Redo */
+.undo-redo-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--panel-2);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  border: 1px solid var(--border-light);
+}
+.undo-redo-btn {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 16px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  cursor: pointer;
+  transition: all 0.15s ease !important;
+}
+.undo-redo-btn:hover:not(:disabled) {
+  background: var(--panel) !important;
+  color: var(--primary) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.undo-redo-btn:disabled {
+  opacity: 0.35;
+  cursor: default !important;
+}
+.undo-redo-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+[data-theme="dark"] .undo-redo-group {
+  background: var(--panel-2);
+  border-color: var(--border);
+}
+[data-theme="dark"] .undo-redo-btn:hover:not(:disabled) {
+  background: var(--panel);
+  color: var(--primary);
+}
+
 #menu-btn { display: none; }
 
 #view { padding: 24px; max-width: 1280px; width: 100%; }

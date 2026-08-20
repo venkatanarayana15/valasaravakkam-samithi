@@ -61,8 +61,11 @@ async function api(path, opts = {}) {
 async function loadAll() {
   const data = await api("/site");
   store = data;
+  undoStack = [];
+  redoStack = [];
   buildNav();
   render();
+  updateUndoRedoButtons();
 }
 
 /* ================================================================
@@ -435,6 +438,64 @@ let selectedItems = new Set(); // Set of original indices for current collection
 let dragSourceIndex = null; // Track the index being dragged
 let isSaving = false; // Guard against double-save
 
+/* ================================================================
+   Undo / Redo History
+   ================================================================ */
+
+let undoStack = [];
+let redoStack = [];
+const MAX_HISTORY = 50;
+
+function cloneStore() {
+  return JSON.parse(JSON.stringify(store));
+}
+
+function pushSnapshot() {
+  undoStack.push(cloneStore());
+  if (undoStack.length > MAX_HISTORY) undoStack.shift();
+  redoStack = [];
+  updateUndoRedoButtons();
+}
+
+function undo() {
+  if (undoStack.length === 0) return;
+  redoStack.push(cloneStore());
+  store = undoStack.pop();
+  markDirty();
+  render();
+  updateUndoRedoButtons();
+  logActivity("undo", "↩ Undid last action");
+  toast("↩ Undone");
+}
+
+function redo() {
+  if (redoStack.length === 0) return;
+  undoStack.push(cloneStore());
+  store = redoStack.pop();
+  markDirty();
+  render();
+  updateUndoRedoButtons();
+  logActivity("redo", "↪ Redid last action");
+  toast("↪ Redone");
+}
+
+function updateUndoRedoButtons() {
+  const undoBtn = $("#undo-btn");
+  const redoBtn = $("#redo-btn");
+  if (undoBtn) {
+    undoBtn.disabled = undoStack.length === 0;
+    undoBtn.title = undoStack.length > 0
+      ? `Undo (${undoStack.length} step${undoStack.length > 1 ? "s" : ""}) — Ctrl+Z`
+      : "Nothing to undo — Ctrl+Z";
+  }
+  if (redoBtn) {
+    redoBtn.disabled = redoStack.length === 0;
+    redoBtn.title = redoStack.length > 0
+      ? `Redo (${redoStack.length} step${redoStack.length > 1 ? "s" : ""}) — Ctrl+Shift+Z`
+      : "Nothing to redo — Ctrl+Shift+Z";
+  }
+}
+
 function getSortOptions(name) {
   const opts = [
     { value: "default", label: "Default order" },
@@ -735,6 +796,7 @@ function handleDrop(e, name) {
   if (sourceIndex < insertAt) insertAt--;
 
   // Perform the reorder
+  pushSnapshot();
   reorderItem(name, sourceIndex, insertAt);
   markDirty();
   logActivity("reorder", `Reordered item in <strong>${name}</strong>`);
@@ -848,6 +910,7 @@ function bulkDelete(name) {
   if (count === 0) return;
   if (!confirm(`Delete ${count} item(s)? This cannot be undone.`)) return;
 
+  pushSnapshot();
   // Sort indices descending so splicing doesn't shift
   const indices = [...selectedItems].sort((a, b) => b - a);
   for (const i of indices) {
@@ -913,6 +976,7 @@ function editItem(name, index) {
             const rules = VALIDATION_RULES[name];
             if (rules && !validateForm(form, rules)) return;
 
+            pushSnapshot();
             const value = collectForm(form, name);
             if (isNew) {
               if (Array.isArray(store[name])) store[name].push(value);
@@ -1067,6 +1131,7 @@ function editGalleryItem(index) {
             item.icon = form.querySelector("input[name=icon]").value.trim() || "fa-om";
             item.description = form.querySelector("textarea[name=description]").value;
             item.images = item.images.filter((img) => img.src);
+            pushSnapshot();
             if (isNew) store.gallery.push(item);
             else store.gallery[index] = item;
             markDirty();
@@ -1154,6 +1219,7 @@ function collectForm(form, name) {
 
 function deleteItem(name, index) {
   if (!confirm("Delete this item?")) return;
+  pushSnapshot();
   store[name].splice(index, 1);
   markDirty();
   render();
@@ -1293,6 +1359,7 @@ function renderSiteConfig(view) {
               if (!social2[i]) social2[i] = {};
               social2[i][field] = input.value;
             });
+            pushSnapshot();
             store.siteconfig = {
               siteConfig: sc2,
               socialLinks: social2.filter((s) => s && (s.label || s.href)),
@@ -1506,6 +1573,10 @@ $("#menu-btn").addEventListener("click", () => $("#sidebar").classList.toggle("o
 $("#save-all").addEventListener("click", saveAll);
 $("#open-site").addEventListener("click", () => window.open("/", "_blank"));
 
+// Undo / Redo buttons
+$("#undo-btn").addEventListener("click", undo);
+$("#redo-btn").addEventListener("click", redo);
+
 /* ================================================================
    Theme Toggle (Light / Dark)
    ================================================================ */
@@ -1716,6 +1787,8 @@ function buildCommands() {
   const cmds = [
     { icon: "📊", label: "Dashboard", hint: "Overview", action: () => selectCollection(null) },
     { icon: "💾", label: "Save All Changes", kbd: "Ctrl+S", action: () => saveAll() },
+    { icon: "↩", label: "Undo", kbd: "Ctrl+Z", keywords: ["undo", "revert"], action: () => undo() },
+    { icon: "↪", label: "Redo", kbd: "Ctrl+Shift+Z", keywords: ["redo"], action: () => redo() },
     { icon: "☀️", label: "Toggle Dark Mode", action: () => { const t = document.documentElement.getAttribute("data-theme") || "light"; applyTheme(t === "dark" ? "light" : "dark"); } },
     { icon: "↗️", label: "View Live Site", action: () => window.open("/", "_blank") },
     { icon: "📥", label: "Export All Data as JSON", action: () => exportAllData() },
@@ -1750,6 +1823,27 @@ document.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === "s") {
     e.preventDefault();
     if (dirty && !isSaving) saveAll();
+    return;
+  }
+
+  // Ctrl+Z or Cmd+Z — Undo
+  if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+    e.preventDefault();
+    undo();
+    return;
+  }
+
+  // Ctrl+Shift+Z or Cmd+Shift+Z — Redo
+  if ((e.ctrlKey || e.metaKey) && e.key === "z" && e.shiftKey) {
+    e.preventDefault();
+    redo();
+    return;
+  }
+
+  // Ctrl+Y or Cmd+Y — Redo (alternative)
+  if ((e.ctrlKey || e.metaKey) && e.key === "y") {
+    e.preventDefault();
+    redo();
     return;
   }
 
@@ -1903,6 +1997,7 @@ async function handleImportFile(file, overlay) {
     }
 
     // Merge with existing store
+    pushSnapshot();
     let imported = 0;
     for (const key of Object.keys(data)) {
       if (store.hasOwnProperty(key)) {
