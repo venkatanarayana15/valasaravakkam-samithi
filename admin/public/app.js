@@ -432,6 +432,7 @@ function clearDirty(msg) {
 let searchQuery = "";
 let sortBy = "default";
 let selectedItems = new Set(); // Set of original indices for current collection
+let dragSourceIndex = null; // Track the index being dragged
 
 function getSortOptions(name) {
   const opts = [
@@ -620,6 +621,10 @@ function renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, 
   grid.innerHTML = "";
   emptyState.innerHTML = "";
 
+  const canDrag = !searchQuery && sortBy === "default";
+  if (!canDrag) grid.classList.add("drag-disabled");
+  else grid.classList.remove("drag-disabled");
+
   if (allItems.length === 0) {
     emptyState.append(
       el("div", { class: "empty-icon" }, meta.icon),
@@ -649,6 +654,93 @@ function renderCollectionGrid(grid, emptyState, name, allItems, filtered, meta, 
     const originalIndex = allItems.indexOf(item);
     grid.append(collectionCard(name, item, originalIndex, updateBulkToolbar));
   });
+
+  // Set up drag-over and drop handlers on the grid
+  if (canDrag) {
+    grid.addEventListener("dragover", handleDragOver);
+    grid.addEventListener("dragleave", handleDragLeave);
+    grid.addEventListener("drop", (e) => handleDrop(e, name));
+  }
+}
+
+/* ---------- Drag & Drop handlers ---------- */
+
+function getDragTargetRow(e) {
+  const row = e.target.closest(".row");
+  if (!row) return null;
+  const grid = row.parentElement;
+  if (!grid || !grid.classList.contains("grid")) return null;
+  // Only respond to drops within the same grid
+  const rows = [...grid.querySelectorAll(".row")];
+  const targetIndex = rows.indexOf(row);
+  if (targetIndex === -1) return null;
+  return { row, targetIndex, grid };
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+  const target = getDragTargetRow(e);
+  if (!target) return;
+
+  // Clean previous indicators
+  document.querySelectorAll(".row.drag-over, .row.drag-over-bottom").forEach((el) => {
+    el.classList.remove("drag-over", "drag-over-bottom");
+  });
+
+  // Determine if dropping above or below the midpoint
+  const rect = target.row.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+  if (e.clientY < midY) {
+    target.row.classList.add("drag-over");
+  } else {
+    target.row.classList.add("drag-over", "drag-over-bottom");
+  }
+}
+
+function handleDragLeave(e) {
+  const row = e.target.closest(".row");
+  if (row && !row.contains(e.relatedTarget)) {
+    row.classList.remove("drag-over", "drag-over-bottom");
+  }
+}
+
+function handleDrop(e, name) {
+  e.preventDefault();
+  const target = getDragTargetRow(e);
+  if (!target || dragSourceIndex === null) return;
+
+  const sourceIndex = dragSourceIndex;
+  const targetIndex = target.targetIndex;
+
+  // Clean indicators
+  document.querySelectorAll(".row.drag-over, .row.drag-over-bottom").forEach((el) => {
+    el.classList.remove("drag-over", "drag-over-bottom");
+  });
+
+  if (sourceIndex === targetIndex) return;
+
+  // Determine drop position (above or below midpoint)
+  const rect = target.row.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+  let insertAt = e.clientY < midY ? targetIndex : targetIndex + 1;
+
+  // Adjust if dragging from before the insert point
+  if (sourceIndex < insertAt) insertAt--;
+
+  // Perform the reorder
+  reorderItem(name, sourceIndex, insertAt);
+  markDirty();
+  toast("↕️ Item reordered");
+  render();
+}
+
+function reorderItem(name, fromIndex, toIndex) {
+  if (!Array.isArray(store[name])) return;
+  if (fromIndex < 0 || fromIndex >= store[name].length) return;
+  if (toIndex < 0 || toIndex > store[name].length) return;
+  const [item] = store[name].splice(fromIndex, 1);
+  store[name].splice(toIndex > fromIndex ? toIndex - 1 : toIndex, 0, item);
 }
 
 function collectionCard(name, item, index, updateBulkToolbar) {
@@ -656,6 +748,10 @@ function collectionCard(name, item, index, updateBulkToolbar) {
   const sub = pickSub(item);
   const preview = pickPreview(item);
   const isSelected = selectedItems.has(index);
+
+  // Drag handle (only when not searching/filtering/sorting)
+  const canDrag = !searchQuery && sortBy === "default";
+  const handle = el("span", { class: "drag-handle" }, "⠿");
 
   const checkbox = el("input", { type: "checkbox" });
   checkbox.checked = isSelected;
@@ -673,6 +769,7 @@ function collectionCard(name, item, index, updateBulkToolbar) {
     "div",
     { class: `row${isSelected ? " selected" : ""}` },
     checkboxWrap,
+    canDrag ? handle : null,
     preview !== null
       ? el("img", { class: "thumb", src: preview, alt: "", onerror: "this.style.display='none'" })
       : null,
@@ -689,6 +786,28 @@ function collectionCard(name, item, index, updateBulkToolbar) {
       el("button", { class: "btn btn-danger btn-sm", onclick: () => deleteItem(name, index) }, "🗑️")
     )
   );
+
+  // Set up drag events
+  if (canDrag) {
+    box.draggable = true;
+    box.addEventListener("dragstart", (e) => {
+      dragSourceIndex = index;
+      box.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", String(index));
+      // Slight delay so the dragging class renders after the browser captures the ghost
+      requestAnimationFrame(() => box.classList.add("dragging"));
+    });
+    box.addEventListener("dragend", () => {
+      dragSourceIndex = null;
+      box.classList.remove("dragging");
+      // Clean up all drag-over indicators
+      document.querySelectorAll(".row.drag-over, .row.drag-over-bottom").forEach((el) => {
+        el.classList.remove("drag-over", "drag-over-bottom");
+      });
+    });
+  }
+
   return box;
 }
 
