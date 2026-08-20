@@ -1,21 +1,21 @@
 const API = "/api";
 
 const COLLECTIONS = [
-  { name: "siteconfig", label: "Site Settings", icon: "⚙" },
-  { name: "events", label: "Upcoming Events", icon: "📅" },
-  { name: "services", label: "Services", icon: "🤝" },
-  { name: "coordinators", label: "Coordinators", icon: "👥" },
-  { name: "gallery", label: "Gallery", icon: "🖼" },
-  { name: "homegallery", label: "Home Gallery", icon: "🏠" },
-  { name: "stats", label: "Stats", icon: "📊" },
-  { name: "activities", label: "Activities", icon: "📈" },
-  { name: "about", label: "About Sections", icon: "📄" },
-  { name: "members", label: "Members", icon: "🧑‍🤝‍🧑" },
-  { name: "balvikas", label: "Balvikas Children", icon: "🧒" },
+  { name: "siteconfig", label: "Site Settings", icon: "⚙️", group: "General" },
+  { name: "events", label: "Upcoming Events", icon: "📅", group: "Content" },
+  { name: "services", label: "Services", icon: "🤝", group: "Content" },
+  { name: "coordinators", label: "Coordinators", icon: "👥", group: "Content" },
+  { name: "gallery", label: "Gallery", icon: "🖼️", group: "Content" },
+  { name: "homegallery", label: "Home Gallery", icon: "🏠", group: "Content" },
+  { name: "stats", label: "Stats", icon: "📊", group: "Data" },
+  { name: "activities", label: "Activities", icon: "📈", group: "Data" },
+  { name: "about", label: "About Sections", icon: "📄", group: "Content" },
+  { name: "members", label: "Members", icon: "🧑‍🤝‍🧑", group: "People" },
+  { name: "balvikas", label: "Balvikas Children", icon: "🧒", group: "People" },
 ];
 
 let store = {};
-let activeCollection = "siteconfig";
+let activeCollection = null; // null = dashboard
 let dirty = false;
 
 const $ = (sel) => document.querySelector(sel);
@@ -25,6 +25,7 @@ const el = (tag, attrs = {}, ...children) => {
   for (const [k, v] of Object.entries(attrs)) {
     if (k === "class") node.className = v;
     else if (k === "html") node.innerHTML = v;
+    else if (k === "style" && typeof v === "object") Object.assign(node.style, v);
     else if (k.startsWith("on") && typeof v === "function") node.addEventListener(k.slice(2), v);
     else if (v !== undefined && v !== null) node.setAttribute(k, v);
   }
@@ -38,7 +39,7 @@ const el = (tag, attrs = {}, ...children) => {
 function toast(msg, type = "ok") {
   const t = el("div", { class: `toast ${type}` }, msg);
   document.body.append(t);
-  setTimeout(() => t.remove(), 2600);
+  setTimeout(() => t.remove(), 2800);
 }
 
 async function api(path, opts = {}) {
@@ -64,42 +65,348 @@ async function loadAll() {
   render();
 }
 
+/* ================================================================
+   Navigation
+   ================================================================ */
+
 function buildNav() {
   const nav = $("#nav");
   nav.innerHTML = "";
+
+  // Dashboard button
+  const dashBtn = el(
+    "button",
+    {
+      class: `nav-item ${activeCollection === null ? "active" : ""}`,
+      onclick: () => selectCollection(null),
+    },
+    el("span", { class: "nav-icon" }, "📊"),
+    "Dashboard"
+  );
+  nav.append(dashBtn);
+
+  // Group by category
+  const groups = {};
   for (const c of COLLECTIONS) {
-    const count = Array.isArray(store[c.name]) ? store[c.name].length : null;
-    nav.append(
-      el(
-        "button",
-        {
-          class: `nav-item ${activeCollection === c.name ? "active" : ""}`,
-          onclick: () => selectCollection(c.name),
-        },
-        el("span", { class: "nav-icon" }, c.icon),
-        c.label,
-        count !== null ? el("span", { class: "count" }, String(count)) : null
-      )
-    );
+    if (!groups[c.group]) groups[c.group] = [];
+    groups[c.group].push(c);
+  }
+
+  for (const [groupName, items] of Object.entries(groups)) {
+    nav.append(el("div", { class: "nav-section-label" }, groupName));
+    for (const c of items) {
+      const count = Array.isArray(store[c.name]) ? store[c.name].length : null;
+      nav.append(
+        el(
+          "button",
+          {
+            class: `nav-item ${activeCollection === c.name ? "active" : ""}`,
+            onclick: () => selectCollection(c.name),
+          },
+          el("span", { class: "nav-icon" }, c.icon),
+          c.label,
+          count !== null ? el("span", { class: "count" }, String(count)) : null
+        )
+      );
+    }
   }
 }
 
 function selectCollection(name) {
   activeCollection = name;
-  $("#menu-btn").parentElement.classList.remove("open");
   $("#sidebar").classList.remove("open");
   buildNav();
   render();
 }
 
+/* ================================================================
+   Render
+   ================================================================ */
+
 function render() {
-  const meta = COLLECTIONS.find((c) => c.name === activeCollection);
-  $("#page-title").textContent = meta ? meta.label : "";
-  const view = $("#view");
-  view.innerHTML = "";
-  if (activeCollection === "siteconfig") renderSiteConfig(view);
-  else renderCollection(view, activeCollection, meta);
+  if (activeCollection === null) {
+    $("#page-title").textContent = "Dashboard";
+    const view = $("#view");
+    view.innerHTML = "";
+    renderDashboard(view);
+  } else {
+    const meta = COLLECTIONS.find((c) => c.name === activeCollection);
+    $("#page-title").textContent = meta ? meta.label : "";
+    const view = $("#view");
+    view.innerHTML = "";
+    if (activeCollection === "siteconfig") renderSiteConfig(view);
+    else renderCollection(view, activeCollection, meta);
+  }
 }
+
+/* ================================================================
+   Dashboard Overview
+   ================================================================ */
+
+function renderDashboard(view) {
+  // Stats grid
+  const statsData = [
+    {
+      icon: "📅",
+      label: "Events",
+      value: Array.isArray(store.events) ? store.events.length : 0,
+      color: "blue",
+    },
+    {
+      icon: "🤝",
+      label: "Services",
+      value: Array.isArray(store.services) ? store.services.length : 0,
+      color: "green",
+    },
+    {
+      icon: "👥",
+      label: "Coordinators",
+      value: Array.isArray(store.coordinators) ? store.coordinators.length : 0,
+      color: "purple",
+    },
+    {
+      icon: "🖼️",
+      label: "Gallery Items",
+      value: Array.isArray(store.gallery) ? store.gallery.reduce((sum, g) => sum + (g.images?.length || 0), 0) : 0,
+      color: "orange",
+    },
+    {
+      icon: "📊",
+      label: "Stats Entries",
+      value: Array.isArray(store.stats) ? store.stats.length : 0,
+      color: "cyan",
+    },
+    {
+      icon: "🧑‍🤝‍🧑",
+      label: "Members",
+      value: Array.isArray(store.members) ? store.members.length : 0,
+      color: "yellow",
+    },
+  ];
+
+  const grid = el("div", { class: "dashboard-grid" });
+  for (const s of statsData) {
+    grid.append(
+      el(
+        "div",
+        { class: "stat-card" },
+        el("div", { class: `stat-icon ${s.color}` }, s.icon),
+        el(
+          "div",
+          { class: "stat-info" },
+          el("div", { class: "stat-value" }, String(s.value)),
+          el("div", { class: "stat-label" }, s.label)
+        )
+      )
+    );
+  }
+  view.append(grid);
+
+  // Quick actions
+  const actions = el("div", { class: "quick-actions" });
+  actions.append(
+    el(
+      "button",
+      { class: "btn btn-primary", onclick: () => selectCollection("events") },
+      "📅 Manage Events"
+    ),
+    el(
+      "button",
+      { class: "btn btn-ghost", onclick: () => selectCollection("gallery") },
+      "🖼️ Manage Gallery"
+    ),
+    el(
+      "button",
+      { class: "btn btn-ghost", onclick: () => selectCollection("coordinators") },
+      "👥 Manage Coordinators"
+    ),
+    el(
+      "button",
+      { class: "btn btn-ghost", onclick: () => selectCollection("siteconfig") },
+      "⚙️ Site Settings"
+    )
+  );
+  view.append(actions);
+
+  // Content overview cards
+  const overviewGrid = el("div", { class: "grid", style: { gridTemplateColumns: "1fr 1fr", gap: "16px" } });
+
+  // Recent events card
+  const eventsCard = el("div", { class: "card" });
+  eventsCard.append(
+    el(
+      "div",
+      { class: "card-head" },
+      el("div", null, el("h3", null, "📅 Upcoming Events")),
+      el(
+        "button",
+        { class: "btn btn-ghost btn-sm", onclick: () => selectCollection("events") },
+        "View All →"
+      )
+    )
+  );
+  const events = Array.isArray(store.events) ? store.events.slice(0, 3) : [];
+  if (events.length === 0) {
+    eventsCard.append(el("div", { class: "empty" }, el("div", { class: "empty-icon" }, "📅"), "No events yet"));
+  } else {
+    const list = el("div", { class: "activity-list" });
+    for (const ev of events) {
+      list.append(
+        el(
+          "div",
+          { class: "activity-item" },
+          el("div", { class: "activity-dot", style: { background: "var(--primary)" } }),
+          el("div", { style: { flex: "1" } },
+            el("div", { style: { fontWeight: "600", fontSize: "13px" } }, ev.title || "Untitled"),
+            ev.description ? el("div", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "2px" } }, ev.description.slice(0, 80) + (ev.description.length > 80 ? "..." : "")) : null
+          )
+        )
+      );
+    }
+    eventsCard.append(list);
+  }
+  overviewGrid.append(eventsCard);
+
+  // Services card
+  const servicesCard = el("div", { class: "card" });
+  servicesCard.append(
+    el(
+      "div",
+      { class: "card-head" },
+      el("div", null, el("h3", null, "🤝 Services")),
+      el(
+        "button",
+        { class: "btn btn-ghost btn-sm", onclick: () => selectCollection("services") },
+        "View All →"
+      )
+    )
+  );
+  const svcs = Array.isArray(store.services) ? store.services.slice(0, 3) : [];
+  if (svcs.length === 0) {
+    servicesCard.append(el("div", { class: "empty" }, el("div", { class: "empty-icon" }, "🤝"), "No services yet"));
+  } else {
+    const list = el("div", { class: "activity-list" });
+    for (const s of svcs) {
+      list.append(
+        el(
+          "div",
+          { class: "activity-item" },
+          el("div", { class: "activity-dot", style: { background: "var(--green)" } }),
+          el("div", { style: { flex: "1" } },
+            el("div", { style: { fontWeight: "600", fontSize: "13px" } }, s.title || "Untitled"),
+            s.description ? el("div", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "2px" } }, s.description.slice(0, 80) + (s.description.length > 80 ? "..." : "")) : null
+          )
+        )
+      );
+    }
+    servicesCard.append(list);
+  }
+  overviewGrid.append(servicesCard);
+
+  // Coordinators card
+  const coordCard = el("div", { class: "card" });
+  coordCard.append(
+    el(
+      "div",
+      { class: "card-head" },
+      el("div", null, el("h3", null, "👥 Coordinators")),
+      el(
+        "button",
+        { class: "btn btn-ghost btn-sm", onclick: () => selectCollection("coordinators") },
+        "View All →"
+      )
+    )
+  );
+  const coords = Array.isArray(store.coordinators) ? store.coordinators.slice(0, 4) : [];
+  if (coords.length === 0) {
+    coordCard.append(el("div", { class: "empty" }, el("div", { class: "empty-icon" }, "👥"), "No coordinators yet"));
+  } else {
+    const list = el("div", { class: "activity-list" });
+    for (const c of coords) {
+      list.append(
+        el(
+          "div",
+          { class: "activity-item" },
+          el("div", { class: "activity-dot", style: { background: "var(--accent)" } }),
+          el("div", { style: { flex: "1" } },
+            el("div", { style: { fontWeight: "600", fontSize: "13px" } }, c.name || "Unnamed"),
+            el("div", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "2px" } }, c.role || "")
+          )
+        )
+      );
+    }
+    coordCard.append(list);
+  }
+  overviewGrid.append(coordCard);
+
+  // Gallery summary card
+  const galleryCard = el("div", { class: "card" });
+  galleryCard.append(
+    el(
+      "div",
+      { class: "card-head" },
+      el("div", null, el("h3", null, "🖼️ Gallery")),
+      el(
+        "button",
+        { class: "btn btn-ghost btn-sm", onclick: () => selectCollection("gallery") },
+        "View All →"
+      )
+    )
+  );
+  const gal = Array.isArray(store.gallery) ? store.gallery : [];
+  if (gal.length === 0) {
+    galleryCard.append(el("div", { class: "empty" }, el("div", { class: "empty-icon" }, "🖼️"), "No gallery folders yet"));
+  } else {
+    const list = el("div", { class: "activity-list" });
+    for (const g of gal) {
+      list.append(
+        el(
+          "div",
+          { class: "activity-item" },
+          el("div", { class: "activity-dot", style: { background: "var(--orange)" } }),
+          el("div", { style: { flex: "1" } },
+            el("div", { style: { fontWeight: "600", fontSize: "13px" } }, g.label || g.slug || "Unnamed"),
+            el("div", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "2px" } }, `${g.images?.length || 0} images`)
+          )
+        )
+      );
+    }
+    galleryCard.append(list);
+  }
+  overviewGrid.append(galleryCard);
+
+  view.append(overviewGrid);
+
+  // Site info footer
+  if (store.siteconfig?.siteConfig) {
+    const sc = store.siteconfig.siteConfig;
+    const infoCard = el("div", { class: "card", style: { marginTop: "8px" } });
+    infoCard.append(
+      el("div", { class: "card-head" }, el("div", null, el("h3", null, "ℹ️ Site Information"))),
+      el(
+        "div",
+        { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", fontSize: "13px" } },
+        el("div", null,
+          el("div", { style: { color: "var(--muted)", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px" } }, "Organization"),
+          el("div", { style: { fontWeight: "600" } }, sc.orgName || "—")
+        ),
+        el("div", null,
+          el("div", { style: { color: "var(--muted)", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px" } }, "Email"),
+          el("div", { style: { fontWeight: "500" } }, sc.email || "—")
+        ),
+        el("div", null,
+          el("div", { style: { color: "var(--muted)", fontSize: "11px", fontWeight: "600", textTransform: "uppercase", marginBottom: "4px" } }, "Phone"),
+          el("div", { style: { fontWeight: "500" } }, sc.phone || "—")
+        )
+      )
+    );
+    view.append(infoCard);
+  }
+}
+
+/* ================================================================
+   Dirty tracking
+   ================================================================ */
 
 function markDirty() {
   dirty = true;
@@ -115,9 +422,9 @@ function clearDirty(msg) {
   s.className = "save-state saved";
 }
 
-/* ============================================================
+/* ================================================================
    Generic collection editor (arrays of objects)
-   ============================================================ */
+   ================================================================ */
 
 function renderCollection(view, name, meta) {
   const items = Array.isArray(store[name]) ? store[name] : [];
@@ -126,13 +433,18 @@ function renderCollection(view, name, meta) {
     el(
       "div",
       { class: "card-head" },
-      el("div", null, el("h3", null, meta.label), el("p", null, `${items.length} item(s)`)),
+      el("div", null, el("h3", null, `${meta.icon} ${meta.label}`), el("p", null, `${items.length} item(s)`)),
       el("button", { class: "btn btn-primary btn-sm", onclick: () => editItem(name, null) }, "+ Add Item")
     )
   );
 
   if (items.length === 0) {
-    card.append(el("div", { class: "empty" }, "No items yet. Click \"+ Add Item\" to create one."));
+    card.append(
+      el("div", { class: "empty" },
+        el("div", { class: "empty-icon" }, meta.icon),
+        "No items yet. Click \"+ Add Item\" to create one."
+      )
+    );
   } else {
     const grid = el("div", { class: "grid" });
     items.forEach((item, i) => {
@@ -162,8 +474,8 @@ function collectionCard(name, item, index) {
     el(
       "div",
       { class: "row-actions" },
-      el("button", { class: "btn btn-ghost btn-sm", onclick: () => editItem(name, index) }, "Edit"),
-      el("button", { class: "btn btn-danger btn-sm", onclick: () => deleteItem(name, index) }, "Del")
+      el("button", { class: "btn btn-ghost btn-sm", onclick: () => editItem(name, index) }, "✏️ Edit"),
+      el("button", { class: "btn btn-danger btn-sm", onclick: () => deleteItem(name, index) }, "🗑️")
     )
   );
   return box;
@@ -205,25 +517,29 @@ function editItem(name, index) {
     const actions = el(
       "div",
       { class: "editor-actions" },
-      el("button", { class: "btn btn-danger", onclick: () => overlay.remove() }, "Cancel"),
+      el("div", { class: "spacer" }),
+      el("button", { class: "btn btn-ghost", onclick: () => overlay.remove() }, "Cancel"),
       el(
         "button",
-        { class: "btn btn-primary", onclick: async (e) => {
-          e.preventDefault();
-          const value = collectForm(form, name);
-          if (isNew) {
-            if (Array.isArray(store[name])) store[name].push(value);
-            else store[name] = value;
-          } else {
-            if (Array.isArray(store[name])) store[name][index] = value;
-            else store[name] = value;
-          }
-          markDirty();
-          overlay.remove();
-          render();
-          toast(isNew ? "Added" : "Updated");
-        } },
-        isNew ? "Create" : "Save"
+        {
+          class: "btn btn-primary",
+          onclick: (e) => {
+            e.preventDefault();
+            const value = collectForm(form, name);
+            if (isNew) {
+              if (Array.isArray(store[name])) store[name].push(value);
+              else store[name] = value;
+            } else {
+              if (Array.isArray(store[name])) store[name][index] = value;
+              else store[name] = value;
+            }
+            markDirty();
+            overlay.remove();
+            render();
+            toast(isNew ? "✅ Added" : "✅ Updated");
+          },
+        },
+        isNew ? "➕ Create" : "💾 Save"
       )
     );
     return [form, actions];
@@ -232,7 +548,10 @@ function editItem(name, index) {
 
 function editGalleryItem(index) {
   const isNew = index === null;
-  const item = isNew ? { slug: "", label: "", icon: "fa-om", description: "", images: [] } : { ...store.gallery[index], images: [...store.gallery[index].images] };
+  const item = isNew
+    ? { slug: "", label: "", icon: "fa-om", description: "", images: [] }
+    : { ...store.gallery[index], images: [...store.gallery[index].images] };
+
   openOverlay(isNew ? "New Gallery Folder" : "Edit Gallery Folder", (overlay) => {
     const form = el("div", {});
     for (const [key, label, type] of [
@@ -242,13 +561,19 @@ function editGalleryItem(index) {
       ["description", "Description", "textarea"],
     ]) {
       form.append(
-        el("div", { class: "field" }, el("label", null, label),
-          type === "textarea" ? el("textarea", { name: key, rows: 3 }, item[key] ?? "") : el("input", { type: "text", name: key, value: item[key] ?? "" }))
+        el(
+          "div",
+          { class: "field" },
+          el("label", null, label),
+          type === "textarea"
+            ? el("textarea", { name: key, rows: 3 }, item[key] ?? "")
+            : el("input", { type: "text", name: key, value: item[key] ?? "" })
+        )
       );
     }
 
     form.append(el("hr", { class: "separator" }));
-    form.append(el("h3", { style: "font-size:14px;margin-bottom:10px" }, `Images (${item.images.length})`));
+    form.append(el("h3", { style: { fontSize: "14px", marginBottom: "10px", fontWeight: "700" } }, `📸 Images (${item.images.length})`));
     const imgBox = el("div", {});
     const countEl = form.querySelector("h3");
 
@@ -259,35 +584,46 @@ function editGalleryItem(index) {
           { class: "sub-item" },
           el("img", { class: "thumb", src: img.src, alt: "", onerror: "this.style.display='none'" }),
           el("input", { type: "text", value: img.src, placeholder: "Image URL", oninput: (e) => (img.src = e.target.value) }),
-          el("input", { type: "text", value: img.title || "", placeholder: "Title", style: "max-width:130px", oninput: (e) => (img.title = e.target.value) }),
-          el("input", { type: "text", value: img.description || "", placeholder: "Caption", style: "max-width:150px", oninput: (e) => (img.description = e.target.value) }),
-          el("button", { class: "btn btn-danger btn-sm", onclick: () => {
-            const idx = item.images.indexOf(img);
-            if (idx !== -1) item.images.splice(idx, 1);
-            img.remove();
-            markDirty();
-            countEl.textContent = `Images (${item.images.length})`;
-          } }, "✕")
+          el("input", { type: "text", value: img.title || "", placeholder: "Title", style: { maxWidth: "130px" }, oninput: (e) => (img.title = e.target.value) }),
+          el("input", { type: "text", value: img.description || "", placeholder: "Caption", style: { maxWidth: "150px" }, oninput: (e) => (img.description = e.target.value) }),
+          el(
+            "button",
+            {
+              class: "btn btn-danger btn-sm",
+              onclick: () => {
+                const idx = item.images.indexOf(img);
+                if (idx !== -1) item.images.splice(idx, 1);
+                img.remove();
+                markDirty();
+                countEl.textContent = `📸 Images (${item.images.length})`;
+              },
+            },
+            "✕"
+          )
         )
       );
     };
     item.images.forEach(addImageRow);
     const addImg = el(
       "button",
-      { class: "btn btn-ghost btn-sm", style: "margin-top:8px", onclick: () => {
-        const img = { src: "", title: "", description: "" };
-        item.images.push(img);
-        addImageRow(img);
-        markDirty();
-        countEl.textContent = `Images (${item.images.length})`;
-      } },
+      {
+        class: "btn btn-ghost btn-sm",
+        style: { marginTop: "8px" },
+        onclick: () => {
+          const img = { src: "", title: "", description: "" };
+          item.images.push(img);
+          addImageRow(img);
+          markDirty();
+          countEl.textContent = `📸 Images (${item.images.length})`;
+        },
+      },
       "+ Add image"
     );
     imgBox.append(addImg);
     form.append(imgBox);
 
-    const uploadBox = el("div", { class: "field", style: "margin-top:14px" });
-    uploadBox.append(el("label", null, "Upload image (appends to list)"));
+    const uploadBox = el("div", { class: "field", style: { marginTop: "14px" } });
+    uploadBox.append(el("label", null, "📤 Upload image (appends to list)"));
     const fileInput = el("input", {
       type: "file",
       accept: "image/*",
@@ -306,8 +642,8 @@ function editGalleryItem(index) {
           item.images.push(img);
           addImageRow(img);
           markDirty();
-          countEl.textContent = `Images (${item.images.length})`;
-          toast("Image uploaded");
+          countEl.textContent = `📸 Images (${item.images.length})`;
+          toast("✅ Image uploaded");
         } catch (err) {
           toast(err.message, "err");
         }
@@ -319,27 +655,37 @@ function editGalleryItem(index) {
     const actions = el(
       "div",
       { class: "editor-actions" },
-      el("button", { class: "btn btn-danger", onclick: () => overlay.remove() }, "Cancel"),
+      el("div", { class: "spacer" }),
+      el("button", { class: "btn btn-ghost", onclick: () => overlay.remove() }, "Cancel"),
       el(
         "button",
-        { class: "btn btn-primary", onclick: () => {
-          const slug = form.querySelector("input[name=slug]").value.trim();
-          const existing = store.gallery.findIndex((g) => g.slug === slug);
-          if (!slug) { toast("Slug is required", "err"); return; }
-          if (existing !== -1 && existing !== index) { toast("Slug already exists", "err"); return; }
-          item.slug = slug;
-          item.label = form.querySelector("input[name=label]").value.trim() || slug;
-          item.icon = form.querySelector("input[name=icon]").value.trim() || "fa-om";
-          item.description = form.querySelector("textarea[name=description]").value;
-          item.images = item.images.filter((img) => img.src);
-          if (isNew) store.gallery.push(item);
-          else store.gallery[index] = item;
-          markDirty();
-          overlay.remove();
-          render();
-          toast(isNew ? "Gallery folder added" : "Gallery folder updated");
-        } },
-        isNew ? "Create Folder" : "Save Folder"
+        {
+          class: "btn btn-primary",
+          onclick: () => {
+            const slug = form.querySelector("input[name=slug]").value.trim();
+            const existing = store.gallery.findIndex((g) => g.slug === slug);
+            if (!slug) {
+              toast("Slug is required", "err");
+              return;
+            }
+            if (existing !== -1 && existing !== index) {
+              toast("Slug already exists", "err");
+              return;
+            }
+            item.slug = slug;
+            item.label = form.querySelector("input[name=label]").value.trim() || slug;
+            item.icon = form.querySelector("input[name=icon]").value.trim() || "fa-om";
+            item.description = form.querySelector("textarea[name=description]").value;
+            item.images = item.images.filter((img) => img.src);
+            if (isNew) store.gallery.push(item);
+            else store.gallery[index] = item;
+            markDirty();
+            overlay.remove();
+            render();
+            toast(isNew ? "✅ Gallery folder added" : "✅ Gallery folder updated");
+          },
+        },
+        isNew ? "➕ Create Folder" : "💾 Save Folder"
       )
     );
     return [form, actions];
@@ -358,7 +704,6 @@ function renderFormFor(name, item) {
     const value = item[key];
     wrap.append(renderField(name, key, value, def));
   }
-  // image source helper for common image fields
   const imgKeys = Object.keys(item).filter((k) => /image|img|src|avatar|photo/i.test(k));
   if (imgKeys.length) {
     wrap.append(el("hr", { class: "separator" }));
@@ -392,9 +737,7 @@ function renderField(name, key, value, def) {
     input = el(
       "select",
       { name: key },
-      ...def.options.map((o) =>
-        el("option", { value: o, selected: o === value ? "selected" : null }, o)
-      )
+      ...def.options.map((o) => el("option", { value: o, selected: o === value ? "selected" : null }, o))
     );
   } else {
     input = el("input", { type: "text", name: key, value: value ?? "" });
@@ -405,15 +748,13 @@ function renderField(name, key, value, def) {
 function collectForm(form, name) {
   const out = {};
   const isArrayCollection = Array.isArray(store[name]);
-  const base = isArrayCollection
-    ? {}
-    : { ...(typeof store[name] === "object" ? store[name] : {}) };
+  const base = isArrayCollection ? {} : { ...(typeof store[name] === "object" ? store[name] : {}) };
   form.querySelectorAll("input, textarea, select").forEach((input) => {
     if (!input.name) return;
     if (input.name.startsWith("__") || input.dataset.tmp) return;
     const v = input.value;
     const val = input.type === "number" ? (v === "" ? 0 : Number(v)) : v;
-    if (isArrayCollection && val === "" ) return;
+    if (isArrayCollection && val === "") return;
     out[input.name] = val;
   });
   return { ...base, ...out };
@@ -422,16 +763,16 @@ function collectForm(form, name) {
 /* ---------- Delete ---------- */
 
 function deleteItem(name, index) {
-  if (!confirm(`Delete this item?`)) return;
+  if (!confirm("Delete this item?")) return;
   store[name].splice(index, 1);
   markDirty();
   render();
-  toast("Deleted");
+  toast("🗑️ Deleted");
 }
 
-/* ============================================================
-   Site config (object with nested siteConfig + socialLinks)
-   ============================================================ */
+/* ================================================================
+   Site config
+   ================================================================ */
 
 function renderSiteConfig(view) {
   const data = store.siteconfig || {};
@@ -442,7 +783,7 @@ function renderSiteConfig(view) {
     el(
       "div",
       { class: "card-head" },
-      el("div", null, el("h3", null, "Site Settings"), el("p", null, "Contact details, social links and identity."))
+      el("div", null, el("h3", null, "⚙️ Site Settings"), el("p", null, "Contact details, social links and identity."))
     )
   );
 
@@ -475,7 +816,7 @@ function renderSiteConfig(view) {
 
   // social links
   wrap.append(el("hr", { class: "separator" }));
-  wrap.append(el("h3", { style: "font-size:14px;margin-bottom:10px" }, "Social Links"));
+  wrap.append(el("h3", { style: { fontSize: "14px", marginBottom: "10px", fontWeight: "700" } }, "🔗 Social Links"));
   const socialBox = el("div", {});
   const social = Array.isArray(data.socialLinks) ? data.socialLinks : [];
   social.forEach((link, i) => {
@@ -489,7 +830,7 @@ function renderSiteConfig(view) {
           name: `social-label-${i}`,
           value: link.label || "",
           placeholder: "Label",
-          style: "max-width:110px",
+          style: { maxWidth: "110px" },
           oninput: () => markDirty(),
         }),
         el("input", {
@@ -497,7 +838,7 @@ function renderSiteConfig(view) {
           name: `social-icon-${i}`,
           value: link.icon || "",
           placeholder: "Icon key",
-          style: "max-width:130px",
+          style: { maxWidth: "130px" },
           oninput: () => markDirty(),
         }),
         el("input", {
@@ -507,14 +848,18 @@ function renderSiteConfig(view) {
           placeholder: "URL",
           oninput: () => markDirty(),
         }),
-        el("button", {
-          class: "btn btn-danger btn-sm",
-          onclick: () => {
-            social.splice(i, 1);
-            markDirty();
-            renderSiteConfig(view);
+        el(
+          "button",
+          {
+            class: "btn btn-danger btn-sm",
+            onclick: () => {
+              social.splice(i, 1);
+              markDirty();
+              renderSiteConfig(view);
+            },
           },
-        }, "✕")
+          "✕"
+        )
       )
     );
   });
@@ -523,7 +868,7 @@ function renderSiteConfig(view) {
       "button",
       {
         class: "btn btn-ghost btn-sm",
-        style: "margin-top:6px",
+        style: { marginTop: "6px" },
         onclick: () => {
           social.push({ label: "", icon: "", href: "" });
           markDirty();
@@ -540,6 +885,7 @@ function renderSiteConfig(view) {
     el(
       "div",
       { class: "editor-actions" },
+      el("div", { class: "spacer" }),
       el(
         "button",
         {
@@ -563,19 +909,19 @@ function renderSiteConfig(view) {
             };
             markDirty();
             render();
-            toast("Site settings updated");
+            toast("✅ Site settings updated");
           },
         },
-        "Save Site Settings"
+        "💾 Save Site Settings"
       )
     )
   );
   view.append(card);
 }
 
-/* ============================================================
+/* ================================================================
    Field definitions & helpers
-   ============================================================ */
+   ================================================================ */
 
 const FIELD_DEFS = {
   services: {
@@ -668,7 +1014,7 @@ function uploadField(key, item) {
         item[key] = json.url;
         renderPreview();
         markDirty();
-        toast("Image uploaded");
+        toast("✅ Image uploaded");
       } catch (err) {
         toast(err.message, "err");
       }
@@ -681,15 +1027,19 @@ function uploadField(key, item) {
       preview.append(el("img", { src: item[key], alt: "", onerror: "this.style.display='none'" }));
       const path = el("span", { class: "path" }, item[key]);
       path.append(
-        el("button", {
-          class: "btn btn-ghost btn-sm",
-          style: "margin-left:8px",
-          onclick: () => {
-            item[key] = "";
-            renderPreview();
-            markDirty();
+        el(
+          "button",
+          {
+            class: "btn btn-ghost btn-sm",
+            style: { marginLeft: "8px" },
+            onclick: () => {
+              item[key] = "";
+              renderPreview();
+              markDirty();
+            },
           },
-        }, "Clear")
+          "Clear"
+        )
       );
       preview.append(path);
     }
@@ -702,11 +1052,21 @@ function uploadField(key, item) {
 /* ---------- Overlay ---------- */
 
 function openOverlay(title, contentFn) {
-  const overlay = el("div", { class: "overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } });
+  const overlay = el("div", {
+    class: "overlay",
+    onclick: (e) => {
+      if (e.target === overlay) overlay.remove();
+    },
+  });
   const editor = el(
     "div",
     { class: "editor" },
-    el("div", { class: "editor-head" }, el("h3", null, title), el("button", { class: "btn btn-ghost btn-sm", onclick: () => overlay.remove() }, "✕"))
+    el(
+      "div",
+      { class: "editor-head" },
+      el("h3", null, title),
+      el("button", { class: "btn btn-ghost btn-sm", onclick: () => overlay.remove() }, "✕")
+    )
   );
   const body = el("div", {});
   const result = contentFn(overlay);
@@ -716,9 +1076,9 @@ function openOverlay(title, contentFn) {
   document.body.append(overlay);
 }
 
-/* ============================================================
+/* ================================================================
    Save all
-   ============================================================ */
+   ================================================================ */
 
 async function saveAll() {
   const btn = $("#save-all");
@@ -729,7 +1089,7 @@ async function saveAll() {
       await api(`/${c.name}`, { method: "PUT", body: JSON.stringify(store[c.name]) });
     }
     clearDirty("All changes saved");
-    toast("All changes saved");
+    toast("✅ All changes saved");
   } catch (err) {
     toast(err.message, "err");
     const s = $("#save-state");
@@ -737,13 +1097,13 @@ async function saveAll() {
     s.className = "save-state error";
   } finally {
     btn.disabled = false;
-    btn.textContent = "Save All";
+    btn.textContent = "💾 Save All";
   }
 }
 
-/* ============================================================
+/* ================================================================
    Init
-   ============================================================ */
+   ================================================================ */
 
 window.addEventListener("beforeunload", (e) => {
   if (dirty) {

@@ -9,7 +9,6 @@ import Reveal from "@/components/Reveal";
 import TiltCard from "@/components/TiltCard";
 
 const FORMSUBMIT_URL = "https://formsubmit.co/8d83ef3758007b64d1254ddb0557f410";
-const FORMSPREE_URL = "https://formspree.io/f/xdkzywpa";
 
 export default function ContactSection() {
   const { siteConfig } = useSiteData();
@@ -23,22 +22,7 @@ export default function ContactSection() {
 
     try {
       const formData = new FormData(form);
-
-      let formsubmitOnline = true;
-      try {
-        await fetch("https://formsubmit.co", { method: "HEAD", mode: "no-cors" });
-      } catch {
-        formsubmitOnline = false;
-      }
-
-      const action = formsubmitOnline ? FORMSUBMIT_URL : FORMSPREE_URL;
-      if (!formsubmitOnline) {
-        formData.delete("_next");
-        formData.delete("_template");
-        formData.delete("_captcha");
-      }
-
-      const res = await fetch(action, {
+      const res = await fetch(FORMSUBMIT_URL, {
         method: "POST",
         headers: { Accept: "application/json" },
         body: formData,

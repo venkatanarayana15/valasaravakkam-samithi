@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Samithi Admin</title>
+  <title>Samithi Admin — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/_ui/styles.css" />
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <span class="brand-dot"></span>
+        <div class="brand-icon">ॐ</div>
         <div>
           <h1>Samithi Admin</h1>
           <p>Content Management</p>
@@ -18,16 +21,18 @@
       </div>
       <nav id="nav"></nav>
       <div class="sidebar-foot">
-        <button id="open-site" class="btn btn-ghost">View Site</button>
+        <button id="open-site" class="btn btn-ghost" style="width:100%;justify-content:center;">
+          ↗ View Live Site
+        </button>
       </div>
     </aside>
     <main class="content">
       <header class="topbar">
-        <button id="menu-btn" class="btn btn-ghost" aria-label="Toggle menu">☰</button>
+        <button id="menu-btn" class="btn btn-ghost btn-icon" aria-label="Toggle menu">☰</button>
         <h2 id="page-title">Dashboard</h2>
         <div class="topbar-right">
           <span id="save-state" class="save-state"></span>
-          <button id="save-all" class="btn btn-primary">Save All</button>
+          <button id="save-all" class="btn btn-primary">💾 Save All</button>
         </div>
       </header>
       <div id="view"></div>
