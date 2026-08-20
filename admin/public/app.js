@@ -731,6 +731,7 @@ function handleDrop(e, name) {
   // Perform the reorder
   reorderItem(name, sourceIndex, insertAt);
   markDirty();
+  logActivity("reorder", `Reordered item in <strong>${name}</strong>`);
   toast("↕️ Item reordered");
   render();
 }
@@ -895,13 +896,19 @@ function editItem(name, index) {
           class: "btn btn-primary",
           onclick: (e) => {
             e.preventDefault();
+            // Validate if rules exist for this collection
+            const rules = VALIDATION_RULES[name];
+            if (rules && !validateForm(form, rules)) return;
+
             const value = collectForm(form, name);
             if (isNew) {
               if (Array.isArray(store[name])) store[name].push(value);
               else store[name] = value;
+              logActivity("create", `Created <strong>${pickTitle(value)}</strong> in ${name}`);
             } else {
               if (Array.isArray(store[name])) store[name][index] = value;
               else store[name] = value;
+              logActivity("update", `Updated <strong>${pickTitle(value)}</strong> in ${name}`);
             }
             markDirty();
             overlay.remove();
@@ -1517,5 +1524,426 @@ $("#theme-toggle").addEventListener("click", () => {
   const current = document.documentElement.getAttribute("data-theme") || "light";
   applyTheme(current === "dark" ? "light" : "dark");
 });
+
+/* ================================================================
+   Activity Log
+   ================================================================ */
+
+const activityLog = [];
+
+function logActivity(type, text) {
+  const now = new Date();
+  const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  activityLog.unshift({ type, text, time });
+  if (activityLog.length > 50) activityLog.pop();
+  renderActivityLog();
+}
+
+function renderActivityLog() {
+  const body = $("#activity-body");
+  if (!body) return;
+  if (activityLog.length === 0) {
+    body.innerHTML = "";
+    body.append(el("div", { class: "activity-empty" }, "No changes yet"));
+    return;
+  }
+  body.innerHTML = "";
+  const colors = { create: "var(--green)", update: "var(--primary)", delete: "var(--red)", save: "var(--accent)", reorder: "var(--orange)" };
+  for (const entry of activityLog) {
+    body.append(
+      el(
+        "div",
+        { class: "activity-entry" },
+        el("div", { class: "activity-dot", style: { background: colors[entry.type] || "var(--muted)" } }),
+        el("div", { class: "activity-text", html: entry.text }),
+        el("span", { class: "activity-time" }, entry.time)
+      )
+    );
+  }
+}
+
+$("#activity-toggle").addEventListener("click", () => {
+  $("#activity-panel").classList.toggle("open");
+});
+
+// Close activity panel when clicking outside
+document.addEventListener("click", (e) => {
+  const panel = $("#activity-panel");
+  const toggle = $("#activity-toggle");
+  if (panel && !panel.contains(e.target) && !toggle.contains(e.target)) {
+    panel.classList.remove("open");
+  }
+});
+
+/* ================================================================
+   Command Palette (Ctrl+K)
+   ================================================================ */
+
+let cmdOpen = false;
+let cmdActiveIndex = 0;
+
+function openCommandPalette() {
+  const overlay = $("#cmd-overlay");
+  overlay.innerHTML = "";
+  overlay.style.display = "flex";
+  cmdOpen = true;
+  cmdActiveIndex = 0;
+
+  const palette = el("div", { class: "cmd-palette" });
+
+  // Input
+  const inputWrap = el("div", { class: "cmd-input-wrap" });
+  const input = el("input", {
+    class: "cmd-input",
+    type: "text",
+    placeholder: "Type a command or search...",
+  });
+  inputWrap.append(
+    el("span", { class: "cmd-icon" }, "🔍"),
+    input,
+    el("span", { class: "cmd-kbd" }, "ESC")
+  );
+  palette.append(inputWrap);
+
+  // Results
+  const results = el("div", { class: "cmd-results" });
+  palette.append(results);
+
+  // Footer
+  const footer = el("div", { class: "cmd-footer" });
+  footer.append(
+    el("span", {}, "Navigate with "),
+    el("kbd", {}, "↑↓"),
+    el("span", {}, " to select, "),
+    el("kbd", {}, "Enter"),
+    el("span", {}, " to open")
+  );
+  palette.append(footer);
+
+  overlay.append(palette);
+
+  // Build commands list
+  const commands = buildCommands();
+
+  function renderCmdResults(query) {
+    results.innerHTML = "";
+    const filtered = query
+      ? commands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase()) || (c.keywords && c.keywords.some((k) => k.includes(query.toLowerCase()))))
+      : commands;
+
+    if (filtered.length === 0) {
+      results.append(el("div", { class: "cmd-empty" }, `No results for "${query}"`));
+      return;
+    }
+
+    cmdActiveIndex = 0;
+    filtered.forEach((cmd, i) => {
+      const item = el(
+        "div",
+        {
+          class: `cmd-item${i === 0 ? " active" : ""}`,
+          onclick: () => { closeCommandPalette(); cmd.action(); },
+          "data-index": String(i),
+        },
+        el("span", { class: "cmd-item-icon" }, cmd.icon),
+        el("span", { class: "cmd-item-label" }, cmd.label),
+        cmd.hint ? el("span", { class: "cmd-item-hint" }, cmd.hint) : null,
+        cmd.kbd ? el("span", { class: "cmd-item-kbd" }, cmd.kbd) : null
+      );
+      results.append(item);
+    });
+  }
+
+  renderCmdResults("");
+
+  // Input events
+  input.addEventListener("input", () => renderCmdResults(input.value));
+
+  input.addEventListener("keydown", (e) => {
+    const items = results.querySelectorAll(".cmd-item");
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      cmdActiveIndex = Math.min(cmdActiveIndex + 1, items.length - 1);
+      updateCmdActive(items);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      cmdActiveIndex = Math.max(cmdActiveIndex - 1, 0);
+      updateCmdActive(items);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (items[cmdActiveIndex]) items[cmdActiveIndex].click();
+    } else if (e.key === "Escape") {
+      closeCommandPalette();
+    }
+  });
+
+  // Focus input
+  setTimeout(() => input.focus(), 50);
+
+  // Click overlay to close
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeCommandPalette();
+  });
+}
+
+function updateCmdActive(items) {
+  items.forEach((item, i) => {
+    item.classList.toggle("active", i === cmdActiveIndex);
+  });
+  // Scroll into view
+  if (items[cmdActiveIndex]) items[cmdActiveIndex].scrollIntoView({ block: "nearest" });
+}
+
+function closeCommandPalette() {
+  $("#cmd-overlay").style.display = "none";
+  cmdOpen = false;
+}
+
+function buildCommands() {
+  const cmds = [
+    { icon: "📊", label: "Dashboard", hint: "Overview", action: () => selectCollection(null) },
+    { icon: "💾", label: "Save All Changes", kbd: "Ctrl+S", action: () => saveAll() },
+    { icon: "☀️", label: "Toggle Dark Mode", action: () => { const t = document.documentElement.getAttribute("data-theme") || "light"; applyTheme(t === "dark" ? "light" : "dark"); } },
+    { icon: "↗️", label: "View Live Site", action: () => window.open("/", "_blank") },
+    { icon: "📥", label: "Export All Data as JSON", action: () => exportAllData() },
+    { icon: "📤", label: "Import Data from JSON", action: () => openImportModal() },
+  ];
+
+  for (const c of COLLECTIONS) {
+    const count = Array.isArray(store[c.name]) ? store[c.name].length : null;
+    cmds.push({
+      icon: c.icon,
+      label: `${c.label}${count !== null ? ` (${count})` : ""}`,
+      hint: c.group,
+      keywords: [c.name, c.group.toLowerCase()],
+      action: () => selectCollection(c.name),
+    });
+  }
+
+  return cmds;
+}
+
+// Global keyboard shortcuts
+document.addEventListener("keydown", (e) => {
+  // Ctrl+K or Cmd+K — Command Palette
+  if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+    e.preventDefault();
+    if (cmdOpen) closeCommandPalette();
+    else openCommandPalette();
+    return;
+  }
+
+  // Ctrl+S or Cmd+S — Save All
+  if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+    e.preventDefault();
+    if (dirty) saveAll();
+    return;
+  }
+
+  // Escape — Close modals/palette
+  if (e.key === "Escape") {
+    if (cmdOpen) {
+      closeCommandPalette();
+      return;
+    }
+    // Close any open overlay
+    const overlay = $(".overlay");
+    if (overlay) overlay.remove();
+  }
+});
+
+/* ================================================================
+   Loading Spinner
+   ================================================================ */
+
+function showSpinner(label = "Saving...") {
+  const overlay = el("div", { class: "spinner-overlay" });
+  overlay.append(
+    el("div", { style: { textAlign: "center" } },
+      el("div", { class: "spinner" }),
+      el("div", { class: "spinner-label" }, label)
+    )
+  );
+  document.body.append(overlay);
+  return overlay;
+}
+
+/* ================================================================
+   Data Validation
+   ================================================================ */
+
+function validateForm(form, rules) {
+  let valid = true;
+  // Clear previous errors
+  form.querySelectorAll(".field.error").forEach((f) => f.classList.remove("error"));
+  form.querySelectorAll(".field-error").forEach((e) => e.remove());
+
+  for (const [name, rule] of Object.entries(rules)) {
+    const input = form.querySelector(`[name="${name}"]`);
+    if (!input) continue;
+    const value = input.value.trim();
+    const field = input.closest(".field");
+
+    if (rule.required && !value) {
+      if (field) {
+        field.classList.add("error");
+        field.append(el("div", { class: "field-error" }, `⚠️ ${rule.message || "This field is required"}`));
+      }
+      valid = false;
+    }
+
+    if (rule.minLength && value.length < rule.minLength) {
+      if (field) {
+        field.classList.add("error");
+        field.append(el("div", { class: "field-error" }, `⚠️ Minimum ${rule.minLength} characters`));
+      }
+      valid = false;
+    }
+
+    if (rule.pattern && !rule.pattern.test(value)) {
+      if (field) {
+        field.classList.add("error");
+        field.append(el("div", { class: "field-error" }, `⚠️ ${rule.message || "Invalid format"}`));
+      }
+      valid = false;
+    }
+  }
+
+  return valid;
+}
+
+// Validation rules per collection
+const VALIDATION_RULES = {
+  events: { title: { required: true, message: "Event title is required" } },
+  services: { title: { required: true, message: "Service title is required" } },
+  coordinators: { name: { required: true, message: "Name is required" } },
+  gallery: { slug: { required: true, message: "Slug is required" }, label: { required: true, message: "Label is required" } },
+  members: { name: { required: true, message: "Name is required" } },
+  stats: { label: { required: true, message: "Label is required" } },
+};
+
+/* ================================================================
+   Export / Import All Data
+   ================================================================ */
+
+function exportAllData() {
+  const json = JSON.stringify(store, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `samithi-all-data-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  logActivity("save", "Exported all data as JSON");
+  toast("📥 All data exported");
+}
+
+function openImportModal() {
+  openOverlay("Import Data from JSON", (overlay) => {
+    const body = el("div", {});
+
+    const zone = el("div", { class: "import-zone" });
+    zone.append(
+      el("div", { class: "import-icon" }, "📤"),
+      el("div", { class: "import-text", html: "Drag a JSON file here or <strong>click to browse</strong>" })
+    );
+
+    const fileInput = el("input", {
+      type: "file",
+      accept: ".json,application/json",
+      style: { display: "none" },
+      onchange: (e) => handleImportFile(e.target.files[0], overlay),
+    });
+
+    zone.addEventListener("click", () => fileInput.click());
+    zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("dragging"); });
+    zone.addEventListener("dragleave", () => zone.classList.remove("dragging"));
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      zone.classList.remove("dragging");
+      if (e.dataTransfer.files[0]) handleImportFile(e.dataTransfer.files[0], overlay);
+    });
+
+    body.append(zone, fileInput);
+
+    const actions = el(
+      "div",
+      { class: "editor-actions" },
+      el("div", { class: "spacer" }),
+      el("button", { class: "btn btn-ghost", onclick: () => overlay.remove() }, "Cancel")
+    );
+    return [body, actions];
+  });
+}
+
+async function handleImportFile(file, overlay) {
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+
+    // Validate structure
+    if (typeof data !== "object" || data === null) {
+      toast("Invalid JSON structure", "err");
+      return;
+    }
+
+    // Merge with existing store
+    let imported = 0;
+    for (const key of Object.keys(data)) {
+      if (store.hasOwnProperty(key)) {
+        store[key] = data[key];
+        imported++;
+      }
+    }
+
+    if (imported === 0) {
+      toast("No matching collections found in file", "err");
+      return;
+    }
+
+    markDirty();
+    overlay.remove();
+    logActivity("update", `Imported data from <strong>${file.name}</strong> (${imported} collections)`);
+    toast(`📤 Imported ${imported} collection(s) from ${file.name}`);
+    render();
+  } catch (err) {
+    toast(`Import failed: ${err.message}`, "err");
+  }
+}
+
+/* ================================================================
+   Enhanced Save with Spinner + Activity Log
+   ================================================================ */
+
+const _originalSaveAll = saveAll;
+async function saveAll() {
+  const spinner = showSpinner("Saving all changes...");
+  try {
+    await _originalSaveAll();
+    logActivity("save", "All changes saved successfully");
+  } finally {
+    spinner.remove();
+  }
+}
+
+/* ================================================================
+   Patch: Add activity logging to existing actions
+   ================================================================ */
+
+const _originalDeleteItem = deleteItem;
+function deleteItem(name, index) {
+  const items = Array.isArray(store[name]) ? store[name] : [];
+  const title = items[index] ? pickTitle(items[index]) : "item";
+  _originalDeleteItem(name, index);
+  logActivity("delete", `Deleted <strong>${title}</strong> from ${name}`);
+}
+
+const _originalEditItem = editItem;
+function editItem(name, index) {
+  _originalEditItem(name, index);
+  // Activity logging happens on save via overlay button
+}
 
 loadAll().catch((err) => toast("Failed to load: " + err.message, "err"));

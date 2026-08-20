@@ -44,6 +44,25 @@
       <div id="view"></div>
     </main>
   </div>
+
+  <!-- Command Palette -->
+  <div id="cmd-overlay" class="cmd-overlay" style="display:none"></div>
+
+  <!-- Activity Log -->
+  <button id="activity-toggle" class="activity-log-toggle" aria-label="Activity log">
+    📋
+    <span class="badge-dot" id="activity-dot"></span>
+  </button>
+  <div id="activity-panel" class="activity-panel">
+    <div class="activity-panel-head">
+      <span>📋 Recent Changes</span>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('activity-panel').classList.remove('open')">✕</button>
+    </div>
+    <div class="activity-panel-body" id="activity-body">
+      <div class="activity-empty">No changes yet</div>
+    </div>
+  </div>
+
   <script src="/_ui/app.js"></script>
 </body>
 </html>
