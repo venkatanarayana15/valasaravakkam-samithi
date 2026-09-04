@@ -18,8 +18,7 @@ export default function UpcomingEvents() {
   return (
     <section
       id="upcoming-events"
-      className="py-16"
-      style={{ backgroundColor: "#c4d1dbda" }}
+      className="py-10 sm:py-12 md:py-16 dark:bg-[#1a2332]"
     >
       <div className="mx-auto max-w-7xl px-4">
         <Reveal>
@@ -50,9 +49,9 @@ export default function UpcomingEvents() {
             }}
           >
             {events.map((event, i) => (
-              <SwiperSlide key={i} className="!h-[375px] !w-full max-w-md">
+              <SwiperSlide key={i} className="!h-[320px] !w-full max-w-md sm:!h-[375px]">
                 <TiltCard maxTilt={9} scale={1.04}>
-                  <div className="shine relative h-[375px] w-full overflow-hidden rounded-xl shadow-xl">
+                  <div className="shine relative h-[320px] w-full overflow-hidden rounded-xl shadow-xl sm:h-[375px]">
                     <Image
                       src={event.image || "/assets/img/ratha-mahotsavam-bg.png"}
                       alt="Event background"
@@ -64,7 +63,7 @@ export default function UpcomingEvents() {
                       <span className="tilt-pop mb-3 rounded-full bg-white/15 px-4 py-1 text-xs font-bold uppercase tracking-[0.2em] backdrop-blur-sm">
                         {i === 0 ? "Save the Date" : `Day ${i}`}
                       </span>
-                      <p className="tilt-pop font-display text-lg font-bold leading-relaxed drop-shadow">
+                      <p className="tilt-pop font-display text-base font-bold leading-relaxed drop-shadow sm:text-lg">
                         {event.title}
                         {event.location && (
                           <>

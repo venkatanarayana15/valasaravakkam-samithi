@@ -51,7 +51,7 @@ function CountUp({ target }: { target: number }) {
   }, [target]);
 
   return (
-    <span ref={ref} className="text-gradient-static font-display text-5xl font-extrabold">
+    <span ref={ref} className="text-gradient-static font-display text-3xl font-extrabold sm:text-4xl md:text-5xl">
       {value}
     </span>
   );
@@ -61,9 +61,9 @@ export default function Stats() {
   const { stats } = useSiteData();
   const list = stats.length ? stats : staticStats;
   return (
-    <section id="stats" className="py-20">
+    <section id="stats" className="py-12 sm:py-16 md:py-20 dark:bg-[#0f172a]">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:grid-cols-4">
           {list.map((stat, i) => (
             <Reveal key={stat.label} delay={i * 100}>
               <div
@@ -72,7 +72,7 @@ export default function Stats() {
               >
                 {/* 3D floating icon */}
                 <div
-                  className="animate-float-3d relative flex h-20 w-20 items-center justify-center rounded-2xl text-white shadow-lg transition duration-300 group-hover:scale-110"
+                  className="animate-float-3d relative flex h-14 w-14 items-center justify-center rounded-xl text-white shadow-lg transition duration-300 group-hover:scale-110 sm:h-16 sm:w-16 sm:rounded-2xl md:h-20 md:w-20"
                   style={{
                     animationDelay: `${i * 0.6}s`,
                     background:
@@ -85,8 +85,8 @@ export default function Stats() {
                 </div>
 
                 <CountUp target={stat.value} />
-                <p className="mt-2 text-[15px] text-[#5f6b7a]">
-                  <strong className="font-semibold text-[#272829]">{stat.label}</strong>{" "}
+                <p className="mt-2 text-[15px] text-[#5f6b7a] dark:text-gray-400">
+                  <strong className="font-semibold text-[#272829] dark:text-gray-200">{stat.label}</strong>{" "}
                   <span>{stat.suffix}</span>
                 </p>
               </div>

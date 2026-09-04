@@ -6,9 +6,9 @@ type SectionTitleProps = {
 
 export default function SectionTitle({ title, description, dark = false }: SectionTitleProps) {
   return (
-    <div className="mb-12 text-center">
+    <div className="mb-8 text-center sm:mb-10 md:mb-12">
       <h2
-        className={`font-display text-[26px] font-bold uppercase tracking-wide sm:text-[32px] ${
+        className={`font-display text-xl font-bold uppercase tracking-wide sm:text-[26px] md:text-[32px] ${
           dark ? "text-white" : "text-gradient"
         }`}
       >
@@ -21,9 +21,9 @@ export default function SectionTitle({ title, description, dark = false }: Secti
       </div>
       {description && (
         <p
-          className={`mx-auto mt-4 max-w-3xl text-[15px] leading-relaxed ${
-            dark ? "text-[#a8a9b4]" : "text-muted"
-          }`}
+        className={`mx-auto mt-3 max-w-3xl text-sm leading-relaxed sm:mt-4 sm:text-[15px] ${
+          dark ? "text-[#a8a9b4]" : "text-muted dark:text-gray-400"
+        }`}
         >
           {description}
         </p>

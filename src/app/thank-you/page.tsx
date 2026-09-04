@@ -9,13 +9,13 @@ export const metadata: Metadata = {
 
 export default function ThankYouPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="max-w-lg rounded-2xl bg-white p-10 text-center shadow-xl ring-1 ring-gray-100">
-        <BsCheckCircle className="mx-auto text-6xl text-green-600" />
-        <h2 className="mt-4 font-display text-3xl font-bold text-green-600">
+    <div className="flex min-h-[60vh] items-center justify-center px-6 dark:bg-[#0f172a] sm:min-h-screen">
+      <div className="max-w-lg rounded-2xl bg-white p-6 text-center shadow-xl ring-1 ring-gray-100 dark:bg-[#1e293b] dark:ring-gray-700 sm:p-10">
+        <BsCheckCircle className="mx-auto text-5xl text-green-600 sm:text-6xl" />
+        <h2 className="mt-4 font-display text-2xl font-bold text-green-600 sm:text-3xl">
           Thank You!
         </h2>
-        <p className="mt-4 text-muted">
+        <p className="mt-4 text-sm text-muted dark:text-gray-400 sm:text-base">
           Your message has been successfully submitted. We appreciate your message —
           it will be very helpful to us.
         </p>

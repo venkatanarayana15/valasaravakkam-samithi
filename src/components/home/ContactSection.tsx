@@ -40,7 +40,7 @@ export default function ContactSection() {
   }
 
   return (
-    <section id="contact" className="py-16">
+    <section id="contact" className="py-10 sm:py-12 md:py-16 dark:bg-[#0f172a]">
       <div className="mx-auto max-w-7xl px-4">
         <Reveal>
           <SectionTitle
@@ -54,38 +54,38 @@ export default function ContactSection() {
           <div className="lg:col-span-5">
             <Reveal delay={100}>
               <TiltCard maxTilt={5} scale={1.01}>
-                <div className="rounded-xl bg-[#f7f9fc] p-6 shadow-sm">
-                <div className="group flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md">
-                  <span className="animate-float-3d flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-xl text-[#149ddd] shadow transition group-hover:text-white group-hover:shadow-[#149ddd]/40" style={{ background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
+                <div className="rounded-xl bg-[#f7f9fc] p-4 shadow-sm dark:bg-[#1e293b] sm:p-6">
+                <div className="group flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md dark:hover:bg-[#273548]">
+                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#149ddd] shadow transition group-hover:text-white group-hover:shadow-[#149ddd]/40 sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl" style={{ background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
                     <BsGeoAlt />
                   </span>
                   <div>
-                    <h3 className="text-lg font-semibold text-[#272829]">Address</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-muted">
+                    <h3 className="text-lg font-semibold text-[#272829] dark:text-gray-100">Address</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted dark:text-gray-400">
                       {config.address}
                     </p>
                   </div>
                 </div>
 
-                <div className="group mt-6 flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md">
-                  <span className="animate-float-3d flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-xl text-[#149ddd] shadow" style={{ animationDelay: "0.4s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
+                <div className="group mt-6 flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md dark:hover:bg-[#273548]">
+                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#149ddd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.4s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
                     <BsTelephone />
                   </span>
                   <div>
-                    <h3 className="text-lg font-semibold text-[#272829]">Call Us</h3>
-                    <a href="tel:+919087951742" className="mt-1 block text-sm text-muted transition hover:text-[#149ddd]">
+                    <h3 className="text-lg font-semibold text-[#272829] dark:text-gray-100">Call Us</h3>
+                    <a href="tel:+919087951742" className="mt-1 block text-sm text-muted dark:text-gray-400 transition hover:text-[#149ddd]">
                       {config.phone}
                     </a>
                   </div>
                 </div>
 
-                <div className="group mt-6 flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md">
-                  <span className="animate-float-3d flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-xl text-[#149ddd] shadow" style={{ animationDelay: "0.8s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
+                <div className="group mt-6 flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md dark:hover:bg-[#273548]">
+                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#149ddd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.8s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
                     <BsEnvelope />
                   </span>
                   <div>
-                    <h3 className="text-lg font-semibold text-[#272829]">Email Us</h3>
-                    <a href={`mailto:${config.email}`} className="mt-1 block break-all text-sm text-muted transition hover:text-[#149ddd]">
+                    <h3 className="text-lg font-semibold text-[#272829] dark:text-gray-100">Email Us</h3>
+                    <a href={`mailto:${config.email}`} className="mt-1 block break-all text-sm text-muted dark:text-gray-400 transition hover:text-[#149ddd]">
                       {config.email}
                     </a>
                   </div>
@@ -95,7 +95,7 @@ export default function ContactSection() {
                   <iframe
                     src={config.mapsEmbed}
                     title="Samithi location map"
-                    className="h-[270px] w-full border-0"
+                    className="h-[220px] w-full border-0 sm:h-[270px]"
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
@@ -111,7 +111,7 @@ export default function ContactSection() {
             <Reveal delay={200}>
               <form
                 onSubmit={handleSubmit}
-                className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100"
+                className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 dark:bg-[#1e293b] dark:ring-gray-700 sm:p-6"
               >
                 <input type="hidden" name="_next" value="/thank-you" />
                 <input type="hidden" name="_template" value="table" />
@@ -119,7 +119,7 @@ export default function ContactSection() {
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
-                    <label htmlFor="name-field" className="mb-2 block text-sm font-medium">
+                    <label htmlFor="name-field" className="mb-2 block text-sm font-medium dark:text-gray-300">
                       Your Name
                     </label>
                     <input
@@ -127,11 +127,11 @@ export default function ContactSection() {
                       name="name"
                       id="name-field"
                       required
-                      className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                   <div>
-                    <label htmlFor="email-field" className="mb-2 block text-sm font-medium">
+                    <label htmlFor="email-field" className="mb-2 block text-sm font-medium dark:text-gray-300">
                       Your Email
                     </label>
                     <input
@@ -139,11 +139,11 @@ export default function ContactSection() {
                       name="email"
                       id="email-field"
                       required
-                      className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label htmlFor="subject-field" className="mb-2 block text-sm font-medium">
+                    <label htmlFor="subject-field" className="mb-2 block text-sm font-medium dark:text-gray-300">
                       Subject
                     </label>
                     <input
@@ -151,11 +151,11 @@ export default function ContactSection() {
                       name="subject"
                       id="subject-field"
                       required
-                      className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label htmlFor="message-field" className="mb-2 block text-sm font-medium">
+                    <label htmlFor="message-field" className="mb-2 block text-sm font-medium dark:text-gray-300">
                       Message
                     </label>
                     <textarea
@@ -163,7 +163,7 @@ export default function ContactSection() {
                       id="message-field"
                       rows={7}
                       required
-                      className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                 </div>

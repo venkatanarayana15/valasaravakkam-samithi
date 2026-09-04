@@ -23,7 +23,7 @@ export default function CategoryGallery({ category }: { category: GalleryCategor
       </Link>
 
       <div className="mb-10 text-center">
-        <h1 className="text-gradient-static font-display text-3xl font-bold sm:text-4xl">
+        <h1 className="text-gradient-static font-display text-3xl font-bold dark:text-blue-400 sm:text-4xl">
           {category.label} Gallery
         </h1>
         <div className="mx-auto mt-3 flex items-center justify-center gap-2">
@@ -31,12 +31,12 @@ export default function CategoryGallery({ category }: { category: GalleryCategor
           <span className="divider-dot h-2 w-2 rounded-full bg-[#149ddd]" />
           <span className="h-[2px] w-10 rounded-full bg-gradient-to-l from-transparent to-[#149ddd] sm:w-14" />
         </div>
-        <p className="mx-auto mt-4 max-w-2xl text-[15px] text-muted">
+        <p className="mx-auto mt-4 max-w-2xl text-[15px] text-muted dark:text-gray-400">
           {category.description}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-7">
         {category.images.map((image, i) => (
           <TiltCard key={image.src} maxTilt={9} scale={1.04}>
             <button

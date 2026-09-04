@@ -13,6 +13,7 @@ import {
   BsEnvelope,
 } from "react-icons/bs";
 import { useSiteData } from "@/lib/site-data";
+import DarkModeToggle from "@/components/DarkModeToggle";
 
 const iconMap: Record<string, React.ReactNode> = {
   "bi-house": <BsHouse className="size-4" />,
@@ -104,11 +105,11 @@ export default function SiteHeader() {
     <>
       {/* Mobile top bar */}
       <header
-        className={`fixed inset-x-0 top-0 z-40 bg-sidebar/95 backdrop-blur transition-shadow lg:hidden ${
+        className={`fixed inset-x-0 top-0 z-40 bg-sidebar/95 backdrop-blur transition-shadow dark:bg-[#0a0f1a]/95 lg:hidden ${
           scrolled ? "shadow-lg shadow-black/30" : ""
         }`}
       >
-        <div className="flex h-16 items-center justify-center px-4">
+        <div className="flex h-14 items-center justify-between px-3 sm:h-16 sm:px-4">
           <Link href="/" className="flex items-center gap-2">
             <Image
               src="/assets/img/my-profile-img.png"
@@ -118,7 +119,7 @@ export default function SiteHeader() {
               className="rounded-full border-2 border-[#149ddd] object-cover"
             />
             <span
-              className="font-display text-lg font-semibold uppercase tracking-wide"
+              className="font-display text-base font-semibold uppercase tracking-wide sm:text-lg"
               style={{
                 background: "linear-gradient(90deg, #7dd3fc, #149ddd, #7dd3fc)",
                 WebkitBackgroundClip: "text",
@@ -129,12 +130,13 @@ export default function SiteHeader() {
               {siteConfig.name}
             </span>
           </Link>
+          <DarkModeToggle />
         </div>
       </header>
 
       {/* Desktop top navbar */}
       <header
-        className={`fixed inset-x-0 top-0 z-50 hidden bg-sidebar/95 backdrop-blur transition-all lg:block ${
+        className={`fixed inset-x-0 top-0 z-50 hidden bg-sidebar/95 backdrop-blur transition-all dark:bg-[#0a0f1a]/95 lg:block ${
           scrolled
             ? "shadow-xl shadow-black/40"
             : "border-b border-white/10"
@@ -194,6 +196,7 @@ export default function SiteHeader() {
 
           {/* Social links */}
           <div className="flex shrink-0 items-center gap-2">
+            <DarkModeToggle />
             {socialLinks.map((link) => (
               <div key={link.label}>{renderSocial(link)}</div>
             ))}

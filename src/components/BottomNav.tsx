@@ -50,7 +50,7 @@ export default function BottomNav() {
       className="fixed inset-x-0 bottom-0 z-50 pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Mobile navigation"
     >
-      <div className="bottom-nav-enter mx-auto mb-3 w-[calc(100%-1.5rem)] max-w-md rounded-2xl border border-white/10 bg-[#040b14]/85 px-2 py-1.5 shadow-[0_-6px_30px_rgba(4,11,20,0.5)] backdrop-blur-xl">
+      <div className="bottom-nav-enter mx-auto mb-2 w-[calc(100%-1rem)] max-w-md rounded-2xl border border-white/10 bg-[#040b14]/90 px-1.5 py-1 shadow-[0_-6px_30px_rgba(4,11,20,0.5)] backdrop-blur-xl dark:bg-[#0a0f1a]/95 sm:mb-3 sm:px-2 sm:py-1.5">
         <ul className="flex items-center justify-between">
           {navLinks.map((link) => {
             const isActive = active === link.href;
@@ -62,7 +62,7 @@ export default function BottomNav() {
                   className="group flex flex-col items-center gap-0.5 py-1"
                 >
                   <span
-                    className={`flex size-9 items-center justify-center rounded-xl transition-all duration-300 ${
+                    className={`flex size-10 items-center justify-center rounded-xl transition-all duration-300 sm:size-9 ${
                       isActive
                         ? "bg-gradient-to-br from-[#149ddd] to-[#6a5cff] text-white shadow-[0_4px_14px_rgba(20,157,221,0.6)] -translate-y-0.5 scale-105"
                         : "text-[#a8a9b4] group-active:scale-90"
@@ -71,7 +71,7 @@ export default function BottomNav() {
                     {iconMap[link.icon]}
                   </span>
                   <span
-                    className={`text-[10px] transition-colors ${
+                    className={`text-[9px] transition-colors sm:text-[10px] ${
                       isActive
                         ? "font-semibold text-[#7dd3fc]"
                         : "text-[#a8a9b4]"

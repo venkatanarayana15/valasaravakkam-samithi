@@ -121,15 +121,24 @@ function selectCollection(name) {
   sortBy = "default";
   selectedItems = new Set();
   $("#sidebar").classList.remove("open");
+  const backdrop = $("#sidebar-backdrop");
+  if (backdrop) backdrop.classList.remove("visible");
   buildNav();
   render();
+  // Close quick-add dropdown
+  const dd = $("#quick-add-dropdown");
+  if (dd) dd.classList.remove("open");
 }
 
 /* ================================================================
    Render
    ================================================================ */
 
+let currentTemplate = localStorage.getItem("admin-dashboard-template") || "overview";
+let currentViewMode = localStorage.getItem("admin-view-mode") || "list";
+
 function render() {
+  updateBreadcrumb();
   if (activeCollection === null) {
     $("#page-title").textContent = "Dashboard";
     const view = $("#view");
@@ -142,6 +151,36 @@ function render() {
     view.innerHTML = "";
     if (activeCollection === "siteconfig") renderSiteConfig(view);
     else renderCollection(view, activeCollection, meta);
+  }
+  updateQuickAdd();
+}
+
+function updateBreadcrumb() {
+  const bc = $("#breadcrumb");
+  if (!bc) return;
+  bc.innerHTML = "";
+  bc.append(el("span", { class: "breadcrumb-home", onclick: () => selectCollection(null), style: { cursor: "pointer" } }, "Dashboard"));
+  if (activeCollection) {
+    const meta = COLLECTIONS.find((c) => c.name === activeCollection);
+    bc.append(el("span", { class: "breadcrumb-sep" }, "/"));
+    bc.append(el("span", { class: "breadcrumb-current" }, meta ? meta.label : activeCollection));
+  }
+}
+
+function updateQuickAdd() {
+  const dd = $("#quick-add-dropdown");
+  if (!dd) return;
+  dd.innerHTML = "";
+  const addable = COLLECTIONS.filter((c) => c.name !== "siteconfig" && c.name !== "stats" && c.name !== "activities");
+  for (const c of addable) {
+    dd.append(
+      el(
+        "button",
+        { class: "quick-add-item", onclick: () => { dd.classList.remove("open"); editItem(c.name, null); } },
+        el("span", { class: "qai-icon" }, c.icon),
+        `Add ${c.label.replace(/s$/, "")}`
+      )
+    );
   }
 }
 
@@ -190,21 +229,74 @@ function renderDashboard(view) {
     },
   ];
 
-  const grid = el("div", { class: "dashboard-grid" });
-  for (const s of statsData) {
-    grid.append(
+  // Template picker (desktop only)
+  const picker = el("div", { class: "template-picker" });
+  const templates = [
+    { id: "overview", icon: "📊", label: "Overview" },
+    { id: "compact", icon: "📋", label: "Compact" },
+    { id: "analytics", icon: "📈", label: "Analytics" },
+  ];
+  for (const t of templates) {
+    picker.append(
       el(
-        "div",
-        { class: "stat-card" },
-        el("div", { class: `stat-icon ${s.color}` }, s.icon),
-        el(
-          "div",
-          { class: "stat-info" },
-          el("div", { class: "stat-value" }, String(s.value)),
-          el("div", { class: "stat-label" }, s.label)
-        )
+        "button",
+        {
+          class: `template-btn ${currentTemplate === t.id ? "active" : ""}`,
+          title: t.label,
+          onclick: () => {
+            currentTemplate = t.id;
+            localStorage.setItem("admin-dashboard-template", t.id);
+            render();
+          },
+        },
+        t.icon
       )
     );
+  }
+
+  // Template header
+  const totalItems = statsData.reduce((sum, s) => sum + s.value, 0);
+  const templateHeader = el("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "12px" } });
+  templateHeader.append(
+    el("div", null,
+      el("h2", { style: { fontSize: "20px", fontWeight: "700", color: "var(--text)" } }, "Welcome back"),
+      el("p", { style: { fontSize: "13px", color: "var(--muted)", marginTop: "2px" } }, "Here's what's happening with your content")
+    ),
+    picker
+  );
+  view.append(templateHeader);
+
+  // Featured stat card
+  const featuredCard = el("div", { class: "stat-card stat-card-featured", style: { marginBottom: "16px" } });
+  featuredCard.append(
+    el("div", { class: "stat-icon" }, "🏛️"),
+    el("div", { class: "stat-info" },
+      el("div", { class: "stat-value" }, String(totalItems)),
+      el("div", { class: "stat-label" }, "Total Content Items")
+    )
+  );
+  view.append(featuredCard);
+
+  const gridClass = `dashboard-grid ${currentTemplate === "compact" ? "dashboard-compact" : ""} ${currentTemplate === "analytics" ? "dashboard-analytics" : ""}`;
+  const grid = el("div", { class: gridClass });
+  for (const s of statsData) {
+    const card = el("div", { class: "stat-card" },
+      el("div", { class: `stat-icon ${s.color}` }, s.icon),
+      el("div", { class: "stat-info" },
+        el("div", { class: "stat-value" }, String(s.value)),
+        el("div", { class: "stat-label" }, s.label)
+      )
+    );
+    if (currentTemplate === "analytics" && totalItems > 0) {
+      const pct = Math.round((s.value / totalItems) * 100);
+      const colorMap = { blue: "primary", green: "green", purple: "accent", orange: "orange", cyan: "cyan", yellow: "yellow" };
+      card.append(
+        el("div", { class: "analytics-bar" },
+          el("div", { class: "analytics-bar-fill", style: { width: `${pct}%`, background: `var(--${colorMap[s.color] || "primary"})` } })
+        )
+      );
+    }
+    grid.append(card);
   }
   view.append(grid);
 
@@ -599,6 +691,21 @@ function renderCollection(view, name, meta) {
   }
 
   if (allItems.length > 0) {
+    // View toggle (grid/list)
+    const viewToggle = el("div", { class: "view-toggle" });
+    viewToggle.append(
+      el("button", {
+        class: `view-toggle-btn ${currentViewMode === "list" ? "active" : ""}`,
+        title: "List view",
+        onclick: () => { currentViewMode = "list"; localStorage.setItem("admin-view-mode", "list"); render(); },
+      }, "☰"),
+      el("button", {
+        class: `view-toggle-btn ${currentViewMode === "grid" ? "active" : ""}`,
+        title: "Grid view",
+        onclick: () => { currentViewMode = "grid"; localStorage.setItem("admin-view-mode", "grid"); render(); },
+      }, "⊞")
+    );
+    headerRight.append(viewToggle);
     headerRight.append(el("button", { class: "btn btn-ghost btn-sm", onclick: () => exportSelectedJSON(name, meta) }, "📥 Export JSON"));
   }
   headerRight.append(el("button", { class: "btn btn-primary btn-sm", onclick: () => { searchQuery = ""; sortBy = "default"; selectedItems = new Set(); editItem(name, null); } }, "+ Add Item"));
@@ -1569,9 +1676,32 @@ window.addEventListener("beforeunload", (e) => {
   }
 });
 
-$("#menu-btn").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
+$("#menu-btn").addEventListener("click", () => {
+  const sidebar = $("#sidebar");
+  const backdrop = $("#sidebar-backdrop");
+  sidebar.classList.toggle("open");
+  backdrop.classList.toggle("visible");
+});
+$("#sidebar-backdrop").addEventListener("click", () => {
+  $("#sidebar").classList.remove("open");
+  $("#sidebar-backdrop").classList.remove("visible");
+});
 $("#save-all").addEventListener("click", saveAll);
 $("#open-site").addEventListener("click", () => window.open("/", "_blank"));
+
+// Quick Add dropdown
+$("#quick-add-btn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const dd = $("#quick-add-dropdown");
+  dd.classList.toggle("open");
+});
+document.addEventListener("click", (e) => {
+  const dd = $("#quick-add-dropdown");
+  const btn = $("#quick-add-btn");
+  if (dd && !dd.contains(e.target) && !btn.contains(e.target)) {
+    dd.classList.remove("open");
+  }
+});
 
 // Undo / Redo buttons
 $("#undo-btn").addEventListener("click", undo);
@@ -1650,12 +1780,17 @@ $("#activity-toggle").addEventListener("click", () => {
   $("#activity-panel").classList.toggle("open");
 });
 
-// Close activity panel when clicking outside
+// Close activity/version panels when clicking outside
 document.addEventListener("click", (e) => {
-  const panel = $("#activity-panel");
-  const toggle = $("#activity-toggle");
-  if (panel && !panel.contains(e.target) && !toggle.contains(e.target)) {
-    panel.classList.remove("open");
+  const actPanel = $("#activity-panel");
+  const actToggle = $("#activity-toggle");
+  if (actPanel && !actPanel.contains(e.target) && !actToggle.contains(e.target)) {
+    actPanel.classList.remove("open");
+  }
+  const verPanel = $("#version-panel");
+  const verToggle = $("#version-toggle");
+  if (verPanel && !verPanel.contains(e.target) && !verToggle.contains(e.target)) {
+    verPanel.classList.remove("open");
   }
 });
 
@@ -1793,6 +1928,9 @@ function buildCommands() {
     { icon: "↗️", label: "View Live Site", action: () => window.open("/", "_blank") },
     { icon: "📥", label: "Export All Data as JSON", action: () => exportAllData() },
     { icon: "📤", label: "Import Data from JSON", action: () => openImportModal() },
+    { icon: "🕐", label: "Version History", kbd: "Ctrl+H", keywords: ["version", "history", "backup", "restore"], action: () => { closeCommandPalette(); openVersionPanel(); } },
+    { icon: "💾", label: "Create Named Backup", kbd: "Ctrl+B", keywords: ["backup", "snapshot"], action: () => { closeCommandPalette(); $("#create-backup-btn").click(); } },
+    { icon: "📊", label: "Storage Usage", keywords: ["storage", "quota", "size"], action: () => showStorageUsage() },
   ];
 
   for (const c of COLLECTIONS) {
@@ -1844,6 +1982,13 @@ document.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === "y") {
     e.preventDefault();
     redo();
+    return;
+  }
+
+  // Ctrl+B or Cmd+B — Quick Backup
+  if ((e.ctrlKey || e.metaKey) && e.key === "b") {
+    e.preventDefault();
+    createNamedBackup("Quick backup " + new Date().toLocaleTimeString());
     return;
   }
 
@@ -2026,35 +2171,469 @@ async function handleImportFile(file, overlay) {
    ================================================================ */
 
 const _originalSaveAll = saveAll;
-async function saveAll() {
+saveAll = async function () {
   if (isSaving) return;
   isSaving = true;
   const spinner = showSpinner("Saving all changes...");
   try {
     await _originalSaveAll();
     logActivity("save", "All changes saved successfully");
+    createAutoVersion("Auto-save on save");
   } finally {
     isSaving = false;
     spinner.remove();
   }
-}
+};
 
 /* ================================================================
    Patch: Add activity logging to existing actions
    ================================================================ */
 
 const _originalDeleteItem = deleteItem;
-function deleteItem(name, index) {
+deleteItem = function (name, index) {
   const items = Array.isArray(store[name]) ? store[name] : [];
   const title = items[index] ? pickTitle(items[index]) : "item";
   _originalDeleteItem(name, index);
   logActivity("delete", `Deleted <strong>${title}</strong> from ${name}`);
-}
+};
 
 const _originalEditItem = editItem;
-function editItem(name, index) {
+editItem = function (name, index) {
   _originalEditItem(name, index);
   // Activity logging happens on save via overlay button
+};
+
+/* ================================================================
+   Version History & Backup/Restore
+   ================================================================ */
+
+const VERSION_STORAGE_KEY = "samithi-version-history";
+const BACKUP_STORAGE_KEY = "samithi-backups";
+const MAX_AUTO_VERSIONS = 30;
+let currentVersionTab = "auto";
+
+function getAutoVersions() {
+  try {
+    return JSON.parse(localStorage.getItem(VERSION_STORAGE_KEY) || "[]");
+  } catch {
+    return [];
+  }
 }
+
+function saveAutoVersions(versions) {
+  try {
+    localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify(versions));
+  } catch (err) {
+    toast("Storage full — clearing old auto-saves", "err");
+    const trimmed = versions.slice(-10);
+    localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify(trimmed));
+  }
+}
+
+function getBackups() {
+  try {
+    return JSON.parse(localStorage.getItem(BACKUP_STORAGE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveBackups(backups) {
+  try {
+    localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(backups));
+  } catch (err) {
+    toast("Storage full — try deleting some backups", "err");
+  }
+}
+
+function createAutoVersion(label) {
+  const versions = getAutoVersions();
+  const snapshot = {
+    id: "v" + Date.now(),
+    label: label || "Auto-save",
+    timestamp: new Date().toISOString(),
+    data: cloneStore(),
+    summary: getChangeSummary(),
+  };
+  versions.push(snapshot);
+  if (versions.length > MAX_AUTO_VERSIONS) versions.shift();
+  saveAutoVersions(versions);
+  renderVersionPanel();
+}
+
+function createNamedBackup(name) {
+  const backups = getBackups();
+  const backup = {
+    id: "b" + Date.now(),
+    name: name || "Backup " + new Date().toLocaleString(),
+    timestamp: new Date().toISOString(),
+    data: cloneStore(),
+    summary: "Full data snapshot",
+  };
+  backups.push(backup);
+  saveBackups(backups);
+  renderVersionPanel();
+  toast(`💾 Backup "${backup.name}" created`);
+  logActivity("save", `Created backup <strong>"${backup.name}"</strong>`);
+}
+
+function restoreVersion(id) {
+  const allVersions = [...getAutoVersions(), ...getBackups()];
+  const version = allVersions.find((v) => v.id === id);
+  if (!version) return;
+
+  if (!confirm(`Restore to "${version.label || version.name}"?\n\nCurrent unsaved changes will be lost.`)) return;
+
+  // Save current state as auto-version before restoring
+  createAutoVersion("Before restore");
+
+  store = cloneStore(version.data);
+  markDirty();
+  render();
+  toast(`↩ Restored to "${version.label || version.name}"`);
+  logActivity("update", `Restored to version <strong>"${version.label || version.name}"</strong>`);
+}
+
+function deleteVersion(id) {
+  if (!confirm("Delete this version?")) return;
+  let versions = getAutoVersions();
+  const before = versions.length;
+  versions = versions.filter((v) => v.id !== id);
+  if (versions.length < before) {
+    saveAutoVersions(versions);
+  } else {
+    let backups = getBackups();
+    backups = backups.filter((v) => v.id !== id);
+    saveBackups(backups);
+  }
+  renderVersionPanel();
+  toast("🗑️ Version deleted");
+}
+
+function getChangeSummary() {
+  const parts = [];
+  for (const c of COLLECTIONS) {
+    const count = Array.isArray(store[c.name]) ? store[c.name].length : null;
+    if (count !== null) parts.push(`${c.label}: ${count}`);
+  }
+  return parts.join(" · ");
+}
+
+function computeDiff(oldData, newData) {
+  const diffs = [];
+  for (const c of COLLECTIONS) {
+    const oldArr = Array.isArray(oldData[c.name]) ? oldData[c.name] : [];
+    const newArr = Array.isArray(newData[c.name]) ? newData[c.name] : [];
+    const oldCount = oldArr.length;
+    const newCount = newArr.length;
+    if (oldCount !== newCount) {
+      const diff = newCount - oldCount;
+      diffs.push({
+        collection: c.label,
+        type: diff > 0 ? "add" : "remove",
+        text: `${diff > 0 ? "+" : ""}${diff} item${Math.abs(diff) !== 1 ? "s" : ""}`,
+      });
+    }
+    // Check for content changes (compare JSON of first few items)
+    const maxCheck = Math.min(oldCount, newCount, 5);
+    for (let i = 0; i < maxCheck; i++) {
+      if (JSON.stringify(oldArr[i]) !== JSON.stringify(newArr[i])) {
+        const title = pickTitle(newArr[i] || oldArr[i]);
+        diffs.push({
+          collection: c.label,
+          type: "change",
+          text: `Modified: ${title}`,
+        });
+        break; // One change per collection is enough
+      }
+    }
+  }
+  return diffs;
+}
+
+function showStorageUsage() {
+  const autoVersions = getAutoVersions();
+  const backups = getBackups();
+  const autoSize = new Blob([JSON.stringify(autoVersions)]).size;
+  const backupSize = new Blob([JSON.stringify(backups)]).size;
+  const totalSize = autoSize + backupSize;
+
+  openOverlay("Storage Usage", (overlay) => {
+    const body = el("div", { style: { padding: "16px" } });
+
+    const items = [
+      { label: "Auto-save versions", count: autoVersions.length, size: autoSize, color: "var(--primary)" },
+      { label: "Named backups", count: backups.length, size: backupSize, color: "var(--green)" },
+    ];
+
+    for (const item of items) {
+      const row = el("div", { style: { display: "flex", alignItems: "center", gap: "12px", padding: "10px 0", borderBottom: "1px solid var(--border-light)" } });
+      row.append(
+        el("div", { style: { width: "8px", height: "8px", borderRadius: "50%", background: item.color, flexShrink: 0 } }),
+        el("div", { style: { flex: 1 } },
+          el("div", { style: { fontWeight: "600", fontSize: "13px" } }, item.label),
+          el("div", { style: { fontSize: "11px", color: "var(--muted)" } }, `${item.count} item${item.count !== 1 ? "s" : ""}`)
+        ),
+        el("div", { style: { fontWeight: "600", fontSize: "13px", color: "var(--text-secondary)" } }, formatBytes(item.size))
+      );
+      body.append(row);
+    }
+
+    // Total
+    body.append(el("div", { style: { display: "flex", justifyContent: "space-between", padding: "12px 0 0", fontWeight: "700", fontSize: "14px" } },
+      el("span", null, "Total"),
+      el("span", null, formatBytes(totalSize))
+    ));
+
+    body.append(el("div", { style: { fontSize: "11px", color: "var(--muted)", marginTop: "12px", padding: "8px", background: "var(--panel-2)", borderRadius: "var(--radius-sm)" } },
+      "💡 localStorage typically has 5-10MB limit. Auto-saves are capped at 30. Delete old backups if storage is full."
+    ));
+
+    const actions = el("div", { class: "editor-actions" },
+      el("div", { class: "spacer" }),
+      el("button", { class: "btn btn-danger btn-sm", onclick: () => {
+        if (confirm("Delete ALL auto-save versions?")) {
+          saveAutoVersions([]);
+          overlay.remove();
+          showStorageUsage();
+          toast("🗑️ Auto-saves cleared");
+        }
+      } }, "Clear Auto-saves"),
+      el("button", { class: "btn btn-ghost", onclick: () => overlay.remove() }, "Close")
+    );
+    return [body, actions];
+  });
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+}
+
+function showVersionDiff(versionId) {
+  const allVersions = [...getAutoVersions(), ...getBackups()];
+  const version = allVersions.find((v) => v.id === versionId);
+  if (!version) return;
+
+  const diffs = computeDiff(version.data, store);
+
+  openOverlay(`Changes since "${version.label || version.name}"`, (overlay) => {
+    const body = el("div", {});
+
+    if (diffs.length === 0) {
+      body.append(el("div", { class: "activity-empty" }, "No changes detected"));
+    } else {
+      body.append(el("div", { style: { fontSize: "12px", color: "var(--muted)", marginBottom: "8px" } }, `${diffs.length} change(s) since this version:`));
+      const diffBox = el("div", { class: "version-diff" });
+      for (const d of diffs) {
+        const line = el("div", { style: { marginBottom: "4px" } });
+        line.append(el("span", { class: "diff-section" }, `${d.collection}: `));
+        line.append(el("span", {
+          class: d.type === "add" ? "diff-add" : d.type === "remove" ? "diff-remove" : "",
+          style: d.type === "change" ? { color: "var(--orange)" } : {},
+        }, d.text));
+        diffBox.append(line);
+      }
+      body.append(diffBox);
+    }
+
+    // Version summary
+    if (version.summary) {
+      body.append(el("div", { style: { fontSize: "11px", color: "var(--muted)", marginTop: "12px", padding: "8px", background: "var(--panel-2)", borderRadius: "var(--radius-sm)" } },
+        el("strong", null, "Version snapshot: "), version.summary
+      ));
+    }
+
+    const actions = el("div", { class: "editor-actions" },
+      el("div", { class: "spacer" }),
+      el("button", { class: "btn btn-ghost", onclick: () => overlay.remove() }, "Close"),
+      el("button", { class: "btn btn-primary", onclick: () => { overlay.remove(); restoreVersion(versionId); } }, "↩ Restore This Version")
+    );
+    return [body, actions];
+  });
+}
+
+/* ---------- Version History Panel UI ---------- */
+
+let versionPanelOpen = false;
+
+function renderVersionPanel() {
+  const body = $("#version-body");
+  if (!body) return;
+  body.innerHTML = "";
+
+  if (currentVersionTab === "auto") {
+    const versions = getAutoVersions();
+    if (versions.length === 0) {
+      body.append(el("div", { class: "activity-empty" }, "No auto-saves yet\nVersions are created when you save changes."));
+      return;
+    }
+    for (const v of versions.slice().reverse()) {
+      body.append(renderVersionEntry(v, "auto"));
+    }
+  } else {
+    const backups = getBackups();
+    if (backups.length === 0) {
+      body.append(el("div", { class: "activity-empty" }, "No named backups yet\nClick \"💾 Backup\" to create one."));
+      return;
+    }
+    for (const b of backups.slice().reverse()) {
+      body.append(renderVersionEntry(b, "backup"));
+    }
+  }
+}
+
+function renderVersionEntry(version, type) {
+  const time = new Date(version.timestamp);
+  const timeStr = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const dateStr = time.toLocaleDateString([], { month: "short", day: "numeric" });
+  const label = type === "backup" ? version.name : version.label;
+  const summary = version.summary || "";
+
+  const entry = el("div", { class: "version-entry" });
+
+  const icon = el("div", { class: `version-icon ${type}` }, type === "backup" ? "💾" : "🕐");
+  const info = el("div", { class: "version-info" });
+  info.append(el("div", { class: "version-label" }, label || "Untitled"));
+  const meta = el("div", { class: "version-meta" });
+  meta.append(el("span", null, `${dateStr} ${timeStr}`));
+  info.append(meta);
+  if (summary) info.append(el("div", { class: "version-summary" }, summary));
+
+  const actions = el("div", { class: "version-actions" });
+  actions.append(
+    el("button", { class: "btn btn-ghost", title: "View changes", onclick: () => showVersionDiff(version.id) }, "🔍"),
+    el("button", { class: "btn btn-ghost", title: "Restore this version", onclick: () => restoreVersion(version.id) }, "↩"),
+    el("button", { class: "btn btn-ghost", title: "Delete", onclick: () => deleteVersion(version.id) }, "🗑️")
+  );
+
+  entry.append(icon, info, actions);
+  return entry;
+}
+
+function openVersionPanel() {
+  const panel = $("#version-panel");
+  panel.classList.add("open");
+  versionPanelOpen = true;
+  renderVersionPanel();
+}
+
+function closeVersionPanel() {
+  $("#version-panel").classList.remove("open");
+  versionPanelOpen = false;
+}
+
+function toggleVersionPanel() {
+  if (versionPanelOpen) closeVersionPanel();
+  else openVersionPanel();
+}
+
+// Tab switching
+document.querySelectorAll(".version-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".version-tab").forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+    currentVersionTab = tab.dataset.tab;
+    renderVersionPanel();
+  });
+});
+
+// Toggle button
+$("#version-toggle").addEventListener("click", toggleVersionPanel);
+
+// Create backup button
+$("#create-backup-btn").addEventListener("click", () => {
+  openOverlay("Create Named Backup", (overlay) => {
+    const body = el("div", { style: { padding: "16px" } });
+    const input = el("input", {
+      type: "text",
+      placeholder: "Backup name (e.g., Before event update)",
+      style: { width: "100%", padding: "10px 12px", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)", fontSize: "13px", fontFamily: "inherit", background: "var(--panel-2)", color: "var(--text)" },
+    });
+    body.append(el("div", { class: "field" }, el("label", null, "Backup Name"), input));
+    body.append(el("div", { style: { fontSize: "11px", color: "var(--muted)", marginTop: "4px" } }, "This saves a full snapshot of all your data."));
+
+    const actions = el("div", { class: "editor-actions" },
+      el("div", { class: "spacer" }),
+      el("button", { class: "btn btn-ghost", onclick: () => overlay.remove() }, "Cancel"),
+      el("button", {
+        class: "btn btn-primary",
+        onclick: () => {
+          const name = input.value.trim() || "Backup " + new Date().toLocaleString();
+          createNamedBackup(name);
+          overlay.remove();
+        },
+      }, "💾 Create Backup")
+    );
+    return [body, actions];
+  });
+});
+
+// Close panel on outside click
+document.addEventListener("click", (e) => {
+  const panel = $("#version-panel");
+  const toggle = $("#version-toggle");
+  if (panel && !panel.contains(e.target) && !toggle.contains(e.target)) {
+    panel.classList.remove("open");
+    versionPanelOpen = false;
+  }
+});
+
+// Auto-version on page unload if dirty
+window.addEventListener("beforeunload", (e) => {
+  if (dirty) {
+    createAutoVersion("Auto-save on exit");
+  }
+});
+
+/* ================================================================
+   Mobile: Swipe-down to close bottom-sheet panels
+   ================================================================ */
+
+function addSwipeToClose(panelEl, closeFn) {
+  if (!panelEl) return;
+  let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
+
+  panelEl.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) return;
+    // Only start if touching near the top of the panel
+    const rect = panelEl.getBoundingClientRect();
+    if (e.touches[0].clientY - rect.top > 60) return;
+    startY = e.touches[0].clientY;
+    isDragging = true;
+    panelEl.style.transition = "none";
+  }, { passive: true });
+
+  panelEl.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+    currentY = e.touches[0].clientY - startY;
+    if (currentY > 0) {
+      panelEl.style.transform = `translateY(${currentY}px)`;
+      panelEl.style.opacity = String(1 - currentY / 300);
+    }
+  }, { passive: true });
+
+  panelEl.addEventListener("touchend", () => {
+    if (!isDragging) return;
+    isDragging = false;
+    panelEl.style.transition = "";
+    panelEl.style.transform = "";
+    panelEl.style.opacity = "";
+    if (currentY > 100) {
+      closeFn();
+    }
+    currentY = 0;
+  }, { passive: true });
+}
+
+addSwipeToClose($("#activity-panel"), () => {
+  $("#activity-panel").classList.remove("open");
+});
+addSwipeToClose($("#version-panel"), () => {
+  $("#version-panel").classList.remove("open");
+});
 
 loadAll().catch((err) => toast("Failed to load: " + err.message, "err"));

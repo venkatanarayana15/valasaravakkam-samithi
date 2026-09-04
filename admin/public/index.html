@@ -11,6 +11,7 @@
 </head>
 <body>
   <div class="layout">
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-icon">ॐ</div>
@@ -21,28 +22,48 @@
       </div>
       <nav id="nav"></nav>
       <div class="sidebar-foot">
-        <button id="open-site" class="btn btn-ghost" style="width:100%;justify-content:center;">
-          ↗ View Live Site
+        <button id="open-site" class="btn btn-ghost sidebar-view-btn">
+          <span>↗</span> View Live Site
         </button>
+        <div class="sidebar-shortcut-hint">
+          <kbd>Ctrl</kbd>+<kbd>K</kbd> Quick search
+        </div>
       </div>
     </aside>
     <main class="content">
       <header class="topbar">
-        <button id="menu-btn" class="btn btn-ghost btn-icon" aria-label="Toggle menu">☰</button>
-        <h2 id="page-title">Dashboard</h2>
+        <button id="menu-btn" class="btn btn-ghost btn-icon" aria-label="Toggle menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-5"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="topbar-breadcrumb" id="breadcrumb">
+          <span class="breadcrumb-home">Dashboard</span>
+        </div>
         <div class="topbar-right">
           <div class="undo-redo-group">
             <button id="undo-btn" class="btn btn-ghost btn-icon undo-redo-btn" disabled title="Undo (Ctrl+Z)">↩</button>
             <button id="redo-btn" class="btn btn-ghost btn-icon undo-redo-btn" disabled title="Redo (Ctrl+Shift+Z)">↪</button>
           </div>
           <div class="theme-toggle">
-            <span class="theme-label" id="theme-label">☀️</span>
             <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">
-              <span class="theme-toggle-thumb">☀️</span>
+              <span class="theme-toggle-thumb">
+                <span class="theme-icon-light">☀️</span>
+                <span class="theme-icon-dark">🌙</span>
+              </span>
             </button>
           </div>
+          <div class="topbar-divider"></div>
+          <div class="quick-add-wrap">
+            <button id="quick-add-btn" class="btn btn-primary btn-quick-add" aria-label="Quick add">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="size-4"><path d="M12 5v14M5 12h14"/></svg>
+              <span class="quick-add-label">Add New</span>
+            </button>
+            <div class="quick-add-dropdown" id="quick-add-dropdown"></div>
+          </div>
           <span id="save-state" class="save-state"></span>
-          <button id="save-all" class="btn btn-primary">💾 Save All</button>
+          <button id="save-all" class="btn btn-primary btn-save">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+            <span class="save-label">Save All</span>
+          </button>
         </div>
       </header>
       <div id="view"></div>
@@ -64,6 +85,28 @@
     </div>
     <div class="activity-panel-body" id="activity-body">
       <div class="activity-empty">No changes yet</div>
+    </div>
+  </div>
+
+  <!-- Version History -->
+  <button id="version-toggle" class="version-toggle" aria-label="Version history">
+    🕐
+    <span class="badge-dot" id="version-dot"></span>
+  </button>
+  <div id="version-panel" class="version-panel">
+    <div class="version-panel-head">
+      <span>🕐 Version History</span>
+      <div style="display:flex;gap:6px;">
+        <button id="create-backup-btn" class="btn btn-ghost btn-sm">💾 Backup</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('version-panel').classList.remove('open')">✕</button>
+      </div>
+    </div>
+    <div class="version-panel-tabs">
+      <button class="version-tab active" data-tab="auto">Auto-saves</button>
+      <button class="version-tab" data-tab="backups">Named Backups</button>
+    </div>
+    <div class="version-panel-body" id="version-body">
+      <div class="activity-empty">No versions yet</div>
     </div>
   </div>
 

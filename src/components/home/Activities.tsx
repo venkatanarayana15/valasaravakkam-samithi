@@ -33,12 +33,12 @@ function ProgressBar({ label, value, delay }: { label: string; value: number; de
   return (
     <div ref={ref} className="mb-7">
       <div className="mb-2.5 flex items-center justify-between text-sm">
-        <span className="font-display font-semibold uppercase tracking-wide text-[#272829]">
+        <span className="font-display font-semibold uppercase tracking-wide text-[#272829] dark:text-gray-200">
           {label}
         </span>
         <span className="text-gradient-static text-sm font-bold">{value}%</span>
       </div>
-      <div className="h-[11px] rounded-[50px] bg-[#e9ecef] shadow-inner">
+      <div className="h-[11px] rounded-[50px] bg-[#e9ecef] shadow-inner dark:bg-gray-700">
         <div
           className="bar-shimmer h-full rounded-[50px] transition-[width] duration-1000 ease-out"
           style={{
@@ -57,7 +57,7 @@ export default function Activities() {
   const { activityLevels } = useSiteData();
   const list = activityLevels.length ? activityLevels : staticActivityLevels;
   return (
-    <section id="activities" className="bg-[#f7f9fc] py-20">
+    <section id="activities" className="bg-[#f7f9fc] py-12 sm:py-16 md:py-20 dark:bg-[#1e293b]">
       <div className="mx-auto max-w-7xl px-4">
         <Reveal>
           <SectionTitle
@@ -65,7 +65,7 @@ export default function Activities() {
             description="It is the level of each activities"
           />
         </Reveal>
-        <div className="grid grid-cols-1 gap-x-10 gap-y-2 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-2 sm:gap-x-10 md:grid-cols-2">
           <Reveal delay={100}>
             {list.slice(0, 3).map((a, i) => (
               <ProgressBar key={a.name} label={a.name} value={a.value} delay={i * 120} />

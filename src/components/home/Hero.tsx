@@ -20,7 +20,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative flex min-h-[92vh] items-center justify-center overflow-hidden"
+      className="relative flex min-h-[70vh] items-center justify-center overflow-hidden sm:min-h-[80vh] md:min-h-[92vh]"
     >
       {/* Parallax background */}
       <Image
@@ -69,31 +69,31 @@ export default function Hero() {
       {/* Hero content */}
       <div className="relative z-10 px-6 text-center text-white">
         <p
-          className="hero-enter font-display text-base font-medium uppercase tracking-[0.35em] text-white/80 sm:text-lg"
+          className="hero-enter font-display text-xs font-medium uppercase tracking-[0.25em] text-white/80 sm:text-base sm:tracking-[0.35em] md:text-lg"
           style={{ animationDelay: "0.1s" }}
         >
           Welcome to
         </p>
         <h1
-          className="hero-enter text-gradient mt-3 font-display text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl"
+          className="hero-enter text-gradient mt-3 font-display text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl lg:text-5xl"
           style={{ animationDelay: "0.3s" }}
         >
           {siteConfig.orgName}
         </h1>
         <h2
-          className="hero-enter mt-3 text-xl font-semibold text-white sm:text-2xl"
+          className="hero-enter mt-3 text-lg font-semibold text-white sm:text-xl md:text-2xl"
           style={{ animationDelay: "0.5s" }}
         >
           {siteConfig.name}
         </h2>
         <p
-          className="hero-enter mt-2 text-sm font-light tracking-wide text-white/70"
+          className="hero-enter mt-2 text-xs font-light tracking-wide text-white/70 sm:text-sm"
           style={{ animationDelay: "0.65s" }}
         >
           {siteConfig.zone}
         </p>
         <p
-          className="hero-enter mx-auto mt-5 max-w-md text-sm italic text-white/60"
+          className="hero-enter mx-auto mt-5 max-w-md text-xs italic text-white/60 sm:text-sm"
           style={{ animationDelay: "0.8s" }}
         >
           {siteConfig.tagline}

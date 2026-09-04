@@ -14,6 +14,27 @@
 html {
   scroll-behavior: smooth;
   overflow-x: clip;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile touch improvements */
+@supports (-webkit-touch-callout: none) {
+  /* iOS safe areas */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Better tap targets on mobile */
+a, button, [role="button"] {
+  min-height: 44px;
+}
+
+@media (min-width: 1024px) {
+  a, button, [role="button"] {
+    min-height: unset;
+  }
 }
 
 body {
@@ -21,6 +42,29 @@ body {
   color: #272829;
   font-family: var(--font-poppins), system-ui, sans-serif;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body,
+.dark {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+/* Smooth dark mode transitions */
+.dark * {
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+/* Dark mode selection color */
+.dark ::selection {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+/* Dark mode focus ring */
+.dark :focus-visible {
+  outline-color: #60a5fa;
 }
 
 ::selection {
@@ -40,9 +84,15 @@ body {
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
 ::-webkit-scrollbar-thumb {
   background: #c5c5c5;
   border-radius: 8px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary);
@@ -349,6 +399,29 @@ section[id] {
 }
 .lightbox-enter {
   animation: lightbox-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Lightbox swipe snap-back */
+.lightbox-snap {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+}
+
+/* Prevent text selection and drag during swipe/pinch */
+.lightbox-enter img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
+}
+
+/* Zoom transition spring */
+@keyframes zoom-reset {
+  from {
+    transform: scale(var(--from-scale, 1));
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 /* Bottom nav entrance */

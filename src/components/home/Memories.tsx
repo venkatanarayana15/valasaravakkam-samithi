@@ -17,7 +17,7 @@ export default function Memories() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   return (
-    <section id="memories" className="bg-[#f7f9fc] py-16">
+    <section id="memories" className="bg-[#f7f9fc] py-10 sm:py-12 md:py-16 dark:bg-[#1e293b]">
       <div className="mx-auto max-w-7xl px-4">
         <Reveal>
           <SectionTitle
@@ -26,7 +26,7 @@ export default function Memories() {
           />
         </Reveal>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {images.map((image, i) => (
             <Reveal key={image.src} delay={i * 100}>
               <TiltCard maxTilt={9} scale={1.04}>
@@ -45,7 +45,7 @@ export default function Memories() {
                     />
                   </div>
                   <div className="absolute inset-0 flex flex-col justify-between bg-black/0 p-2.5 opacity-0 transition duration-300 group-hover:bg-black/40 group-hover:opacity-100">
-                    <span className="tilt-pop self-start rounded bg-primary px-3 py-1 text-sm font-bold text-white">
+                    <span className="tilt-pop self-start rounded bg-primary px-3 py-1 text-sm font-bold text-white dark:bg-blue-600">
                       {image.title}
                     </span>
                     <div className="flex items-end justify-between">
@@ -62,8 +62,7 @@ export default function Memories() {
                         <BsDownload />
                       </a>
                     </div>
-                  </div>
-                  <span className="tilt-pop absolute right-2.5 top-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-primary/80 text-white opacity-0 transition group-hover:opacity-100">
+                  </div>                    <span className="tilt-pop absolute right-2.5 top-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-primary/80 text-white opacity-0 transition group-hover:opacity-100 dark:bg-blue-600/80">
                     <BsZoomIn />
                   </span>
                 </button>

@@ -30,7 +30,7 @@ export default async function CategoryPage({ params }: Props) {
   if (!found) notFound();
 
   return (
-    <div className="min-h-screen px-4 py-12" style={{ backgroundColor: "rgba(147, 156, 156, 0.25)" }}>
+    <div className="min-h-screen px-4 py-8 dark:bg-[#0f172a] sm:py-10 md:py-12" style={{ backgroundColor: "rgba(147, 156, 156, 0.25)" }}>
       <div className="mx-auto max-w-7xl">
         <CategoryGallery category={found} />
       </div>

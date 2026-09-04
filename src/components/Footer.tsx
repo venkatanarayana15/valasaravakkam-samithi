@@ -6,20 +6,20 @@ import { useSiteData } from "@/lib/site-data";
 export default function Footer() {
   const { siteConfig, socialLinks } = useSiteData();
   return (
-    <footer className="border-t border-gray-200 bg-white py-6">
+    <footer className="border-t border-gray-200 bg-white py-4 dark:border-gray-700 dark:bg-[#0f172a] sm:py-6">
       <div className="px-4">
-        <div className="mb-4 text-center text-sm text-[#272829]">
+        <div className="mb-4 text-center text-sm text-[#272829] dark:text-gray-300">
           © <span>Copyright</span>{" "}
           <strong className="px-1 font-semibold">{siteConfig.shortName}</strong>{" "}
           <span>All Rights Reserved</span>
         </div>
-        <div className="mb-4 text-center text-sm">
+        <div className="mb-4 text-center text-sm dark:text-gray-400">
           Designed & Distributed by{" "}
           <Link href="/" className="text-[#149ddd] hover:underline">
             Valasaravakkam Samithi Youth
           </Link>
         </div>
-        <div className="flex items-center justify-center gap-3 text-xl text-[#45505b]">
+        <div className="flex items-center justify-center gap-4 text-xl text-[#45505b] dark:text-gray-400">
           {socialLinks.map((link) => (
             <a
               key={link.label}
@@ -29,7 +29,7 @@ export default function Footer() {
               aria-label={link.label}
               className="transition hover:text-[#149ddd]"
             >
-              <span className="text-lg leading-none">
+              <span className="text-xl leading-none">
                 {link.icon === "bi-twitter-x" && (
                   <svg viewBox="0 0 24 24" fill="currentColor" className="size-5">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />

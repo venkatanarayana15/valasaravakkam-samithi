@@ -16,7 +16,7 @@ export default function Coordinators() {
   const { coordinators } = useSiteData();
   const list = coordinators.length ? coordinators : staticCoordinators;
   return (
-    <section id="coordinators" className="bg-white py-16">
+    <section id="coordinators" className="bg-white py-10 sm:py-12 md:py-16 dark:bg-[#0f172a]">
       <div className="mx-auto max-w-7xl px-4">
         <Reveal>
           <SectionTitle
@@ -43,8 +43,8 @@ export default function Coordinators() {
             {list.map((coordinator) => (
               <SwiperSlide key={`${coordinator.name}-${coordinator.role}`}>
                 <TiltCard maxTilt={8} scale={1.03}>
-                  <div className="shine mx-auto max-w-xl rounded-lg bg-[#f7f9fc] p-6 text-center shadow-sm transition hover:shadow-xl">
-                    <p className="relative text-[15px] italic leading-relaxed text-muted">
+                  <div className="shine mx-auto max-w-xl rounded-lg bg-[#f7f9fc] p-4 text-center shadow-sm transition hover:shadow-xl dark:bg-[#1e293b] sm:p-6">
+                    <p className="relative text-sm italic leading-relaxed text-muted sm:text-[15px]">
                       <BsQuote className="absolute -left-2 -top-1 inline-block rotate-180 text-xl text-[#149ddd] opacity-60" />
                       <span className="px-4">{coordinator.description}</span>
                       <BsQuote className="absolute -right-2 -bottom-1 inline-block text-xl text-[#149ddd] opacity-60" />
@@ -61,10 +61,10 @@ export default function Coordinators() {
                         />
                       </div>
                     </div>
-                    <h3 className="mt-3 text-lg font-bold text-[#272829]">
+                    <h3 className="mt-3 text-lg font-bold text-[#272829] dark:text-gray-100">
                       {coordinator.name}
                     </h3>
-                    <h4 className="text-sm font-medium text-[#149ddd]">
+                    <h4 className="text-sm font-medium text-[#149ddd] dark:text-blue-400">
                       {coordinator.role}
                     </h4>
                   </div>
