@@ -222,65 +222,6 @@ section[id] {
   animation: glow-pulse 2.6s ease-in-out infinite;
 }
 
-/* 3D emblem */
-@keyframes spin3d {
-  from {
-    transform: rotateX(64deg) rotateZ(0deg);
-  }
-  to {
-    transform: rotateX(64deg) rotateZ(360deg);
-  }
-}
-@keyframes emblem-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-14px);
-  }
-}
-.emblem {
-  position: relative;
-  transform-style: preserve-3d;
-  animation: emblem-float 6s ease-in-out infinite;
-}
-.emblem-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  transform-style: preserve-3d;
-  border: 2px solid rgba(255, 255, 255, 0.22);
-}
-.emblem-ring.r1 {
-  animation: spin3d 16s linear infinite;
-  border-style: dashed;
-}
-.emblem-ring.r2 {
-  inset: 16px;
-  animation: spin3d 11s linear infinite reverse;
-  border-style: dotted;
-}
-.emblem-ring.r3 {
-  inset: 32px;
-  animation: spin3d 8s linear infinite;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-}
-.emblem-core {
-  position: absolute;
-  inset: 34px;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.95), rgba(20, 157, 221, 0.85));
-  box-shadow:
-    0 0 44px rgba(20, 157, 221, 0.65),
-    inset 0 0 20px rgba(13, 110, 253, 0.4);
-  transform: translateZ(30px);
-}
-
 /* Floating particles */
 @keyframes particle-rise {
   0% {

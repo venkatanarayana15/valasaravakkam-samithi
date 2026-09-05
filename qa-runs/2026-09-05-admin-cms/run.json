@@ -1,0 +1,23 @@
+{
+  "run": "2026-09-05-admin-cms",
+  "date": "2026-09-05",
+  "task": "Make admin fully dynamic: events/coordinators/site-config/etc. added or edited in admin reflect on the main website",
+  "skill_versions": {
+    "ui-ux-pro-max": "loaded 2026-09-05 (global ~/.opencode/skills)"
+  },
+  "verification_mode": "live end-to-end: admin server :3001 + next dev :3000, curl chain + build/lint",
+  "root_cause": "Double fallback resurrected static content: (1) mergeApi fell back to static when a collection was EMPTY, (2) every component did .length ? live : static again. So admin deletes/clears silently came back as the original static sections. Plus about-field shape mismatch and no navLinks editing.",
+  "verification_evidence": {
+    "admin_post": "POST /api/events (Bearer test-token-123) -> ok, length 5",
+    "site_aggregate": "GET localhost:3001/api/site -> events[-1] = Test CMS Event [Sept 20, 6:00 PM]",
+    "next_rewrite": "GET localhost:3000/api/site (rewrite -> admin) -> same event present => reflects on main website",
+    "empty_semantics": "PUT /api/events [] -> GET /api/site -> events: [] (0 items, static NOT resurrected); events.json restored, count back to 4"
+  },
+  "build": "PASS - next build green, TS clean, 10/10 static pages",
+  "lint": "PASS (no new issues) - same 10 pre-existing problems (Lightbox 91/433x2/144/282, dark-mode 33/90, admin app.js x3 unused catch params)",
+  "servers_stopped": true,
+  "residual_notes": [
+    "Catalyst production path: if CATALYST_SITE_API_URL is set, /api/site prefers Catalyst (which is not deployed). Deploy Catalyst OR leave it unset so admin stays the source of truth.",
+    "Seed events still show stale July content - user action B1 (add real upcoming events in admin)."
+  ]
+}

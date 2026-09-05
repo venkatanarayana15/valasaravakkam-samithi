@@ -80,7 +80,7 @@ export default function Chatbot() {
         <div
           role="dialog"
           aria-label="Samithi assistant chat"
-          className="fixed right-4 bottom-[13.5rem] left-4 z-50 flex max-h-[60vh] min-h-[320px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:right-6 sm:bottom-[10.5rem] sm:left-auto sm:w-[380px] dark:border-slate-700 dark:bg-slate-900"
+          className="fixed right-4 bottom-[13.5rem] left-4 z-50 flex h-[min(60vh,540px)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:right-6 sm:bottom-[10.5rem] sm:left-auto sm:w-[380px] lg:bottom-6 dark:border-slate-700 dark:bg-slate-900"
         >
           <div className="flex items-center justify-between bg-primary px-4 py-3 text-white dark:bg-blue-700">
             <div>

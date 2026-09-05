@@ -1105,6 +1105,7 @@ function editItem(name, index) {
 
             pushSnapshot();
             const value = collectForm(form, name);
+            if (value === null) return;
             if (isNew) {
               if (Array.isArray(store[name])) store[name].push(value);
               else store[name] = value;
@@ -1305,6 +1306,15 @@ function fieldKeysFor(name) {
   return [...seen];
 }
 
+function formatJson(value) {
+  if (value === undefined || value === null || value === "") return "";
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return "";
+  }
+}
+
 function renderField(name, key, value, def) {
   const isTextarea = def?.type === "textarea" || (typeof value === "string" && value.length > 90);
   const isNumber = def?.type === "number" || typeof value === "number";
@@ -1313,6 +1323,9 @@ function renderField(name, key, value, def) {
   let input;
   if (isNumber) {
     input = el("input", { type: "number", name: key, value: value ?? 0 });
+  } else if (def?.type === "json") {
+    input = el("textarea", { name: key, rows: 6, class: "json-field" }, formatJson(value));
+    input.dataset.json = "1";
   } else if (isTextarea) {
     input = el("textarea", { name: key, rows: 4 }, value ?? "");
   } else if (def?.options) {
@@ -1331,14 +1344,28 @@ function collectForm(form, name) {
   const out = {};
   const isArrayCollection = Array.isArray(store[name]);
   const base = isArrayCollection ? {} : { ...(typeof store[name] === "object" ? store[name] : {}) };
-  form.querySelectorAll("input, textarea, select").forEach((input) => {
-    if (!input.name) return;
-    if (input.name.startsWith("__") || input.dataset.tmp) return;
+  for (const input of form.querySelectorAll("input, textarea, select")) {
+    if (!input.name) continue;
+    if (input.name.startsWith("__") || input.dataset.tmp) continue;
     const v = input.value;
+    if (input.dataset.json) {
+      const trimmed = v.trim();
+      if (!trimmed) {
+        out[input.name] = [];
+        continue;
+      }
+      try {
+        out[input.name] = JSON.parse(trimmed);
+      } catch {
+        toast(`Invalid JSON in "${humanize(input.name)}" — fix it and save again`, "err");
+        return null;
+      }
+      continue;
+    }
     const val = input.type === "number" ? (v === "" ? 0 : Number(v)) : v;
-    if (isArrayCollection && val === "") return;
+    if (isArrayCollection && val === "") continue;
     out[input.name] = val;
-  });
+  }
   return { ...base, ...out };
 }
 
@@ -1463,6 +1490,73 @@ function renderSiteConfig(view) {
   );
   wrap.append(socialBox);
 
+  // navigation links
+  wrap.append(el("hr", { class: "separator" }));
+  wrap.append(el("h3", { style: { fontSize: "14px", marginBottom: "10px", fontWeight: "700" } }, "🧭 Navigation Links"));
+  const navBox = el("div", {});
+  const nav = Array.isArray(data.navLinks) ? data.navLinks : [];
+  nav.forEach((link, i) => {
+    navBox.append(
+      el(
+        "div",
+        { class: "sub-item" },
+        el("span", {}, `${i + 1}.`),
+        el("input", {
+          type: "text",
+          name: `nav-label-${i}`,
+          value: link.label || "",
+          placeholder: "Label",
+          style: { maxWidth: "110px" },
+          oninput: () => markDirty(),
+        }),
+        el("input", {
+          type: "text",
+          name: `nav-href-${i}`,
+          value: link.href || "",
+          placeholder: "#section",
+          style: { maxWidth: "170px" },
+          oninput: () => markDirty(),
+        }),
+        el("input", {
+          type: "text",
+          name: `nav-icon-${i}`,
+          value: link.icon || "",
+          placeholder: "Icon key",
+          style: { maxWidth: "130px" },
+          oninput: () => markDirty(),
+        }),
+        el(
+          "button",
+          {
+            class: "btn btn-danger btn-sm",
+            onclick: () => {
+              nav.splice(i, 1);
+              markDirty();
+              renderSiteConfig(view);
+            },
+          },
+          "✕"
+        )
+      )
+    );
+  });
+  navBox.append(
+    el(
+      "button",
+      {
+        class: "btn btn-ghost btn-sm",
+        style: { marginTop: "6px" },
+        onclick: () => {
+          nav.push({ label: "", href: "", icon: "" });
+          markDirty();
+          renderSiteConfig(view);
+        },
+      },
+      "+ Add nav link"
+    )
+  );
+  wrap.append(navBox);
+
   card.append(wrap);
   card.append(
     el(
@@ -1476,7 +1570,7 @@ function renderSiteConfig(view) {
           onclick: () => {
             const sc2 = {};
             card.querySelectorAll("input[name], textarea[name]").forEach((input) => {
-              if (input.name.startsWith("social-")) return;
+              if (input.name.startsWith("social-") || input.name.startsWith("nav-")) return;
               sc2[input.name] = input.value;
             });
             const social2 = [];
@@ -1486,10 +1580,18 @@ function renderSiteConfig(view) {
               if (!social2[i]) social2[i] = {};
               social2[i][field] = input.value;
             });
+            const nav2 = [];
+            card.querySelectorAll("input[name^='nav-']").forEach((input) => {
+              const [, field, idx] = input.name.split("-");
+              const i = Number(idx);
+              if (!nav2[i]) nav2[i] = {};
+              nav2[i][field] = input.value;
+            });
             pushSnapshot();
             store.siteconfig = {
               siteConfig: sc2,
               socialLinks: social2.filter((s) => s && (s.label || s.href)),
+              navLinks: nav2.filter((n) => n && (n.label || n.href)),
             };
             markDirty();
             render();
@@ -1521,6 +1623,7 @@ const FIELD_DEFS = {
   },
   events: {
     title: { type: "text" },
+    date: { type: "text" },
     location: { type: "text" },
     mapsUrl: { type: "text" },
     description: { type: "textarea" },
@@ -1563,7 +1666,7 @@ const FIELD_DEFS = {
   },
   about: {
     heading: { type: "text" },
-    text: { type: "textarea" },
+    items: { type: "json" },
   },
 };
 

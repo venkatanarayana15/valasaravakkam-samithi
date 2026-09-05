@@ -363,10 +363,10 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
   return (
     <div className="lightbox-enter fixed inset-0 z-[100] flex flex-col bg-black/95 dark:bg-black/98">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4">
-        <h3 className="text-lg font-semibold text-white">{image.title}</h3>
-        <div className="flex items-center gap-2">
-          <span className="mr-1 text-sm text-white/50">
+      <div className="flex min-w-0 items-center justify-between gap-3 p-3 sm:p-4">
+        <h3 className="min-w-0 flex-1 truncate text-lg font-semibold text-white">{image.title}</h3>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="whitespace-nowrap text-sm text-white/50">
             {index + 1} / {images.length}
           </span>
           {isZoomed && (

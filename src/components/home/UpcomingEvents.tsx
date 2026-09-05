@@ -5,7 +5,7 @@ import { Autoplay, EffectCoverflow, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-coverflow";
 import "swiper/css/pagination";
-import { upcomingEvents as staticEvents, asset } from "@/lib/data";
+import { asset } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 import SectionTitle from "@/components/SectionTitle";
 import Reveal from "@/components/Reveal";
@@ -14,7 +14,8 @@ import Image from "next/image";
 
 export default function UpcomingEvents() {
   const { upcomingEvents } = useSiteData();
-  const events = upcomingEvents.length ? upcomingEvents : staticEvents;
+  if (upcomingEvents.length === 0) return null;
+  const events = upcomingEvents;
   return (
     <section
       id="upcoming-events"
@@ -61,7 +62,7 @@ export default function UpcomingEvents() {
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-black/35 via-black/55 to-black/75 p-6 text-center text-white">
                       <span className="tilt-pop mb-3 rounded-full bg-white/15 px-4 py-1 text-xs font-bold uppercase tracking-[0.2em] backdrop-blur-sm">
-                        {i === 0 ? "Save the Date" : `Day ${i}`}
+                        {event.date || (i === 0 ? "Save the Date" : `Day ${i}`)}
                       </span>
                       <p className="tilt-pop font-display text-base font-bold leading-relaxed drop-shadow sm:text-lg">
                         {event.title}

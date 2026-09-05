@@ -36,7 +36,7 @@ export default function CategoryGallery({ category }: { category: GalleryCategor
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-7">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:gap-6 lg:grid-cols-3 lg:gap-7">
         {category.images.map((image, i) => (
           <TiltCard key={image.src} maxTilt={9} scale={1.04}>
             <button
@@ -49,7 +49,7 @@ export default function CategoryGallery({ category }: { category: GalleryCategor
                   src={image.src}
                   alt={image.title}
                   fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition duration-500 group-hover:scale-110"
                 />
               </div>

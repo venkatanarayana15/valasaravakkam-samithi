@@ -1,0 +1,27 @@
+{
+  "run": "2026-09-05-responsive",
+  "date": "2026-09-05",
+  "task": "Remove planet animation circle from homepage hero + make full website responsive on all devices",
+  "skill_versions": {
+    "ui-ux-pro-max": "loaded 2026-09-05 (global ~/.opencode/skills)"
+  },
+  "verification_mode": "static review + build/lint (browser MCP NOT available this session; no live captures)",
+  "verdict_cap": "warn for live-only claims",
+  "changes": {
+    "src/components/home/Hero.tsx": "removed 3D floating emblem (planet with orbital rings) JSX + FaOm import",
+    "src/app/globals.css": "removed @keyframes spin3d, @keyframes emblem-float, .emblem/.emblem-ring/.emblem-core; kept glow-pulse/.animate-glow (used by Coordinators)",
+    "src/components/SiteHeader.tsx": "mobile top bar: name truncates at narrow widths (min-w-0 flex-1 truncate); desktop nav: tighter gap/padding at lg, social icons + WhatsApp hidden until 2xl to fix 1024-1535px overflow",
+    "src/components/home/Memories.tsx": "grid now 2-up from sm (was 1-up until md); sizes updated",
+    "src/components/gallery/CategoryGallery.tsx": "grid now 2-up from sm; sizes updated",
+    "src/components/Lightbox.tsx": "header: title truncates, control cluster shrink-0, no 320px overflow",
+    "src/components/Chatbot.tsx": "panel h-[min(60vh,540px)] instead of fixed min-h (fixes short/landscape clipping and desktop over-height); lg:bottom-6 on desktop"
+  },
+  "build": "PASS - npm run build: compiled in 34.2s, TypeScript clean, 10/10 static pages",
+  "lint": "PASS (no new issues) - 10 problems, ALL pre-existing: 4 errors (Lightbox 91 setState-in-effect, Lightbox 433 refs-during-render x2, dark-mode 90 setState-in-effect) + 6 warnings (admin/app.js x3, Lightbox 144/282, dark-mode 33). Files changed in this run: clean.",
+  "baselines": "reuse qa-runs/2026-09-04-site-audit (375px + 1440px pass) and qa-runs/2026-09-05-elder-palette",
+  "residual_risks": [
+    "Lightbox nav buttons hidden when zoomed; gesture code lint issues pre-existing (see issues register A1-A4)",
+    "Landscape phone chat: bottom anchored above FAB, height capped at 60vh - usable, may not reach top of screen in extreme landscape",
+    "No live responsive screenshots this session"
+  ]
+}

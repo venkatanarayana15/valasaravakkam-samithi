@@ -4,7 +4,6 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { BsDownload, BsZoomIn } from "react-icons/bs";
-import { homeGalleryImages as staticImages } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 import SectionTitle from "@/components/SectionTitle";
 import Reveal from "@/components/Reveal";
@@ -13,8 +12,9 @@ import TiltCard from "@/components/TiltCard";
 
 export default function Memories() {
   const { homeGalleryImages } = useSiteData();
-  const images = homeGalleryImages.length ? homeGalleryImages : staticImages;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  if (homeGalleryImages.length === 0) return null;
+  const images = homeGalleryImages;
 
   return (
     <section id="memories" className="bg-[#f7f9fc] py-10 sm:py-12 md:py-16 dark:bg-[#1e293b]">
@@ -26,7 +26,7 @@ export default function Memories() {
           />
         </Reveal>
 
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {images.map((image, i) => (
             <Reveal key={image.src} delay={i * 100}>
               <TiltCard maxTilt={9} scale={1.04}>
@@ -40,7 +40,7 @@ export default function Memories() {
                       src={image.src}
                       alt={image.title}
                       fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover transition duration-500 group-hover:scale-110"
                     />
                   </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { activityLevels as staticActivityLevels } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 import SectionTitle from "@/components/SectionTitle";
 import Reveal from "@/components/Reveal";
@@ -55,7 +54,8 @@ function ProgressBar({ label, value, delay }: { label: string; value: number; de
 
 export default function Activities() {
   const { activityLevels } = useSiteData();
-  const list = activityLevels.length ? activityLevels : staticActivityLevels;
+  if (activityLevels.length === 0) return null;
+  const list = activityLevels;
   return (
     <section id="activities" className="bg-[#f7f9fc] py-12 sm:py-16 md:py-20 dark:bg-[#1e293b]">
       <div className="mx-auto max-w-7xl px-4">

@@ -58,6 +58,7 @@ export const activityLevels = [
 
 export type UpcomingEvent = {
   title: string;
+  date?: string;
   description?: string;
   location?: string;
   mapsUrl?: string;

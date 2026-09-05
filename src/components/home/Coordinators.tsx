@@ -6,7 +6,6 @@ import "swiper/css";
 import "swiper/css/pagination";
 import Image from "next/image";
 import { BsQuote } from "react-icons/bs";
-import { coordinators as staticCoordinators } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 import SectionTitle from "@/components/SectionTitle";
 import Reveal from "@/components/Reveal";
@@ -14,7 +13,8 @@ import TiltCard from "@/components/TiltCard";
 
 export default function Coordinators() {
   const { coordinators } = useSiteData();
-  const list = coordinators.length ? coordinators : staticCoordinators;
+  if (coordinators.length === 0) return null;
+  const list = coordinators;
   return (
     <section id="coordinators" className="bg-white py-10 sm:py-12 md:py-16 dark:bg-[#0f172a]">
       <div className="mx-auto max-w-7xl px-4">

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { FaOm } from "react-icons/fa6";
 import { asset } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 
@@ -49,22 +48,6 @@ export default function Hero() {
             }}
           />
         ))}
-      </div>
-
-      {/* 3D floating emblem */}
-      <div
-        className="absolute right-[7%] top-[16%] hidden md:block lg:right-[12%]"
-        style={{ perspective: "900px" }}
-        aria-hidden="true"
-      >
-        <div className="emblem h-44 w-44 lg:h-52 lg:w-52">
-          <div className="emblem-ring r1" />
-          <div className="emblem-ring r2" />
-          <div className="emblem-ring r3" />
-          <div className="emblem-core">
-            <FaOm className="text-5xl drop-shadow-lg" />
-          </div>
-        </div>
       </div>
 
       {/* Hero content */}

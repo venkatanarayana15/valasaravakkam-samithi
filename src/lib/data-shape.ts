@@ -46,29 +46,47 @@ export const FALLBACK: SiteData = {
 
 type ApiShape = Record<string, unknown>;
 
+/**
+ * Presence-based pick: if the key EXISTS in the API payload we trust it even
+ * when it is an empty array (admin deliberately cleared the collection).
+ * Only when a key is entirely ABSENT do we fall back to static content —
+ * which happens when the admin/Catalyst backend is unreachable.
+ */
+function pick<T>(api: ApiShape, key: string, fallback: T): T {
+  return Object.prototype.hasOwnProperty.call(api, key) && Array.isArray(api[key])
+    ? (api[key] as T)
+    : fallback;
+}
+
 export function mergeApi(api: ApiShape | null): SiteData {
   if (!api) return FALLBACK;
-  const sc = api.siteconfig as { siteConfig?: Partial<typeof staticSiteConfig>; socialLinks?: typeof staticSocialLinks } | undefined;
+  const sc = api.siteconfig as
+    | {
+        siteConfig?: Partial<typeof staticSiteConfig>;
+        socialLinks?: typeof staticSocialLinks;
+        navLinks?: typeof staticNavLinks;
+      }
+    | undefined;
   return {
     siteConfig: sc?.siteConfig ? { ...staticSiteConfig, ...sc.siteConfig } : staticSiteConfig,
-    socialLinks: Array.isArray(sc?.socialLinks) && sc.socialLinks.length ? sc.socialLinks : staticSocialLinks,
-    navLinks: staticNavLinks,
-    stats: Array.isArray(api.stats) && (api.stats as unknown[]).length ? (api.stats as typeof staticStats) : staticStats,
-    activityLevels: Array.isArray(api.activities) && (api.activities as unknown[]).length ? (api.activities as typeof staticActivityLevels) : staticActivityLevels,
-    upcomingEvents: Array.isArray(api.events) && (api.events as unknown[]).length ? (api.events as typeof staticUpcomingEvents) : staticUpcomingEvents,
-    services: Array.isArray(api.services) && (api.services as unknown[]).length ? (api.services as typeof staticServices) : staticServices,
-    coordinators: Array.isArray(api.coordinators) && (api.coordinators as unknown[]).length ? (api.coordinators as typeof staticCoordinators) : staticCoordinators,
-    galleryCategories: Array.isArray(api.gallery) && (api.gallery as unknown[]).length ? (api.gallery as typeof staticGalleryCategories) : staticGalleryCategories,
-    homeGalleryImages: Array.isArray(api.homegallery) && (api.homegallery as unknown[]).length ? (api.homegallery as typeof staticHomeGalleryImages) : staticHomeGalleryImages,
-    aboutSections: Array.isArray(api.about) && (api.about as unknown[]).length ? (api.about as typeof staticAboutSections) : staticAboutSections,
-    members: Array.isArray(api.members) ? api.members : [],
-    balvikas: Array.isArray(api.balvikas) ? api.balvikas : [],
+    socialLinks: Array.isArray(sc?.socialLinks) ? sc.socialLinks : staticSocialLinks,
+    navLinks: Array.isArray(sc?.navLinks) ? sc.navLinks : staticNavLinks,
+    stats: pick(api, "stats", staticStats),
+    activityLevels: pick(api, "activities", staticActivityLevels),
+    upcomingEvents: pick(api, "events", staticUpcomingEvents),
+    services: pick(api, "services", staticServices),
+    coordinators: pick(api, "coordinators", staticCoordinators),
+    galleryCategories: pick(api, "gallery", staticGalleryCategories),
+    homeGalleryImages: pick(api, "homegallery", staticHomeGalleryImages),
+    aboutSections: pick(api, "about", staticAboutSections),
+    members: pick(api, "members", [] as unknown[]),
+    balvikas: pick(api, "balvikas", [] as unknown[]),
   };
 }
 
 export function toApiShape(data: SiteData): ApiShape {
   return {
-    siteconfig: { siteConfig: data.siteConfig, socialLinks: data.socialLinks },
+    siteconfig: { siteConfig: data.siteConfig, socialLinks: data.socialLinks, navLinks: data.navLinks },
     stats: data.stats,
     activities: data.activityLevels,
     events: data.upcomingEvents,

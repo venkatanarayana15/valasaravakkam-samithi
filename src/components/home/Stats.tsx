@@ -7,7 +7,6 @@ import {
   BsHouse,
   BsPeople,
 } from "react-icons/bs";
-import { stats as staticStats } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 import Reveal from "@/components/Reveal";
 
@@ -59,7 +58,8 @@ function CountUp({ target }: { target: number }) {
 
 export default function Stats() {
   const { stats } = useSiteData();
-  const list = stats.length ? stats : staticStats;
+  if (stats.length === 0) return null;
+  const list = stats;
   return (
     <section id="stats" className="py-12 sm:py-16 md:py-20 dark:bg-[#0f172a]">
       <div className="mx-auto max-w-7xl px-4">

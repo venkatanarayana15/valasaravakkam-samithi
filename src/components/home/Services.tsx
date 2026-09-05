@@ -9,7 +9,7 @@ import {
   FaBookOpen,
   FaBagShopping,
 } from "react-icons/fa6";
-import { services as staticServices, type Service } from "@/lib/data";
+import { type Service } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 import SectionTitle from "@/components/SectionTitle";
 import Reveal from "@/components/Reveal";
@@ -85,7 +85,8 @@ function ServiceCard({ service }: { service: Service }) {
 
 export default function Services() {
   const { services } = useSiteData();
-  const list = services.length ? services : staticServices;
+  if (services.length === 0) return null;
+  const list = services;
   return (
     <section id="services" className="py-12 sm:py-16 md:py-20 dark:bg-[#0f172a]">
       <div className="mx-auto max-w-7xl px-4">

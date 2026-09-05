@@ -1,14 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { aboutSections as staticAboutSections, siteConfig as staticSiteConfig, asset } from "@/lib/data";
+import { siteConfig as staticSiteConfig, asset } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 import Reveal from "@/components/Reveal";
 import TiltCard from "@/components/TiltCard";
 
 export default function AboutSection() {
   const { aboutSections, siteConfig } = useSiteData();
-  const sections = aboutSections.length ? aboutSections : staticAboutSections;
+  if (aboutSections.length === 0) return null;
+  const sections = aboutSections;
   const config = siteConfig ?? staticSiteConfig;
   return (
     <section id="about" className="relative overflow-hidden py-12 sm:py-16 md:py-20 dark:bg-[#0f172a]">
