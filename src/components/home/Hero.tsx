@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { FaOm } from "react-icons/fa6";
+import { asset } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 
 const particles = [
@@ -24,7 +25,7 @@ export default function Hero() {
     >
       {/* Parallax background */}
       <Image
-        src="/assets/img/hero-bg.jpg"
+        src={asset("/assets/img/hero-bg.jpg")}
         alt="Hero background"
         fill
         sizes="100vw"

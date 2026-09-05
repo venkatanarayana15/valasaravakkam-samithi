@@ -5,8 +5,10 @@ import SiteHeader from "@/components/SiteHeader";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import ScrollTop from "@/components/ScrollTop";
+import Chatbot from "@/components/Chatbot";
 import { SiteDataProvider } from "@/lib/site-data";
 import { DarkModeProvider } from "@/lib/dark-mode";
+import { asset } from "@/lib/data";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -27,8 +29,8 @@ export const metadata: Metadata = {
   description:
     "Sri Sathya Sai Seva Organisation - Valasaravakkam Samithi, Chennai Metro West. Love All, Serve All. Help Ever, Hurt Never.",
   icons: {
-    icon: "/assets/img/favicon.jpg",
-    apple: "/assets/img/apple-touch-icon.png",
+    icon: asset("/assets/img/sssso-emblem-32.png"),
+    apple: asset("/assets/img/sssso-emblem-180.png"),
   },
 };
 
@@ -54,6 +56,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </div>
             </div>
             <ScrollTop />
+            <Chatbot />
             <BottomNav />
           </SiteDataProvider>
         </DarkModeProvider>

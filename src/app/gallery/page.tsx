@@ -47,7 +47,7 @@ export default async function GalleryPage() {
                 <h4 className="tilt-pop mt-5 text-lg font-semibold text-gray-800 dark:text-gray-200">
                   {category.label}
                 </h4>
-                <span className="mt-1 text-xs font-medium uppercase tracking-widest text-[#149ddd] opacity-0 transition duration-300 group-hover:opacity-100">
+                <span className="mt-1 text-xs font-medium uppercase tracking-widest text-primary-dark opacity-0 transition duration-300 group-hover:opacity-100">
                   Explore
                 </span>
               </Link>

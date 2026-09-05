@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { aboutSections as staticAboutSections, siteConfig as staticSiteConfig } from "@/lib/data";
+import { aboutSections as staticAboutSections, siteConfig as staticSiteConfig, asset } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 import Reveal from "@/components/Reveal";
 import TiltCard from "@/components/TiltCard";
@@ -14,7 +14,7 @@ export default function AboutSection() {
     <section id="about" className="relative overflow-hidden py-12 sm:py-16 md:py-20 dark:bg-[#0f172a]">
       <div className="absolute inset-0">
         <Image
-          src="/assets/img/hero-bg.jpg"
+          src={asset("/assets/img/hero-bg.jpg")}
           alt=""
           fill
           sizes="100vw"
@@ -78,7 +78,7 @@ export default function AboutSection() {
                 Whether through seva, devotion, or learning, Valasaravakkam Samithi
                 offers opportunities for all to grow and serve together.
               </p>
-              <p className="text-center font-medium text-[#149ddd]">
+              <p className="text-center font-medium text-primary-dark">
                 {config.tagline}
               </p>
             </div>

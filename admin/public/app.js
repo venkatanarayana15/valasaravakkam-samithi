@@ -42,11 +42,31 @@ function toast(msg, type = "ok") {
   setTimeout(() => t.remove(), 2800);
 }
 
-async function api(path, opts = {}) {
+async function getToken() {
+  let token = sessionStorage.getItem("samithi_admin_token") || "";
+  if (!token) {
+    token = window.prompt("Enter admin token:") || "";
+    token = token.trim();
+    if (token) sessionStorage.setItem("samithi_admin_token", token);
+  }
+  return token;
+}
+
+function authHeaders(extra = {}) {
+  const token = sessionStorage.getItem("samithi_admin_token") || "";
+  return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
+}
+
+async function api(path, opts = {}, retried = false) {
   const res = await fetch(API + path, {
-    headers: { "Content-Type": "application/json" },
     ...opts,
+    headers: { "Content-Type": "application/json", ...authHeaders(opts.headers || {}) },
   });
+  if (res.status === 401 && !retried) {
+    sessionStorage.removeItem("samithi_admin_token");
+    const token = await getToken();
+    if (token) return api(path, opts, true);
+  }
   if (!res.ok) {
     let detail = res.statusText;
     try {
@@ -1194,7 +1214,7 @@ function editGalleryItem(index) {
         try {
           const res = await fetch(API + "/upload", {
             method: "POST",
-            headers: { "Content-Type": "application/octet-stream", "X-Filename": file.name },
+            headers: authHeaders({ "Content-Type": "application/octet-stream", "X-Filename": file.name }),
             body: await file.arrayBuffer(),
           });
           const json = await res.json();
@@ -1570,7 +1590,7 @@ function uploadField(key, item) {
       try {
         const res = await fetch(API + "/upload", {
           method: "POST",
-          headers: { "Content-Type": "application/octet-stream", "X-Filename": file.name },
+          headers: authHeaders({ "Content-Type": "application/octet-stream", "X-Filename": file.name }),
           body,
         });
         const json = await res.json();

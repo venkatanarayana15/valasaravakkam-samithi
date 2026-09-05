@@ -1,3 +1,13 @@
+/**
+ * Asset base URL. Empty = serve from local /public (current behavior).
+ * Set NEXT_PUBLIC_ASSET_BASE=https://samithi-assets-development.zohostratus.in
+ * after uploading public/assets to the Catalyst Stratus bucket — all image
+ * helpers below switch origin automatically. No other code changes needed.
+ */
+export const ASSET_BASE = process.env.NEXT_PUBLIC_ASSET_BASE || "";
+
+export const asset = (p: string) => encodeURI(ASSET_BASE + p);
+
 export const siteConfig = {
   name: "Valasaravakkam Samithi",
   shortName: "SSSSO",
@@ -59,7 +69,7 @@ export const upcomingEvents: UpcomingEvent[] = [
     title: "Sri Sathya Sai Ratha Mahotsavam – Valasaravakkam Samithi",
     description:
       "Join us for 3 days of divine celebrations with bhajans, Balvikas performances, poojas, cultural events, and the sacred Ratha Yatra!",
-    image: "/assets/img/ratha-mahotsavam-bg.png",
+    image: asset("/assets/img/ratha-mahotsavam-bg.png"),
   },
   {
     title: "July 4 (Fri, 5:30 PM onwards)",
@@ -140,56 +150,56 @@ export const coordinators: Coordinator[] = [
   {
     name: "Anand N S",
     role: "Convenor",
-    image: "/assets/img/testimonials/download.jpeg",
+    image: asset("/assets/img/testimonials/download.jpeg"),
     description:
       "The Convenor leads the Samithi with devotion, humility, and discipline, upholding Baba's teachings. He coordinate all seva, spiritual, and educational activities with unity and love. He act as a bridge between members and higher organizational levels. Maintaining records and encouraging participation in all wings is part of their sacred duty.",
   },
   {
     name: "Venkata Narayana",
     role: "Gents Service Co-ordinator",
-    image: "/assets/img/testimonials/testimonials-2.jpg",
+    image: asset("/assets/img/testimonials/testimonials-2.jpg"),
     description:
       "The Service Coordinator plans and organizes all seva activities with dedication and discipline. They ensure regular Narayana Seva, medical camps, environmental efforts, and community outreach. They inspire volunteers to serve with love, humility, and unity. Documentation and reporting of service activities is also their key responsibility.",
   },
   {
     name: "Hari Haran",
     role: "Gents Youth Co-ordinator",
-    image: "/assets/img/testimonials/hari.jpg",
+    image: asset("/assets/img/testimonials/hari.jpg"),
     description:
       "The Youth Coordinator guides Sai youth in spiritual, service, and leadership activities. They inspire young minds to live Baba's message through discipline, seva, and devotion. They organize youth satsangs, service projects, and training sessions. Their focus is to build character, unity, and commitment among the younger generation.",
   },
   {
     name: "Venkata Narayana",
     role: "IT Co-ordinator",
-    image: "/assets/img/testimonials/testimonials-2.jpg",
+    image: asset("/assets/img/testimonials/testimonials-2.jpg"),
     description:
       "The IT Coordinator manages all digital and technical needs of the Samithi. They maintain websites, communication platforms, and support online seva initiatives. They help document activities, design media, and streamline event coordination. Bridging technology and seva, they enable efficient and inspired service delivery.",
   },
   {
     name: "Meenakshi",
     role: "Mahilas Service Co-ordinator",
-    image: "/assets/img/testimonials/download.jpeg",
+    image: asset("/assets/img/testimonials/download.jpeg"),
     description:
       "The Service Coordinator plans and organizes all seva activities with dedication and discipline. They ensure regular Narayana Seva, medical camps, environmental efforts, and community outreach. They inspire volunteers to serve with love, humility, and unity. Documentation and reporting of service activities is also their key responsibility.",
   },
   {
     name: "Selvakani",
     role: "Mahilas Youth Co-ordinator",
-    image: "/assets/img/testimonials/download.jpeg",
+    image: asset("/assets/img/testimonials/download.jpeg"),
     description:
       "The Youth Coordinator guides Sai youth in spiritual, service, and leadership activities. They inspire young minds to live Baba's message through discipline, seva, and devotion. They organize youth satsangs, service projects, and training sessions. Their focus is to build character, unity, and commitment among the younger generation.",
   },
   {
     name: "Rajeshwari",
     role: "Mahilas Spiritual Co-ordinator",
-    image: "/assets/img/testimonials/download.jpeg",
+    image: asset("/assets/img/testimonials/download.jpeg"),
     description:
       "The Spiritual Coordinator leads all devotional activities like bhajans, study circles, and japa sessions. They nurture the spiritual growth of members through regular satsangs and scriptural study. They ensure all programs align with Bhagawan's teachings and calendar. Inspiring inner transformation through collective prayer and devotion is their core mission.",
   },
   {
     name: "Rajesh",
     role: "Gents spiritual Co-ordinator",
-    image: "/assets/img/testimonials/download.jpeg",
+    image: asset("/assets/img/testimonials/download.jpeg"),
     description:
       "The Spiritual Coordinator leads all devotional activities like bhajans, study circles, and japa sessions. They nurture the spiritual growth of members through regular satsangs and scriptural study. They ensure all programs align with Bhagawan's teachings and calendar. Inspiring inner transformation through collective prayer and devotion is their core mission.",
   },
@@ -209,7 +219,7 @@ export type GalleryCategory = {
   images: GalleryImage[];
 };
 
-const img = (path: string) => encodeURI(path);
+const img = (path: string) => asset(path);
 
 export const galleryCategories: GalleryCategory[] = [
   {

@@ -13,6 +13,7 @@ import {
   BsEnvelope,
 } from "react-icons/bs";
 import { useSiteData } from "@/lib/site-data";
+import { asset } from "@/lib/data";
 import DarkModeToggle from "@/components/DarkModeToggle";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -112,11 +113,11 @@ export default function SiteHeader() {
         <div className="flex h-14 items-center justify-between px-3 sm:h-16 sm:px-4">
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/assets/img/my-profile-img.png"
-              alt="Profile"
+              src={asset("/assets/img/sssso-emblem-192.png")}
+              alt="Sri Sathya Sai Seva Organisations emblem"
               width={36}
               height={36}
-              className="rounded-full border-2 border-[#149ddd] object-cover"
+              className="object-contain drop-shadow"
             />
             <span
               className="font-display text-base font-semibold uppercase tracking-wide sm:text-lg"
@@ -145,18 +146,13 @@ export default function SiteHeader() {
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-6">
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-3">
-            <div
-              className="animate-glow rounded-full p-[2px]"
-              style={{ background: "linear-gradient(135deg, #149ddd, #6a5cff)" }}
-            >
-              <Image
-                src="/assets/img/my-profile-img.png"
-                alt="Profile"
-                width={44}
-                height={44}
-                className="rounded-full border-2 border-sidebar object-cover"
-              />
-            </div>
+            <Image
+              src={asset("/assets/img/sssso-emblem-192.png")}
+              alt="Sri Sathya Sai Seva Organisations emblem"
+              width={44}
+              height={44}
+              className="object-contain drop-shadow"
+            />
             <span
               className="font-display text-xl font-bold uppercase tracking-wide"
               style={{
@@ -180,7 +176,7 @@ export default function SiteHeader() {
                     aria-current={active === link.href ? "true" : undefined}
                     className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
                       active === link.href
-                        ? "bg-gradient-to-r from-[#149ddd] to-[#6a5cff] text-white shadow-lg shadow-[#149ddd]/30"
+                        ? "bg-primary text-white shadow-lg shadow-primary/30"
                         : "text-[#c9cbdd] hover:bg-white/10 hover:text-white"
                     }`}
                   >

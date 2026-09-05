@@ -64,7 +64,7 @@ export default function Coordinators() {
                     <h3 className="mt-3 text-lg font-bold text-[#272829] dark:text-gray-100">
                       {coordinator.name}
                     </h3>
-                    <h4 className="text-sm font-medium text-[#149ddd] dark:text-blue-400">
+                    <h4 className="text-sm font-medium text-[#0a58ca] dark:text-blue-400">
                       {coordinator.role}
                     </h4>
                   </div>

@@ -42,3 +42,11 @@ next-env.d.ts
 
 # admin uploads
 /admin/uploads/
+
+# local opencode runtime scaffold (copied node_modules + global skills)
+/.opencode/
+
+# one-off design analysis scratch (regenerate anytime: design_output|master_ds)
+/design_output.md
+/design_output.txt
+/master_ds.txt

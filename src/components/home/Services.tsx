@@ -41,7 +41,7 @@ function ServiceCard({ service }: { service: Service }) {
           }
         }}
         className={`shine group flex h-full cursor-pointer gap-3 rounded-xl p-4 transition duration-300 hover:shadow-2xl hover:shadow-black/10 sm:gap-4 sm:rounded-2xl sm:p-6 ${
-          open ? "bg-white shadow-xl ring-1 ring-[#149ddd]/30 dark:bg-[#1e293b] dark:ring-blue-500/30" : "bg-white/60 dark:bg-[#1e293b]/60"
+          open ? "bg-white shadow-xl ring-1 ring-[#0d6efd]/40 dark:bg-[#1e293b] dark:ring-blue-500/30" : "bg-white/60 dark:bg-[#1e293b]/60"
         }`}
       >
         {/* 3D animated icon tile */}
@@ -58,7 +58,7 @@ function ServiceCard({ service }: { service: Service }) {
         </div>
 
         <div className="flex-1">            <h4
-              className="tilt-pop-2 text-lg font-semibold text-[#272829] dark:text-gray-100 transition-colors group-hover:text-[#149ddd]"
+              className="tilt-pop-2 text-lg font-semibold text-[#272829] dark:text-gray-100 transition-colors group-hover:text-primary-dark"
             style={{ display: "inline-block" }}
           >
             {service.title}
@@ -71,7 +71,7 @@ function ServiceCard({ service }: { service: Service }) {
             <p>{service.description}</p>
           </div>
           <span
-            className={`mt-2 inline-block text-xs font-bold uppercase tracking-widest text-[#149ddd] dark:text-blue-400 transition ${
+            className={`mt-2 inline-block text-xs font-bold uppercase tracking-widest text-[#0a58ca] dark:text-blue-400 transition ${
               open ? "opacity-100" : "opacity-0"
             }`}
           >

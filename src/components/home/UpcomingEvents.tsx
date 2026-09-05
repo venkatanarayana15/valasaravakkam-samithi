@@ -5,7 +5,7 @@ import { Autoplay, EffectCoverflow, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-coverflow";
 import "swiper/css/pagination";
-import { upcomingEvents as staticEvents } from "@/lib/data";
+import { upcomingEvents as staticEvents, asset } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
 import SectionTitle from "@/components/SectionTitle";
 import Reveal from "@/components/Reveal";
@@ -53,7 +53,7 @@ export default function UpcomingEvents() {
                 <TiltCard maxTilt={9} scale={1.04}>
                   <div className="shine relative h-[320px] w-full overflow-hidden rounded-xl shadow-xl sm:h-[375px]">
                     <Image
-                      src={event.image || "/assets/img/ratha-mahotsavam-bg.png"}
+                      src={event.image || asset("/assets/img/ratha-mahotsavam-bg.png")}
                       alt="Event background"
                       fill
                       sizes="(max-width: 1200px) 100vw, 33vw"

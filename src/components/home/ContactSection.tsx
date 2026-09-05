@@ -15,25 +15,48 @@ export default function ContactSection() {
   const config = siteConfig ?? staticSiteConfig;
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
+  async function postToCatalyst(payload: Record<string, string>) {
+    const res = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("catalyst unavailable");
+  }
+
+  async function postToFormSubmit(form: HTMLFormElement) {
+    const formData = new FormData(form);
+    formData.delete("_honey");
+    const res = await fetch(FORMSUBMIT_URL, {
+      method: "POST",
+      headers: { Accept: "application/json" },
+      body: formData,
+    });
+    if (!res.ok) throw new Error("formsubmit failed");
+  }
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
+    const data = new FormData(form);
+    const payload = {
+      name: String(data.get("name") || ""),
+      email: String(data.get("email") || ""),
+      subject: String(data.get("subject") || ""),
+      message: String(data.get("message") || ""),
+      _honey: String(data.get("_honey") || ""),
+    };
     setStatus("sending");
 
     try {
-      const formData = new FormData(form);
-      const res = await fetch(FORMSUBMIT_URL, {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: formData,
-      });
-
-      if (res.ok) {
-        setStatus("sent");
-        form.reset();
-      } else {
-        setStatus("error");
+      // Catalyst first (stores + notifies), FormSubmit as legacy fallback.
+      try {
+        await postToCatalyst(payload);
+      } catch {
+        await postToFormSubmit(form);
       }
+      setStatus("sent");
+      form.reset();
     } catch {
       setStatus("error");
     }
@@ -56,7 +79,7 @@ export default function ContactSection() {
               <TiltCard maxTilt={5} scale={1.01}>
                 <div className="rounded-xl bg-[#f7f9fc] p-4 shadow-sm dark:bg-[#1e293b] sm:p-6">
                 <div className="group flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md dark:hover:bg-[#273548]">
-                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#149ddd] shadow transition group-hover:text-white group-hover:shadow-[#149ddd]/40 sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl" style={{ background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
+                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#0d6efd] shadow transition group-hover:text-white group-hover:shadow-[#149ddd]/40 sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl" style={{ background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
                     <BsGeoAlt />
                   </span>
                   <div>
@@ -68,24 +91,24 @@ export default function ContactSection() {
                 </div>
 
                 <div className="group mt-6 flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md dark:hover:bg-[#273548]">
-                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#149ddd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.4s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
+                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#0d6efd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.4s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
                     <BsTelephone />
                   </span>
                   <div>
                     <h3 className="text-lg font-semibold text-[#272829] dark:text-gray-100">Call Us</h3>
-                    <a href="tel:+919087951742" className="mt-1 block text-sm text-muted dark:text-gray-400 transition hover:text-[#149ddd]">
+                    <a href="tel:+919087951742" className="mt-1 block text-sm text-muted dark:text-gray-400 transition hover:text-primary">
                       {config.phone}
                     </a>
                   </div>
                 </div>
 
                 <div className="group mt-6 flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md dark:hover:bg-[#273548]">
-                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#149ddd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.8s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
+                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#0d6efd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.8s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
                     <BsEnvelope />
                   </span>
                   <div>
                     <h3 className="text-lg font-semibold text-[#272829] dark:text-gray-100">Email Us</h3>
-                    <a href={`mailto:${config.email}`} className="mt-1 block break-all text-sm text-muted dark:text-gray-400 transition hover:text-[#149ddd]">
+                    <a href={`mailto:${config.email}`} className="mt-1 block break-all text-sm text-muted dark:text-gray-400 transition hover:text-primary">
                       {config.email}
                     </a>
                   </div>
@@ -116,6 +139,15 @@ export default function ContactSection() {
                 <input type="hidden" name="_next" value="/thank-you" />
                 <input type="hidden" name="_template" value="table" />
                 <input type="hidden" name="_captcha" value="false" />
+                {/* Honeypot — humans never see it; bots fill it and get silently dropped */}
+                <input
+                  type="text"
+                  name="_honey"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="absolute h-0 w-0 overflow-hidden opacity-0"
+                />
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
@@ -127,7 +159,7 @@ export default function ContactSection() {
                       name="name"
                       id="name-field"
                       required
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0d6efd] focus:ring-2 focus:ring-[#0d6efd]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                   <div>
@@ -139,7 +171,7 @@ export default function ContactSection() {
                       name="email"
                       id="email-field"
                       required
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0d6efd] focus:ring-2 focus:ring-[#0d6efd]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -151,7 +183,7 @@ export default function ContactSection() {
                       name="subject"
                       id="subject-field"
                       required
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0d6efd] focus:ring-2 focus:ring-[#0d6efd]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -163,14 +195,14 @@ export default function ContactSection() {
                       id="message-field"
                       rows={7}
                       required
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#149ddd] focus:ring-2 focus:ring-[#149ddd]/30 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0d6efd] focus:ring-2 focus:ring-[#0d6efd]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                 </div>
 
-                <div className="mt-5 text-center">
+                <div className="mt-5 text-center" role="status" aria-live="polite">
                   {status === "sending" && (
-                    <div className="mb-2 text-sm font-medium text-[#149ddd]">
+                    <div className="mb-2 text-sm font-medium text-primary-dark">
                       Sending message...
                     </div>
                   )}

@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     "*.html",
     "CNAME",
     "public/**",
+    // Local OpenCode runtime scaffold (vendored node_modules + global skills)
+    ".opencode/**",
   ]),
 ]);
 

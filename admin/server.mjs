@@ -10,6 +10,17 @@ const DATA_DIR = path.join(__dirname, "data");
 const UPLOAD_DIR = path.join(__dirname, "uploads");
 const PUBLIC_DIR = path.join(__dirname, "public");
 
+// Shared-secret gate for all mutations (CRUD + uploads). GETs stay public so
+// the website can read. Run with ADMIN_TOKEN=<long-random-string> in any
+// shared/production environment. Empty = open (local dev only).
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+
+function authorized(req) {
+  if (!ADMIN_TOKEN) return true;
+  const header = req.headers["authorization"] || "";
+  return header === `Bearer ${ADMIN_TOKEN}`;
+}
+
 const COLLECTIONS = [
   "siteconfig",
   "events",
@@ -105,6 +116,14 @@ const server = http.createServer(async (req, res) => {
   const pathname = decodeURIComponent(url.pathname);
 
   try {
+    // ---- Mutation gate: every non-GET /api/* needs the admin token ----
+    if (req.method !== "GET" && pathname.startsWith("/api/")) {
+      if (!authorized(req)) {
+        send(res, 401, { error: "Unauthorized: valid admin token required" });
+        return;
+      }
+    }
+
     // ---- Static admin UI ----
     if (req.method === "GET" && pathname.startsWith("/_ui/")) {
       const rel = pathname.replace("/_ui/", "");
@@ -265,4 +284,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`[admin] listening on http://localhost:${PORT}`);
+  if (!ADMIN_TOKEN) {
+    console.warn("[admin] WARNING: ADMIN_TOKEN is not set — mutations are open to anyone who can reach this server. Set ADMIN_TOKEN in production.");
+  }
 });

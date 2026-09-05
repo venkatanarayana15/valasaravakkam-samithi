@@ -76,7 +76,7 @@ export default function Stats() {
                   style={{
                     animationDelay: `${i * 0.6}s`,
                     background:
-                      "linear-gradient(135deg, #149ddd 0%, #0d6efd 60%, #6a5cff 120%)",
+                      "linear-gradient(135deg, #0d6efd 0%, #149ddd 100%)",
                     boxShadow: "0 12px 30px -8px rgba(13, 110, 253, 0.55)",
                   }}
                 >

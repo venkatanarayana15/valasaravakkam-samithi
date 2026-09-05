@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
 @theme inline {
+  /* Elder-first palette (decisions.md #8): every text/background pair below
+     holds ≥ 4.5:1 in its mode. #149ddd is decorative-only — never body text
+     or small fills on light backgrounds (it measures ~3:1). */
   --color-primary: #0d6efd;
   --color-primary-dark: #0a58ca;
   --color-accent: #149ddd;
   --color-sidebar: #040b14;
   --color-sidebar-deep: #02050a;
-  --color-muted: #5f6b7a;
+  --color-muted: #475569;
   --font-sans: var(--font-poppins);
   --font-display: var(--font-raleway);
 }

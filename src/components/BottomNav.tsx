@@ -64,14 +64,14 @@ export default function BottomNav() {
                   <span
                     className={`flex size-10 items-center justify-center rounded-xl transition-all duration-300 sm:size-9 ${
                       isActive
-                        ? "bg-gradient-to-br from-[#149ddd] to-[#6a5cff] text-white shadow-[0_4px_14px_rgba(20,157,221,0.6)] -translate-y-0.5 scale-105"
+                        ? "bg-primary text-white shadow-[0_4px_14px_rgba(13,110,253,0.6)] -translate-y-0.5 scale-105"
                         : "text-[#a8a9b4] group-active:scale-90"
                     }`}
                   >
                     {iconMap[link.icon]}
                   </span>
                   <span
-                    className={`text-[9px] transition-colors sm:text-[10px] ${
+                    className={`text-[10px] transition-colors ${
                       isActive
                         ? "font-semibold text-[#7dd3fc]"
                         : "text-[#a8a9b4]"
