@@ -18,20 +18,20 @@ const seed = {
       address:
         "17, Chintamani Vinayagar Koil St, Alwartirunagar, Chennai, Tamil Nadu 600087",
       whatsapp: "https://chat.whatsapp.com/FRGkXU2sH6X2AlEqkrvtlP",
-      youtube: "https://www.youtube.com/@YourChannel",
+      youtube: "https://www.youtube.com/@valasaravakkamsamithi9258",
       mapsEmbed:
         "https://www.google.com/maps/embed?pb=!3m2!1sen!2sin!4v1750933518873!5m2!1sen!2sin!6m8!1m7!1sP4jWgzof6Ux6vpfU3vEHDw!2m2!1d13.0471520360607!2d80.18547745868291!3f43.769612503958435!4f12.22431640817625!5f1.3357077677436555",
     },
     socialLinks: [
       { label: "Twitter", icon: "bi-twitter-x", href: "#", color: "text-white" },
-      { label: "Facebook", icon: "bi-facebook", href: "#", color: "text-[#1a6ab0]" },
-      { label: "Instagram", icon: "bi-instagram", href: "#", color: "text-[#f262d8]" },
-      { label: "YouTube", icon: "fab-youtube", href: "https://www.youtube.com/@YourChannel", color: "text-[#ef0000]" },
+      { label: "Facebook", icon: "bi-facebook", href: "https://www.facebook.com/SSSSOCMW/", color: "text-[#1a6ab0]" },
+      { label: "Instagram", icon: "bi-instagram", href: "https://www.instagram.com/sssso_tn/", color: "text-[#f262d8]" },
+      { label: "YouTube", icon: "fab-youtube", href: "https://www.youtube.com/@valasaravakkamsamithi9258", color: "text-[#ef0000]" },
     ],
   },
   stats: [
     { icon: "bi-emoji-smile", value: 132, label: "Total Members", suffix: "In our samithi" },
-    { icon: "bi-journal-richtext", value: 56, label: "Balvikas Childrens", suffix: "In our samithi" },
+    { icon: "bi-journal-richtext", value: 56, label: "Balvikas Children", suffix: "In our samithi" },
     { icon: "bi-house", value: 6, label: "Balvikas Centers", suffix: "in valasaravakkam" },
     { icon: "bi-people", value: 20, label: "Youth", suffix: "members in samithi" },
   ],
@@ -46,32 +46,32 @@ const seed = {
   events: [
     {
       title: "Sri Sathya Sai Ratha Mahotsavam – Valasaravakkam Samithi",
+      date: "Save the Date",
       description:
         "Join us for 3 days of divine celebrations with bhajans, Balvikas performances, poojas, cultural events, and the sacred Ratha Yatra!",
-      image: "/assets/img/ratha-mahotsavam-bg.png",
     },
     {
       title: "July 4 (Fri, 5:30 PM onwards)",
+      date: "Day 1",
       location: "Valasaravakkam Samithi",
       mapsUrl: "https://maps.app.goo.gl/8KXq7uX8tu13MUPb7",
       description: "Ashtotram, Bhajans, Balvikas Programs, and Narayana Seva.",
-      image: "/assets/img/ratha-mahotsavam-bg.png",
     },
     {
       title: "July 5 (Sat, 7:00 AM onwards)",
+      date: "Day 2",
       location: "Kankaiaman Temple",
       mapsUrl: "https://maps.app.goo.gl/oUpremDC6Yke7zAT8",
       description:
         "Procession, Mangala Vadhyam, Sahasranamam, Vilakku Pooja, Bhajans, Maha Mangala Aarathi & Narayana Seva.",
-      image: "/assets/img/ratha-mahotsavam-bg.png",
     },
     {
       title: "July 6 (Sun, 5:30 AM onwards)",
+      date: "Day 3",
       location: "Valasaravakkam Samithi",
       mapsUrl: "https://maps.app.goo.gl/8KXq7uX8tu13MUPb7",
       description:
         "Ratham Procession, Mangala Vadhyam, Balvikas Cultural Program, Bhajans, Maha Mangala Aarathi & Narayana Seva.",
-      image: "/assets/img/ratha-mahotsavam-bg.png",
     },
   ],
   services: [
@@ -244,8 +244,13 @@ const seed = {
   balvikas: [],
 };
 
-for (const [name, data] of Object.entries(seed)) {
-  const file = path.join(DATA_DIR, `${name}.json`);
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
-  console.log(`seeded ${name}.json`);
+export default seed;
+
+// Direct invocation seeds the real data dir; import() only reuses the shape.
+if (process.argv[1] && process.argv[1].endsWith("seed.mjs")) {
+  for (const [name, data] of Object.entries(seed)) {
+    const file = path.join(DATA_DIR, `${name}.json`);
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+    console.log(`seeded ${name}.json`);
+  }
 }

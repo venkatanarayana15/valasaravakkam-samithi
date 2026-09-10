@@ -5,20 +5,18 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    // Build output & generated files
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Legacy static site assets & pages (kept for reference)
-    "assets/**",
-    "*.html",
-    "CNAME",
+    // Public assets are not linted
     "public/**",
     // Local OpenCode runtime scaffold (vendored node_modules + global skills)
     ".opencode/**",
+    // QA artifacts
+    "qa-runs/**",
   ]),
 ]);
 

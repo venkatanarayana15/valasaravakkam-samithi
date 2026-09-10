@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { BsDownload, BsChevronLeft, BsChevronRight } from "react-icons/bs";
+import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import type { GalleryImage } from "@/lib/data";
+import DownloadButton from "@/components/DownloadButton";
 
 type LightboxProps = {
   images: GalleryImage[];
@@ -37,9 +38,16 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
 
+  // Mirrors pinch/pan refs into render so the transition can be disabled
+  // while a gesture is live (refs alone never trigger a re-render, which
+  // made the image lag behind the finger on the first frames of a drag).
+  const [gestureLive, setGestureLive] = useState(false);
+
   const touchStart = useRef({ x: 0, y: 0, time: 0 });
   const dragRef = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const lastFocused = useRef<HTMLElement | null>(null);
 
   // Pinch tracking
   const pinchRef = useRef({
@@ -86,11 +94,21 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
     [onNavigate],
   );
 
-  // Reset zoom on image change
+  // Focus management: move focus into the dialog on open, restore on close.
+  // The invoker is captured ONLY on the open transition (index: null -> n).
+  // Re-capturing on every navigation would remember the dialog itself
+  // (the rAF below moves focus into it), so restore-on-close would silently
+  // focus a detached node and drop focus to <body>.
   useEffect(() => {
-    setScale(1);
-    setPanX(0);
-    setPanY(0);
+    if (index !== null) {
+      if (!lastFocused.current) {
+        lastFocused.current = document.activeElement as HTMLElement | null;
+      }
+      requestAnimationFrame(() => dialogRef.current?.focus());
+    } else if (lastFocused.current) {
+      lastFocused.current.focus();
+      lastFocused.current = null;
+    }
   }, [index]);
 
   // Keyboard navigation
@@ -123,6 +141,22 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
         setPanX(0);
         setPanY(0);
       }
+      // Tab trap: keep keyboard focus inside the dialog.
+      if (e.key === "Tab") {
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+        const focusables = dialog.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -140,26 +174,19 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  // Get midpoint between two touches
-  const getTouchMidpoint = (touches: React.TouchList) => {
-    if (touches.length < 2) return { x: touches[0].clientX, y: touches[0].clientY };
-    return {
-      x: (touches[0].clientX + touches[1].clientX) / 2,
-      y: (touches[0].clientY + touches[1].clientY) / 2,
-    };
-  };
-
   // Touch start
   const onTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      // Two-finger pinch start
+      // Two-finger pinch start (touchAction:none on the container already
+      // suppresses browser gestures — React's preventDefault here would be a
+      // passive-listener no-op)
       if (e.touches.length === 2) {
-        e.preventDefault();
         pinchRef.current = {
           initialDistance: getTouchDistance(e.touches),
           initialScale: scale,
           active: true,
         };
+        setGestureLive(true);
         setIsDragging(false);
         return;
       }
@@ -171,7 +198,6 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
 
         if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
           // Double tap detected
-          e.preventDefault();
           lastTap.current = 0;
 
           if (isZoomed) {
@@ -208,6 +234,7 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
             startPanY: panY,
             active: true,
           };
+          setGestureLive(true);
         } else {
           setIsDragging(true);
           setSwipeDirection(null);
@@ -222,7 +249,6 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
     (e: React.TouchEvent) => {
       // Pinch zoom
       if (e.touches.length === 2 && pinchRef.current.active) {
-        e.preventDefault();
         const currentDistance = getTouchDistance(e.touches);
         const scaleChange = (currentDistance / pinchRef.current.initialDistance) * PINCH_SENSITIVITY;
         const newScale = Math.min(Math.max(pinchRef.current.initialScale * scaleChange, MIN_ZOOM), MAX_ZOOM);
@@ -237,7 +263,6 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
 
       // Pan when zoomed
       if (isZoomed && panRef.current.active && e.touches.length === 1) {
-        e.preventDefault();
         const touch = e.touches[0];
         const dx = touch.clientX - panRef.current.startX;
         const dy = touch.clientY - panRef.current.startY;
@@ -279,7 +304,8 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
 
   // Touch end
   const onTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
+    () => {
+      setGestureLive(false);
       // End pinch
       if (pinchRef.current.active) {
         pinchRef.current.active = false;
@@ -339,9 +365,27 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
     [isDragging, isZoomed, swipeDirection, index, images.length, navigate, close],
   );
 
-  // Wheel zoom (desktop)
-  const onWheel = useCallback(
-    (e: React.WheelEvent) => {
+  // OS/gesture cancellation (incoming call, modal, etc.): mirror the
+  // end-handler cleanup so no gesture is left frozen mid-state.
+  const onTouchCancel = useCallback(() => {
+    pinchRef.current.active = false;
+    panRef.current.active = false;
+    setGestureLive(false);
+    setIsDragging(false);
+    setDragX(0);
+    setDragY(0);
+    setImageOpacity(1);
+    setSwipeDirection(null);
+  }, []);
+
+  // Wheel zoom (desktop) — attached natively with passive:false. React's
+  // delegated wheel listener on <body> is passive by browser default, so the
+  // old React onWheel + preventDefault was a silent no-op that spammed
+  // console errors.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheelNative = (e: WheelEvent) => {
       e.preventDefault();
       const delta = e.deltaY > 0 ? -0.15 : 0.15;
       setScale((s) => {
@@ -352,16 +396,24 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
         }
         return next;
       });
-    },
-    [],
-  );
+    };
+    el.addEventListener("wheel", onWheelNative, { passive: false });
+    return () => el.removeEventListener("wheel", onWheelNative);
+  }, [index]);
 
   if (index === null) return null;
 
   const image = images[index];
 
   return (
-    <div className="lightbox-enter fixed inset-0 z-[100] flex flex-col bg-black/95 dark:bg-black/98">
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={image.title}
+      tabIndex={-1}
+      className="lightbox-enter fixed inset-0 z-[100] flex flex-col bg-black/95 outline-none dark:bg-black/98"
+    >
       {/* Header */}
       <div className="flex min-w-0 items-center justify-between gap-3 p-3 sm:p-4">
         <h3 className="min-w-0 flex-1 truncate text-lg font-semibold text-white">{image.title}</h3>
@@ -382,14 +434,11 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
               Reset
             </button>
           )}
-          <a
+          <DownloadButton
             href={image.src}
-            download
-            aria-label="Download image"
+            label="Download image"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-          >
-            <BsDownload className="text-xl" />
-          </a>
+          />
           <button
             type="button"
             aria-label="Close"
@@ -411,7 +460,7 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        onWheel={onWheel}
+        onTouchCancel={onTouchCancel}
       >
         {/* Prev button (hidden when zoomed) */}
         {!isZoomed && (
@@ -430,7 +479,7 @@ export default function Lightbox({ images, index, onClose, onNavigate }: Lightbo
           className="relative flex h-full w-full items-center justify-center"
           style={{
             transform: `translate3d(${dragX + panX}px, ${dragY + panY}px, 0) scale(${scale})`,
-            transition: isDragging || panRef.current.active || pinchRef.current.active
+            transition: isDragging || gestureLive
               ? "none"
               : "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease",
             opacity: imageOpacity,

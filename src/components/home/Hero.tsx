@@ -25,13 +25,17 @@ export default function Hero() {
       {/* Parallax background */}
       <Image
         src={asset("/assets/img/hero-bg.jpg")}
-        alt="Hero background"
+        alt=""
         fill
         sizes="100vw"
         priority
         className="animate-kenburns object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-black/70" />
+      {/* Deepened vignette + subtle sky glow */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#123a80]/70 via-transparent to-[rgba(59,147,247,0.18)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/35 to-black/70" />
+      {/* Soft sky glow on the left */}
+      <div className="absolute left-0 top-0 h-full w-1/3 bg-gradient-to-r from-[rgba(56,189,248,0.18)] to-transparent" />
 
       {/* Floating particles */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -53,19 +57,19 @@ export default function Hero() {
       {/* Hero content */}
       <div className="relative z-10 px-6 text-center text-white">
         <p
-          className="hero-enter font-display text-xs font-medium uppercase tracking-[0.25em] text-white/80 sm:text-base sm:tracking-[0.35em] md:text-lg"
+          className="hero-enter font-display text-xs font-medium uppercase tracking-[0.28em] text-white/80 sm:text-base sm:tracking-[0.35em] md:text-lg"
           style={{ animationDelay: "0.1s" }}
         >
           Welcome to
         </p>
         <h1
-          className="hero-enter text-gradient mt-3 font-display text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl lg:text-5xl"
+          className="hero-enter text-gradient-hero mt-3 font-display text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl lg:text-5xl"
           style={{ animationDelay: "0.3s" }}
         >
           {siteConfig.orgName}
         </h1>
         <h2
-          className="hero-enter mt-3 text-lg font-semibold text-white sm:text-xl md:text-2xl"
+          className="hero-enter mt-3 text-lg font-semibold text-white sm:text-xl md:text-2xl tracking-wide"
           style={{ animationDelay: "0.5s" }}
         >
           {siteConfig.name}
@@ -81,7 +85,23 @@ export default function Hero() {
           style={{ animationDelay: "0.8s" }}
         >
           {siteConfig.tagline}
-        </p>
+        </p>          <div
+            className="hero-enter mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row"
+            style={{ animationDelay: "0.95s" }}
+          >
+            <a
+              href="#upcoming-events"
+              className="shine inline-flex min-h-[48px] items-center justify-center rounded-full bg-primary px-8 py-3 text-sm font-semibold text-white shadow-xl shadow-primary/30 transition-all duration-200 hover:bg-primary-dark hover:shadow-2xl hover:shadow-primary/40"
+            >
+              See Upcoming Events
+            </a>
+            <a
+              href="#services"
+              className="shine inline-flex min-h-[48px] items-center justify-center rounded-full border border-white/40 bg-white/10 px-8 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20 hover:shadow-xl"
+            >
+              Join Saturday Bhajans
+            </a>
+          </div>
       </div>
     </section>
   );

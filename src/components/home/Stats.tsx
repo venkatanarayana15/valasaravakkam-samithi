@@ -60,12 +60,11 @@ export default function Stats() {
   const { stats } = useSiteData();
   if (stats.length === 0) return null;
   const list = stats;
-  return (
-    <section id="stats" className="py-12 sm:py-16 md:py-20 dark:bg-[#0f172a]">
+  return (          <section id="stats" className="py-12 sm:py-16 md:py-20 dark:bg-[#0b1120]">
       <div className="mx-auto max-w-7xl px-4">
         <div className="grid grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:grid-cols-4">
           {list.map((stat, i) => (
-            <Reveal key={stat.label} delay={i * 100}>
+            <Reveal key={`${stat.label}-${i}`} delay={i * 100}>
               <div
                 className="group relative flex flex-col items-center text-center"
                 style={{ perspective: "800px" }}
@@ -76,17 +75,17 @@ export default function Stats() {
                   style={{
                     animationDelay: `${i * 0.6}s`,
                     background:
-                      "linear-gradient(135deg, #0d6efd 0%, #149ddd 100%)",
-                    boxShadow: "0 12px 30px -8px rgba(13, 110, 253, 0.55)",
+                      "linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)",
+                    boxShadow: "0 12px 30px -8px color-mix(in srgb, var(--color-primary) 55%, transparent)",
                   }}
                 >
                   {iconMap[stat.icon]}
-                  <span className="absolute -inset-2 -z-10 rounded-3xl bg-[#149ddd]/15 blur-md" />
+                  <span className="absolute -inset-2.5 -z-10 rounded-3xl bg-[#38bdf8]/15 blur-md" />
                 </div>
 
                 <CountUp target={stat.value} />
-                <p className="mt-2 text-[15px] text-[#5f6b7a] dark:text-gray-400">
-                  <strong className="font-semibold text-[#272829] dark:text-gray-200">{stat.label}</strong>{" "}
+                <p className="mt-2 text-[15px] text-[#475569] dark:text-gray-400">
+                  <strong className="font-semibold text-[#1f2937] dark:text-gray-200">{stat.label}</strong>{" "}
                   <span>{stat.suffix}</span>
                 </p>
               </div>

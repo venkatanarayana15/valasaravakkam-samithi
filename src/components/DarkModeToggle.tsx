@@ -10,7 +10,7 @@ export default function DarkModeToggle() {
       type="button"
       aria-label={resolved === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       onClick={toggle}
-      className="flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-200 hover:bg-white/15"
+      className="flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-200 hover:bg-slate-900/5 dark:hover:bg-white/15"
     >
       {resolved === "dark" ? (
         /* Sun icon */

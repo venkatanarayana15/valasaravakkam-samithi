@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { galleryCategories as staticCategories } from "@/lib/data";
 import { getServerSiteData } from "@/lib/server-data";
 import CategoryGallery from "@/components/gallery/CategoryGallery";
+import JsonLd from "@/components/JsonLd";
+import { buildGalleryJsonLd } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ category: string }>;
@@ -18,8 +20,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = galleryCategories.find((c) => c.slug === category) ?? staticCategories.find((c) => c.slug === category);
   if (!found) return { title: "Gallery | Valasaravakkam Samithi" };
   return {
-    title: `${found.label} Gallery | Valasaravakkam Samithi`,
+    title: `${found.label} Gallery`,
     description: found.description,
+    alternates: { canonical: `/gallery/${category}` },
+    openGraph: {
+      title: `${found.label} Gallery | Valasaravakkam Samithi`,
+      description: found.description,
+      url: `/gallery/${category}`,
+    },
   };
 }
 
@@ -31,6 +39,17 @@ export default async function CategoryPage({ params }: Props) {
 
   return (
     <div className="min-h-screen px-4 py-8 dark:bg-[#0f172a] sm:py-10 md:py-12" style={{ backgroundColor: "rgba(147, 156, 156, 0.25)" }}>
+      <JsonLd
+        id="jsonld-gallery"
+        graph={buildGalleryJsonLd([
+          {
+            slug: found.slug,
+            label: found.label,
+            description: found.description,
+            images: found.images,
+          },
+        ])}
+      />
       <div className="mx-auto max-w-7xl">
         <CategoryGallery category={found} />
       </div>

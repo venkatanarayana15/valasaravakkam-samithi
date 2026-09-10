@@ -30,21 +30,20 @@ function ProgressBar({ label, value, delay }: { label: string; value: number; de
   }, [value]);
 
   return (
-    <div ref={ref} className="mb-7">
-      <div className="mb-2.5 flex items-center justify-between text-sm">
-        <span className="font-display font-semibold uppercase tracking-wide text-[#272829] dark:text-gray-200">
+    <div ref={ref} className="mb-7">        <div className="mb-2.5 flex items-center justify-between text-sm">
+        <span className="font-display font-semibold uppercase tracking-wide text-[#1f2937] dark:text-gray-200">
           {label}
         </span>
         <span className="text-gradient-static text-sm font-bold">{value}%</span>
       </div>
-      <div className="h-[11px] rounded-[50px] bg-[#e9ecef] shadow-inner dark:bg-gray-700">
+      <div className="h-[12px] rounded-full bg-[#e2e8f0] dark:bg-gray-700">
         <div
           className="bar-shimmer h-full rounded-[50px] transition-[width] duration-1000 ease-out"
           style={{
             width: `${width}%`,
             transitionDelay: `${delay}ms`,
-            background: "linear-gradient(90deg, #149ddd, #0d6efd)",
-            boxShadow: "0 2px 8px rgba(13, 110, 253, 0.45)",
+            background: "linear-gradient(90deg, #1d5fd2 0%, #3b93f7 35%, #5aa9f9 70%, #8cc8fb)",
+            boxShadow: "0 2px 10px rgba(59, 147, 247, 0.45)",
           }}
         />
       </div>
@@ -57,12 +56,12 @@ export default function Activities() {
   if (activityLevels.length === 0) return null;
   const list = activityLevels;
   return (
-    <section id="activities" className="bg-[#f7f9fc] py-12 sm:py-16 md:py-20 dark:bg-[#1e293b]">
+    <section id="activities" className="bg-surface py-12 sm:py-16 md:py-20 dark:bg-[#1e293b]">
       <div className="mx-auto max-w-7xl px-4">
         <Reveal>
           <SectionTitle
             title="Activities Level"
-            description="It is the level of each activities"
+            description="Level of participation across each of our activities"
           />
         </Reveal>
         <div className="grid grid-cols-1 gap-x-8 gap-y-2 sm:gap-x-10 md:grid-cols-2">

@@ -19,30 +19,32 @@ export const siteConfig = {
   address:
     "17, Chintamani Vinayagar Koil St, Alwartirunagar, Chennai, Tamil Nadu 600087",
   whatsapp: "https://chat.whatsapp.com/FRGkXU2sH6X2AlEqkrvtlP",
-  youtube: "https://www.youtube.com/@YourChannel",
+  youtube: "https://www.youtube.com/@valasaravakkamsamithi9258",
   mapsEmbed:
     "https://www.google.com/maps/embed?pb=!3m2!1sen!2sin!4v1750933518873!5m2!1sen!2sin!6m8!1m7!1sP4jWgzof6Ux6vpfU3vEHDw!2m2!1d13.0471520360607!2d80.18547745868291!3f43.769612503958435!4f12.22431640817625!5f1.3357077677436555",
 };
 
+// Absolute-hash hrefs (/#section) so the same nav works from every route —
+// bare #section links do nothing on /gallery etc.
 export const navLinks = [
-  { label: "Home", href: "#hero", icon: "bi-house" },
-  { label: "Upcoming Events", href: "#upcoming-events", icon: "bi-file-earmark-text" },
-  { label: "Memories", href: "#memories", icon: "bi-images" },
-  { label: "Services", href: "#services", icon: "bi-hdd-stack" },
-  { label: "About", href: "#about", icon: "bi-person" },
-  { label: "Contact", href: "#contact", icon: "bi-envelope" },
+  { label: "Home", href: "/#hero", icon: "bi-house" },
+  { label: "Upcoming Events", href: "/#upcoming-events", icon: "bi-file-earmark-text" },
+  { label: "Memories", href: "/#memories", icon: "bi-images" },
+  { label: "Services", href: "/#services", icon: "bi-hdd-stack" },
+  { label: "About", href: "/#about", icon: "bi-person" },
+  { label: "Contact", href: "/#contact", icon: "bi-envelope" },
 ];
 
 export const socialLinks = [
   { label: "Twitter", icon: "bi-twitter-x", href: "#", color: "text-white" },
-  { label: "Facebook", icon: "bi-facebook", href: "#", color: "text-[#1a6ab0]" },
-  { label: "Instagram", icon: "bi-instagram", href: "#", color: "text-[#f262d8]" },
+  { label: "Facebook", icon: "bi-facebook", href: "https://www.facebook.com/SSSSOCMW/", color: "text-[#1a6ab0]" },
+  { label: "Instagram", icon: "bi-instagram", href: "https://www.instagram.com/sssso_tn/", color: "text-[#f262d8]" },
   { label: "YouTube", icon: "fab-youtube", href: siteConfig.youtube, color: "text-[#ef0000]" },
 ];
 
 export const stats = [
   { icon: "bi-emoji-smile", value: 132, label: "Total Members", suffix: "In our samithi" },
-  { icon: "bi-journal-richtext", value: 56, label: "Balvikas Childrens", suffix: "In our samithi" },
+  { icon: "bi-journal-richtext", value: 56, label: "Balvikas Children", suffix: "In our samithi" },
   { icon: "bi-house", value: 6, label: "Balvikas Centers", suffix: "in valasaravakkam" },
   { icon: "bi-people", value: 20, label: "Youth", suffix: "members in samithi" },
 ];

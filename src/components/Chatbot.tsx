@@ -136,7 +136,7 @@ export default function Chatbot() {
                   key={c}
                   type="button"
                   onClick={() => send(c)}
-                  className="shrink-0 cursor-pointer rounded-full border border-[#149ddd]/40 px-3 py-1 text-xs font-medium text-[#0a58ca] transition-colors hover:bg-[#149ddd]/10 dark:border-blue-500/50 dark:text-blue-300 dark:hover:bg-blue-500/10"
+                  className="shrink-0 cursor-pointer rounded-full border border-[#1e64d8] px-3 py-1 text-xs font-medium text-[#1a56bd] transition-colors hover:bg-[#38bdf8]/10 dark:border-blue-500/50 dark:text-blue-300 dark:hover:bg-blue-500/10"
                 >
                   {c}
                 </button>
@@ -157,7 +157,7 @@ export default function Chatbot() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about timings, events…"
               aria-label="Type your question"
-              className="min-w-0 flex-1 rounded-full border border-slate-200 bg-transparent px-3 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-[#149ddd] dark:border-slate-700 dark:text-slate-100"
+              className="min-w-0 flex-1 rounded-full border border-slate-200 bg-transparent px-3 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-[#1e64d8] dark:border-slate-700 dark:text-slate-100"
             />
             <button
               type="submit"

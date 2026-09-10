@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
@@ -30,13 +31,6 @@ export function useDarkMode() {
   return useContext(DarkModeContext);
 }
 
-function getSystemPreference(): ResolvedTheme {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
-
 function getStoredTheme(): Theme | null {
   if (typeof window === "undefined") return null;
   try {
@@ -46,10 +40,22 @@ function getStoredTheme(): Theme | null {
   return null;
 }
 
+function getInitialTheme(): Theme {
+  // Light-first: only an explicit stored choice enables dark; the OS
+  // preference never auto-switches the site theme.
+  return getStoredTheme() ?? "light";
+}
+
+// True only after hydration on the client (false on the server), so
+// theme-dependent consumers never render with SSR values once mounted.
+const emptySubscribe = () => () => {};
+
 export function DarkModeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
-  const [resolved, setResolved] = useState<ResolvedTheme>("light");
-  const [mounted, setMounted] = useState(false);
+  // Lazy init reads localStorage exactly once at first render, so consumers
+  // get the stored theme immediately instead of a light-flash first pass.
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
+  const [resolved, setResolved] = useState<ResolvedTheme>(getInitialTheme);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   // Resolve the actual theme
   const resolve = useCallback((t: Theme): ResolvedTheme => {
@@ -72,7 +78,11 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
   const setTheme = useCallback(
     (t: Theme) => {
       setThemeState(t);
-      localStorage.setItem("theme", t);
+      try {
+        localStorage.setItem("theme", t);
+      } catch {
+        // Private-mode Safari / full storage: keep the in-memory toggle working.
+      }
       applyTheme(resolve(t));
     },
     [applyTheme, resolve],
@@ -83,25 +93,14 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
     setTheme(theme === "light" ? "dark" : "light");
   }, [theme, setTheme]);
 
-  // Initialize on mount
+  // Mirror theme state to the document element (class + data-theme) on
+  // mount and every toggle. DOM writes only — no setState inside, so the
+  // set-state-in-effect rule stays satisfied and lint stays clean.
   useEffect(() => {
-    const stored = getStoredTheme();
-    const initial = stored ?? "light";
-    setThemeState(initial);
-    applyTheme(resolve(initial));
-    setMounted(true);
-
-    // Listen for system changes if no stored preference
-    if (!stored) {
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      const handler = (e: MediaQueryListEvent) => {
-        const r: ResolvedTheme = e.matches ? "dark" : "light";
-        applyTheme(r);
-      };
-      mq.addEventListener("change", handler);
-      return () => mq.removeEventListener("change", handler);
-    }
-  }, [applyTheme, resolve]);
+    const root = document.documentElement;
+    root.classList.toggle("dark", theme === "dark");
+    root.setAttribute("data-theme", theme);
+  }, [theme]);
 
   // Prevent flash on load - add class immediately in <head> via inline script
   // This is handled by the <script> in layout.tsx

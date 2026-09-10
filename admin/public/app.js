@@ -1,5 +1,65 @@
 const API = "/api";
 
+// API base override for Slate deployments (static SPA, no same-origin
+// server): stored in localStorage, editable on the login card. Empty =
+// same-origin /api (local dev server or the site's /admin proxy).
+function apiBase() {
+  return (localStorage.getItem("samithi_api_base") || "").replace(/\/$/, "");
+}
+function apiUrl(path) {
+  return apiBase() + API + path;
+}
+
+// Session state. sessionMode = function-style login (multi-tenant SaaS);
+// legacy = shared ADMIN_TOKEN prompt (old standalone server compat).
+let session = null; // {token, samithi_id, name, role} | null
+let sessionMode = false;
+let legacyMode = false;
+let authed = false;
+let activeSamithi = null; // owner picks a samithi context; convenors fixed
+
+try {
+  const saved = JSON.parse(sessionStorage.getItem("samithi_session") || "null");
+  if (saved && saved.token) {
+    session = saved;
+    sessionMode = true;
+    authed = true;
+    if (session.role !== "owner") activeSamithi = session.samithi_id || null;
+    else activeSamithi = sessionStorage.getItem("samithi_active_samithi") || null;
+  }
+} catch {}
+
+function setActiveSamithi(slug) {
+  activeSamithi = slug;
+  if (slug) sessionStorage.setItem("samithi_active_samithi", slug);
+  else sessionStorage.removeItem("samithi_active_samithi");
+}
+
+function saveSession(s) {
+  session = s;
+  if (s) sessionStorage.setItem("samithi_session", JSON.stringify(s));
+  else sessionStorage.removeItem("samithi_session");
+}
+
+function clearSession() {
+  saveSession(null);
+  sessionMode = false;
+  legacyMode = false;
+  authed = false;
+  setActiveSamithi(null);
+  store = {};
+  render();
+  renderLogin();
+}
+
+function isOwner() {
+  return !!(sessionMode && session && session.role === "owner");
+}
+
+// Personal-data collections are excluded from the public /api/site aggregate
+// (server-side security) — the CMS loads them individually with the token.
+const PRIVATE_COLLECTIONS = ["members", "balvikas"];
+
 const COLLECTIONS = [
   { name: "siteconfig", label: "Site Settings", icon: "⚙️", group: "General" },
   { name: "events", label: "Upcoming Events", icon: "📅", group: "Content" },
@@ -13,6 +73,20 @@ const COLLECTIONS = [
   { name: "members", label: "Members", icon: "🧑‍🤝‍🧑", group: "People" },
   { name: "balvikas", label: "Balvikas Children", icon: "🧒", group: "People" },
 ];
+
+// Pseudo-views: rendered by dedicated screens, never saved as collections.
+const PSEUDO_VIEWS = [
+  { name: "owner", label: "Owner Console", icon: "👑", group: "Admin", pseudo: true, ownerOnly: true },
+  { name: "account", label: "Account", icon: "👤", group: "Admin", pseudo: true },
+];
+
+function allViews() {
+  return COLLECTIONS.concat(PSEUDO_VIEWS);
+}
+
+function findView(name) {
+  return allViews().find((c) => c.name === name);
+}
 
 let store = {};
 let activeCollection = null; // null = dashboard
@@ -53,16 +127,24 @@ async function getToken() {
 }
 
 function authHeaders(extra = {}) {
+  if (sessionMode && session && session.token) {
+    return { ...extra, Authorization: `Bearer ${session.token}` };
+  }
   const token = sessionStorage.getItem("samithi_admin_token") || "";
   return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;
 }
 
 async function api(path, opts = {}, retried = false) {
-  const res = await fetch(API + path, {
+  const res = await fetch(apiUrl(path), {
     ...opts,
     headers: { "Content-Type": "application/json", ...authHeaders(opts.headers || {}) },
   });
   if (res.status === 401 && !retried) {
+    if (sessionMode) {
+      // Session died server-side (or was never valid here): back to login.
+      clearSession();
+      throw new Error("401 Session expired — please sign in again");
+    }
     sessionStorage.removeItem("samithi_admin_token");
     const token = await getToken();
     if (token) return api(path, opts, true);
@@ -73,14 +155,190 @@ async function api(path, opts = {}, retried = false) {
       const body = await res.json();
       if (body && body.error) detail = body.error;
     } catch {}
-    throw new Error(`${res.status} ${detail}`);
+    const err = new Error(`${res.status} ${detail}`);
+    err.status = res.status;
+    throw err;
   }
   return res.json();
 }
 
+// Sign in with convenor credentials. Throws on failure; on legacy servers
+// without /auth/login (404) the caller falls back to the token prompt.
+async function doLogin(login, password) {
+  let res;
+  try {
+    res = await fetch(apiUrl("/auth/login"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ login, password }),
+    });
+  } catch {
+    throw new Error("Server unreachable — is it running?");
+  }
+  if (res.status === 404) {
+    const err = new Error("legacy server");
+    err.status = 404;
+    throw err;
+  }
+  if (!res.ok) {
+    let detail = res.statusText;
+    try {
+      const body = await res.json();
+      if (body && body.error) detail = body.error;
+    } catch {}
+    throw new Error(`${res.status} ${detail}`);
+  }
+  const data = await res.json();
+  saveSession({ token: data.token, samithi_id: data.samithi_id || "", name: data.name || login, role: data.role || "convenor" });
+  sessionMode = true;
+  legacyMode = false;
+  authed = true;
+  activeSamithi = data.role === "owner" ? null : data.samithi_id || null;
+  sessionStorage.removeItem("samithi_active_samithi");
+}
+
+// Sign-in screen: convenor login first, API base configurable for Slate.
+function renderLogin(view) {
+  const card = el("div", { class: "card", style: { maxWidth: "420px", margin: "8vh auto 0" } });
+  card.append(
+    el("div", { class: "card-head" },
+      el("div", null,
+        el("h3", null, "🔐 Samithi Admin"),
+        el("p", null, "Sign in with your convenor login. No public signup — logins are issued by the organisation."),
+        el("p", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "4px" } },
+          "Open this page through its server (http://localhost:3001) — not by double-clicking the file.")))
+  );
+  const errBox = el("div", { class: "field-error", style: { display: "none", marginBottom: "10px" } });
+  const loginInput = el("input", { type: "text", name: "login", placeholder: "Login id", autocomplete: "username", style: { width: "100%" } });
+  const passInput = el("input", { type: "password", name: "password", placeholder: "Password", autocomplete: "current-password", style: { width: "100%" } });
+  const baseDetails = el("details", { style: { marginTop: "10px", fontSize: "12px", color: "var(--muted)" } });
+  const baseSummary = el("summary", { style: { cursor: "pointer" } }, "Advanced: API server address");
+  const baseInput = el("input", {
+    type: "text", placeholder: "https://…/server/site-api/execute (empty = same server)",
+    value: localStorage.getItem("samithi_api_base") || "", style: { width: "100%", marginTop: "6px" },
+  });
+  baseDetails.append(baseSummary, el("div", null, "Set this only when the admin is hosted separately (e.g. Slate) from the API.", baseInput));
+  const submit = async () => {
+    errBox.style.display = "none";
+    const login = loginInput.value.trim();
+    const password = passInput.value;
+    if (!login || !password) {
+      errBox.textContent = "Enter your login id and password.";
+      errBox.style.display = "block";
+      return;
+    }
+    localStorage.setItem("samithi_api_base", baseInput.value.trim().replace(/\/$/, ""));
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Signing in…";
+    try {
+      await doLogin(login, password);
+    } catch (e) {
+      if (e.status === 404) {
+        // Legacy standalone server without /auth/* — fall back to token prompt.
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Sign In";
+        legacyMode = true;
+        try {
+          const token = await getToken();
+          if (!token) {
+            errBox.textContent = "Sign-in cancelled.";
+            errBox.style.display = "block";
+            return;
+          }
+          authed = true;
+          await loadAll();
+          buildNav();
+          render();
+          updateUndoRedoButtons();
+          toast("✅ Signed in (legacy token mode)");
+          const s = $("#save-state");
+          if (s) { s.textContent = ""; s.className = "save-state"; }
+        } catch (err2) {
+          errBox.textContent = "Failed to load: " + err2.message;
+          errBox.style.display = "block";
+        }
+        return;
+      }
+      errBox.textContent = "Sign-in failed: " + e.message;
+      errBox.style.display = "block";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Sign In";
+      return;
+    }
+    try {
+      if (isOwner() && !activeSamithi) {
+        // Owner picks a samithi context after signing in.
+        buildNav();
+        selectCollection("owner");
+        updateUndoRedoButtons();
+        toast(`✅ Signed in as ${session.name} (owner)`);
+        return;
+      }
+      await loadAll();
+      buildNav();
+      render();
+      updateUndoRedoButtons();
+      toast(`✅ Signed in as ${session.name}`);
+    } catch (e) {
+      errBox.textContent = "Failed to load: " + e.message;
+      errBox.style.display = "block";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Sign In";
+    }
+  };
+  const submitBtn = el("button", { class: "btn btn-primary", style: { width: "100%", marginTop: "12px" }, onclick: submit }, "Sign In");
+  const onKey = (e) => { if (e.key === "Enter") submit(); };
+  loginInput.addEventListener("keydown", onKey);
+  passInput.addEventListener("keydown", onKey);
+  card.append(
+    el("div", { class: "field" }, el("label", null, "Login id"), loginInput),
+    el("div", { class: "field" }, el("label", null, "Password"), passInput),
+    errBox,
+    submitBtn,
+    baseDetails
+  );
+  view.append(card);
+  setTimeout(() => loginInput.focus(), 50);
+}
+
 async function loadAll() {
+  if (sessionMode) {
+    // Multi-tenant SaaS path: one tenant payload per session (owner picks a
+    // samithi context first — without it there is nothing to load).
+    if (isOwner() && !activeSamithi) {
+      store = {};
+      undoStack = [];
+      redoStack = [];
+      buildNav();
+      render();
+      updateUndoRedoButtons();
+      return;
+    }
+    const q = isOwner() ? `?samithi=${encodeURIComponent(activeSamithi)}` : "";
+    const data = await api(`/content${q}`);
+    store = data;
+    undoStack = [];
+    redoStack = [];
+    buildNav();
+    render();
+    updateUndoRedoButtons();
+    return;
+  }
   const data = await api("/site");
   store = data;
+  // Fetch private collections separately (token-gated server-side). A 401
+  // here means the token wasn't accepted — keep the UI usable with empty
+  // lists rather than blanking the dashboard.
+  for (const name of PRIVATE_COLLECTIONS) {
+    if (!Array.isArray(store[name])) {
+      try {
+        const list = await api(`/${name}`);
+        store[name] = Array.isArray(list) ? list : [];
+      } catch {
+        store[name] = store[name] || [];
+      }
+    }
+  }
   undoStack = [];
   redoStack = [];
   buildNav();
@@ -108,9 +366,16 @@ function buildNav() {
   );
   nav.append(dashBtn);
 
-  // Group by category
+  // Group by category (owner console only visible to owners when signed in)
   const groups = {};
-  for (const c of COLLECTIONS) {
+  const visible = COLLECTIONS.concat(
+    PSEUDO_VIEWS.filter((c) => {
+      if (c.ownerOnly && !isOwner()) return false;
+      if (!authed) return false;
+      return true;
+    })
+  );
+  for (const c of visible) {
     if (!groups[c.group]) groups[c.group] = [];
     groups[c.group].push(c);
   }
@@ -159,16 +424,33 @@ let currentViewMode = localStorage.getItem("admin-view-mode") || "list";
 
 function render() {
   updateBreadcrumb();
+  // #page-title was removed from the markup (breadcrumb shows location);
+  // guard keeps this safe if the element ever returns.
+  const pageTitle = $("#page-title");
+  const view = $("#view");
+  view.innerHTML = "";
+  if (!authed) {
+    if (pageTitle) pageTitle.textContent = "Sign in";
+    renderLogin(view);
+    updateQuickAdd();
+    return;
+  }
   if (activeCollection === null) {
-    $("#page-title").textContent = "Dashboard";
-    const view = $("#view");
-    view.innerHTML = "";
+    if (pageTitle) pageTitle.textContent = "Dashboard";
     renderDashboard(view);
+  } else if (activeCollection === "owner") {
+    if (!isOwner()) {
+      selectCollection(null);
+      return;
+    }
+    if (pageTitle) pageTitle.textContent = "Owner Console";
+    renderOwner(view);
+  } else if (activeCollection === "account") {
+    if (pageTitle) pageTitle.textContent = "Account";
+    renderAccount(view);
   } else {
-    const meta = COLLECTIONS.find((c) => c.name === activeCollection);
-    $("#page-title").textContent = meta ? meta.label : "";
-    const view = $("#view");
-    view.innerHTML = "";
+    const meta = findView(activeCollection);
+    if (pageTitle) pageTitle.textContent = meta ? meta.label : "";
     if (activeCollection === "siteconfig") renderSiteConfig(view);
     else renderCollection(view, activeCollection, meta);
   }
@@ -181,7 +463,7 @@ function updateBreadcrumb() {
   bc.innerHTML = "";
   bc.append(el("span", { class: "breadcrumb-home", onclick: () => selectCollection(null), style: { cursor: "pointer" } }, "Dashboard"));
   if (activeCollection) {
-    const meta = COLLECTIONS.find((c) => c.name === activeCollection);
+    const meta = findView(activeCollection);
     bc.append(el("span", { class: "breadcrumb-sep" }, "/"));
     bc.append(el("span", { class: "breadcrumb-current" }, meta ? meta.label : activeCollection));
   }
@@ -191,7 +473,7 @@ function updateQuickAdd() {
   const dd = $("#quick-add-dropdown");
   if (!dd) return;
   dd.innerHTML = "";
-  const addable = COLLECTIONS.filter((c) => c.name !== "siteconfig" && c.name !== "stats" && c.name !== "activities");
+  const addable = COLLECTIONS.filter((c) => !c.pseudo && c.name !== "siteconfig" && c.name !== "stats" && c.name !== "activities");
   for (const c of addable) {
     dd.append(
       el(
@@ -529,6 +811,7 @@ function renderDashboard(view) {
 function markDirty() {
   dirty = true;
   const s = $("#save-state");
+  if (!s) return;
   s.textContent = "Unsaved changes";
   s.className = "save-state";
 }
@@ -536,6 +819,7 @@ function markDirty() {
 function clearDirty(msg) {
   dirty = false;
   const s = $("#save-state");
+  if (!s) return;
   s.textContent = msg || "";
   s.className = "save-state saved";
 }
@@ -1279,15 +1563,28 @@ function renderFormFor(name, item) {
   const wrap = el("div", {});
   const keys = fieldKeysFor(name);
   const known = new Set(keys.filter((k) => !k.startsWith("__")));
+  const defined = keys.filter((k) => !k.startsWith("__"));
+  // FIELD_DEFS-only keys (no generic base list) for brand-new items.
+  const defs = FIELD_DEFS[name] || {};
+  const defOnly = Object.keys(defs).filter((k) => !k.startsWith("__"));
+  // Union: existing keys first (stable order), then defined-but-missing keys
+  // so older items (e.g. events saved before `date` existed) still show the
+  // full current form instead of hiding new fields. Brand-new items show
+  // ONLY their FIELD_DEFS fields — never the generic base list.
   const existingKeys = Object.keys(item).filter((k) => known.has(k));
-  const fieldNames = existingKeys.length ? existingKeys : keys.filter((k) => !k.startsWith("__"));
+  const isNew = Object.keys(item).length === 0;
+  const fieldNames = isNew
+    ? (defOnly.length ? defOnly : defined)
+    : [...existingKeys, ...defined.filter((k) => !existingKeys.includes(k))];
 
   for (const key of fieldNames) {
     const def = FIELD_DEFS[name]?.[key];
     const value = item[key];
     wrap.append(renderField(name, key, value, def));
   }
-  const imgKeys = Object.keys(item).filter((k) => /image|img|src|avatar|photo/i.test(k));
+  // Upload widgets only for image-ish keys that are part of the form —
+  // collections whose FIELD_DEFS dropped images (e.g. events) stop asking.
+  const imgKeys = fieldNames.filter((k) => /image|img|src|avatar|photo/i.test(k));
   if (imgKeys.length) {
     wrap.append(el("hr", { class: "separator" }));
     for (const k of imgKeys) {
@@ -1557,6 +1854,56 @@ function renderSiteConfig(view) {
   );
   wrap.append(navBox);
 
+  // Theme presets (multi-tenant SaaS, session mode only — the legacy dev
+  // server has no samithi row to store it in).
+  if (sessionMode) {
+    const THEMES = [
+      { id: "theme-1", label: "Sai Blue", swatch: "linear-gradient(135deg,#1e64d8,#1a56bd)" },
+      { id: "theme-2", label: "Temple Gold", swatch: "linear-gradient(135deg,#8a5a00,#6e4700)" },
+      { id: "theme-3", label: "Emerald", swatch: "linear-gradient(135deg,#0e7a4f,#0b5f3e)" },
+      { id: "theme-4", label: "Maroon", swatch: "linear-gradient(135deg,#a31621,#7f1019)" },
+      { id: "theme-5", label: "Ocean Teal", swatch: "linear-gradient(135deg,#0b6e6e,#085858)" },
+    ];
+    wrap.append(el("hr", { class: "separator" }));
+    wrap.append(el("h3", { style: { fontSize: "14px", marginBottom: "10px", fontWeight: "700" } }, "🎨 Site Theme"));
+    const themeBox = el("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" } });
+    let pickedTheme = (store.samithi && store.samithi.theme) || "theme-1";
+    const paintTheme = () => {
+      themeBox.innerHTML = "";
+      for (const t of THEMES) {
+        const selected = pickedTheme === t.id;
+        themeBox.append(
+          el("button", {
+            class: `btn ${selected ? "btn-primary" : "btn-ghost"} btn-sm`,
+            style: { display: "flex", alignItems: "center", gap: "8px" },
+            onclick: () => { pickedTheme = t.id; paintTheme(); markDirty(); },
+          },
+            el("span", { style: { width: "18px", height: "18px", borderRadius: "50%", background: t.swatch, display: "inline-block" } }),
+            t.label)
+        );
+      }
+    };
+    paintTheme();
+    const themeSave = el("button", {
+      class: "btn btn-primary btn-sm",
+      style: { marginTop: "10px" },
+      onclick: async () => {
+        pushSnapshot();
+        try {
+          const res = isOwner()
+            ? await api(`/samithis/${encodeURIComponent(activeSamithi)}`, { method: "PUT", body: JSON.stringify({ theme: pickedTheme }) })
+            : await api("/samithi", { method: "PUT", body: JSON.stringify({ theme: pickedTheme }) });
+          if (store.samithi) store.samithi.theme = res.theme || pickedTheme;
+          markDirty();
+          toast("✅ Theme applied — reload the website to see it");
+        } catch (err) {
+          toast(err.message, "err");
+        }
+      },
+    }, "Apply theme");
+    wrap.append(themeBox, themeSave);
+  }
+
   card.append(wrap);
   card.append(
     el(
@@ -1627,7 +1974,6 @@ const FIELD_DEFS = {
     location: { type: "text" },
     mapsUrl: { type: "text" },
     description: { type: "textarea" },
-    image: { type: "text" },
   },
   stats: {
     icon: { options: ["bi-emoji-smile", "bi-journal-richtext", "bi-house", "bi-people"] },
@@ -1764,27 +2110,322 @@ function openOverlay(title, contentFn) {
 }
 
 /* ================================================================
+   Owner console + account (multi-tenant SaaS, session mode)
+   ================================================================ */
+
+async function apiGet(path) {
+  return api(path);
+}
+
+// Owner: pick a samithi context, manage samithis + convenors, view audit.
+function renderOwner(view) {
+  const card = el("div", { class: "card" });
+  card.append(
+    el("div", { class: "card-head" },
+      el("div", null,
+        el("h3", null, "👑 Owner Console"),
+        el("p", null, `Signed in as ${session.name}. Manage samithis, logins and activity.`)))
+  );
+  const body = el("div", null, el("p", { style: { color: "var(--muted)", fontSize: "13px" } }, "Loading…"));
+  card.append(body);
+  view.append(card);
+
+  (async () => {
+    try {
+      const [dir, audit] = await Promise.all([
+        apiGet("/samithis").catch(() => ({ samithis: [] })),
+        apiGet("/audit?limit=20").catch(() => ({ entries: [] })),
+      ]);
+      body.innerHTML = "";
+
+      // --- Samithi picker + onboarding ---
+      body.append(el("h3", { style: { fontSize: "14px", margin: "6px 0 10px", fontWeight: "700" } }, "🏛️ Samithis"));
+      const list = el("div", { class: "activity-list" });
+      for (const s of dir.samithis || []) {
+        const managing = activeSamithi === s.slug;
+        list.append(
+          el("div", { class: "activity-item" },
+            el("div", { class: "activity-dot", style: { background: managing ? "var(--green)" : "var(--muted-light)" } }),
+            el("div", { style: { flex: "1" } },
+              el("div", { style: { fontWeight: "600", fontSize: "13px" } }, `${s.name} (${s.slug})${managing ? " — managing" : ""}`),
+              el("div", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "2px" } }, s.district || "")),
+            managing ? null : el("button", {
+              class: "btn btn-primary btn-sm",
+              onclick: async () => {
+                setActiveSamithi(s.slug);
+                activeCollection = null;
+                try {
+                  await loadAll();
+                  toast(`✅ Managing ${s.name}`);
+                } catch (e) { toast(e.message, "err"); }
+              },
+            }, "Manage"))
+        );
+      }
+      body.append(list);
+
+      const slugIn = el("input", { type: "text", placeholder: "slug, e.g. porur", style: { maxWidth: "160px" } });
+      const nameIn = el("input", { type: "text", placeholder: "Samithi name", style: { flex: "1", minWidth: "160px" } });
+      const distIn = el("input", { type: "text", placeholder: "District", style: { maxWidth: "140px" } });
+      const createBtn = el("button", {
+        class: "btn btn-primary btn-sm",
+        onclick: async () => {
+          const slug = slugIn.value.toLowerCase().trim();
+          const name = nameIn.value.trim();
+          if (!slug || !name) {
+            toast("Slug and name are required", "err");
+            return;
+          }
+          try {
+            const r = await api("/samithis", { method: "POST", body: JSON.stringify({ slug, name, district: distIn.value.trim() }) });
+            toast(`✅ Created — live at /s/${r.slug}`);
+            logActivity("create", `Created samithi <strong>${name}</strong>`);
+            render();
+          } catch (e) { toast(e.message, "err"); }
+        },
+      }, "➕ Create samithi");
+      body.append(el("div", { class: "sub-item", style: { marginTop: "8px" } }, slugIn, nameIn, distIn, createBtn));
+
+      // --- Convenors ---
+      body.append(el("hr", { class: "separator" }));
+      body.append(el("h3", { style: { fontSize: "14px", margin: "6px 0 10px", fontWeight: "700" } }, "👥 Convenor logins"));
+      const ulist = el("div", { class: "activity-list" });
+      const redrawUsers = async () => {
+        ulist.innerHTML = "";
+        let fresh = [];
+        try {
+          fresh = (await apiGet("/convenors")).convenors || [];
+        } catch (e) { toast(e.message, "err"); return; }
+        for (const u of fresh) {
+          ulist.append(
+            el("div", { class: "activity-item" },
+              el("div", { class: "activity-dot", style: { background: u.active ? "var(--green)" : "var(--red)" } }),
+              el("div", { style: { flex: "1" } },
+                el("div", { style: { fontWeight: "600", fontSize: "13px" } }, `${u.name} (${u.login})`),
+                el("div", { style: { fontSize: "12px", color: "var(--muted)", marginTop: "2px" } }, `${u.samithi_id} · ${u.role}${u.active ? "" : " · disabled"}`)),
+              el("button", {
+                class: "btn btn-ghost btn-sm",
+                onclick: async () => {
+                  if (!confirm(`Reset password for ${u.login}? A new temporary password will be shown once.`)) return;
+                  try {
+                    const r = await api(`/convenors/${u.id}`, { method: "PUT", body: JSON.stringify({ resetPassword: true }) });
+                    toast(`✅ New temporary password (copy now): ${r.tempPassword}`, "ok");
+                    logActivity("update", `Reset password for <strong>${u.login}</strong>`);
+                  } catch (e) { toast(e.message, "err"); }
+                },
+              }, "Reset PW"),
+              el("button", {
+                class: `btn ${u.active ? "btn-danger" : "btn-ghost"} btn-sm`,
+                onclick: async () => {
+                  const to = !u.active;
+                  if (!confirm(`${to ? "Enable" : "Disable"} login ${u.login}?`)) return;
+                  try {
+                    await api(`/convenors/${u.id}`, { method: "PUT", body: JSON.stringify({ active: to }) });
+                    toast(to ? "✅ Enabled" : "✅ Disabled");
+                    redrawUsers();
+                  } catch (e) { toast(e.message, "err"); }
+                },
+              }, u.active ? "Disable" : "Enable"))
+          );
+        }
+      };
+      await redrawUsers();
+      body.append(ulist);
+      const iName = el("input", { type: "text", placeholder: "Name", style: { flex: "1", minWidth: "120px" } });
+      const iLogin = el("input", { type: "text", placeholder: "Login id", style: { maxWidth: "130px" } });
+      const iSamithi = el("input", { type: "text", placeholder: "samithi slug", style: { maxWidth: "130px" } });
+      const iEmail = el("input", { type: "text", placeholder: "Email (optional)", style: { maxWidth: "170px" } });
+      const inviteBtn = el("button", {
+        class: "btn btn-primary btn-sm",
+        onclick: async () => {
+          if (!iName.value.trim() || !iLogin.value.trim() || !iSamithi.value.trim()) {
+            toast("Name, login id and samithi slug are required", "err");
+            return;
+          }
+          try {
+            const r = await api("/convenors", {
+              method: "POST",
+              body: JSON.stringify({ name: iName.value.trim(), login: iLogin.value.trim(), samithi_id: iSamithi.value.trim(), email: iEmail.value.trim() }),
+            });
+            toast(`✅ Invited ${r.login} — temporary password (copy now): ${r.tempPassword}`, "ok");
+            logActivity("create", `Invited convenor <strong>${r.login}</strong>`);
+            iName.value = iLogin.value = iSamithi.value = iEmail.value = "";
+            redrawUsers();
+          } catch (e) { toast(e.message, "err"); }
+        },
+      }, "📨 Invite convenor");
+      body.append(el("div", { class: "sub-item", style: { marginTop: "8px" } }, iName, iLogin, iSamithi, iEmail, inviteBtn));
+
+      // --- Recent activity ---
+      body.append(el("hr", { class: "separator" }));
+      body.append(el("h3", { style: { fontSize: "14px", margin: "6px 0 10px", fontWeight: "700" } }, "🕐 Recent activity"));
+      const alist = el("div", { class: "activity-list" });
+      for (const a of (audit.entries || []).slice(0, 20)) {
+        alist.append(
+          el("div", { class: "activity-item" },
+            el("div", { class: "activity-dot", style: { background: "var(--primary)" } }),
+            el("div", { style: { flex: "1", fontSize: "12px" } },
+              el("span", { style: { fontWeight: "600" } }, `${a.actor} · ${a.action}`),
+              a.samithi_id ? el("span", { style: { color: "var(--muted)" } }, ` · ${a.samithi_id}`) : null,
+              a.detail ? el("div", { style: { color: "var(--muted)" } }, String(a.detail).slice(0, 120)) : null))
+        );
+      }
+      if (!alist.children.length) alist.append(el("div", { class: "activity-empty" }, "No activity yet"));
+      body.append(alist);
+
+      // --- Suspend / unsuspend ---
+      body.append(el("hr", { class: "separator" }));
+      const sSlug = el("input", { type: "text", placeholder: "samithi slug", style: { maxWidth: "160px" } });
+      const suspBtn = async (to) => {
+        if (!sSlug.value.trim()) {
+          toast("Enter a samithi slug", "err");
+          return;
+        }
+        if (!confirm(`${to === "suspended" ? "Suspend" : "Re-activate"} ${sSlug.value.trim()}?`)) return;
+        try {
+          await api(`/samithis/${encodeURIComponent(sSlug.value.trim())}`, { method: "PUT", body: JSON.stringify({ status: to }) });
+          toast(to === "suspended" ? "✅ Suspended" : "✅ Re-activated");
+          logActivity("update", `${to === "suspended" ? "Suspended" : "Re-activated"} <strong>${sSlug.value.trim()}</strong>`);
+        } catch (e) { toast(e.message, "err"); }
+      };
+      body.append(el("div", { class: "sub-item" }, sSlug,
+        el("button", { class: "btn btn-danger btn-sm", onclick: () => suspBtn("suspended") }, "Suspend"),
+        el("button", { class: "btn btn-ghost btn-sm", onclick: () => suspBtn("active") }, "Re-activate")));
+    } catch (e) {
+      body.innerHTML = "";
+      body.append(el("div", { class: "empty" }, "Failed to load owner data: " + e.message));
+    }
+  })();
+}
+
+// Account: identity, password rotation, logout.
+function renderAccount(view) {
+  const card = el("div", { class: "card" });
+  card.append(
+    el("div", { class: "card-head" },
+      el("div", null, el("h3", null, "👤 Account"), el("p", null, "Your sign-in and session.")))
+  );
+  const wrap = el("div", {});
+  if (!session) {
+    wrap.append(el("div", { class: "empty" }, "Not signed in."));
+  } else {
+    wrap.append(
+      el("div", { style: { fontSize: "13px", lineHeight: "1.9", marginBottom: "12px" } },
+        el("div", null, el("strong", null, "Name: "), session.name || "—"),
+        el("div", null, el("strong", null, "Role: "), session.role || "—"),
+        el("div", null, el("strong", null, "Mode: "), sessionMode ? "convenor session" : (legacyMode ? "legacy token" : "—")),
+        el("div", null, el("strong", null, "Samithi: "), session.role === "owner" ? (activeSamithi || "— (pick one in Owner Console)") : (session.samithi_id || "—")))
+    );
+    if (sessionMode) {
+      const oldIn = el("input", { type: "password", placeholder: "Current password", autocomplete: "current-password", style: { width: "100%" } });
+      const newIn = el("input", { type: "password", placeholder: `New password (min ${8} chars)`, autocomplete: "new-password", style: { width: "100%" } });
+      wrap.append(
+        el("hr", { class: "separator" }),
+        el("h3", { style: { fontSize: "14px", marginBottom: "10px", fontWeight: "700" } }, "🔑 Change password"),
+        el("div", { class: "field" }, el("label", null, "Current password"), oldIn),
+        el("div", { class: "field" }, el("label", null, "New password"), newIn),
+        el("button", {
+          class: "btn btn-primary btn-sm",
+          onclick: async () => {
+            try {
+              await api("/auth/change-password", {
+                method: "POST",
+                body: JSON.stringify({ oldPassword: oldIn.value, newPassword: newIn.value }),
+              });
+              toast("✅ Password changed — please sign in again");
+              logActivity("update", "Changed own password");
+              await doLogout();
+            } catch (e) { toast(e.message, "err"); }
+          },
+        }, "Change password")
+      );
+    } else {
+      wrap.append(el("p", { style: { fontSize: "12px", color: "var(--muted)" } }, "Legacy token mode: restart the server with a new ADMIN_TOKEN to rotate the secret."));
+    }
+    wrap.append(
+      el("hr", { class: "separator" }),
+      el("button", {
+        class: "btn btn-danger btn-sm",
+        onclick: async () => { await doLogout(); },
+      }, "⎋ Sign out")
+    );
+  }
+  card.append(wrap);
+  view.append(card);
+}
+
+async function doLogout() {
+  try {
+    if (sessionMode) {
+      await fetch(apiUrl("/auth/logout"), {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+      }).catch(() => {});
+    }
+  } finally {
+    clearSession();
+    toast("Signed out — Sai Ram");
+  }
+}
+
+/* ================================================================
    Save all
    ================================================================ */
 
 async function saveAll() {
   const btn = $("#save-all");
-  btn.disabled = true;
-  btn.textContent = "Saving...";
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Saving...";
+  }
+  const failed = [];
   try {
-    for (const c of COLLECTIONS) {
-      await api(`/${c.name}`, { method: "PUT", body: JSON.stringify(store[c.name]) });
+    if (sessionMode) {
+      // Multi-tenant SaaS path: tenant-scoped content endpoints. Members /
+      // balvikas have no content endpoint in v1 — they stay read-only here.
+      const jobs = [];
+      const put = (collection, body, label) => jobs.push(
+        api(`/content/${collection}`, { method: "PUT", body: JSON.stringify(body) })
+          .catch((err) => failed.push(`${label}: ${err.message}`))
+      );
+      for (const name of ["events", "services", "coordinators", "stats", "activities", "homegallery"]) {
+        if (Array.isArray(store[name])) put(name, { items: store[name] }, name);
+      }
+      if (Array.isArray(store.gallery)) put("gallery", { categories: store.gallery }, "gallery");
+      if (Array.isArray(store.about)) put("about", { sections: store.about }, "about");
+      if (store.siteconfig) {
+        put("siteconfig", {
+          siteConfig: store.siteconfig.siteConfig || {},
+          socialLinks: store.siteconfig.socialLinks || [],
+        }, "site settings");
+      }
+      await Promise.all(jobs);
+    } else {
+      for (const c of COLLECTIONS) {
+        try {
+          await api(`/${c.name}`, { method: "PUT", body: JSON.stringify(store[c.name]) });
+        } catch (err) {
+          // Report per-collection failures instead of abandoning the rest.
+          failed.push(`${c.label}: ${err.message}`);
+        }
+      }
     }
-    clearDirty("All changes saved");
-    toast("✅ All changes saved");
-  } catch (err) {
-    toast(err.message, "err");
-    const s = $("#save-state");
-    s.textContent = "Save failed";
-    s.className = "save-state error";
+    if (failed.length > 0) {
+      for (const f of failed) toast(f, "err");
+      const s = $("#save-state");
+      if (s) {
+        s.textContent = `Save failed (${failed.length} collection(s))`;
+        s.className = "save-state error";
+      }
+    } else {
+      clearDirty("All changes saved");
+      toast("✅ All changes saved");
+    }
   } finally {
-    btn.disabled = false;
-    btn.textContent = "💾 Save All";
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "💾 Save All";
+    }
   }
 }
 
@@ -1810,7 +2451,18 @@ $("#sidebar-backdrop").addEventListener("click", () => {
   $("#sidebar-backdrop").classList.remove("visible");
 });
 $("#save-all").addEventListener("click", saveAll);
-$("#open-site").addEventListener("click", () => window.open("/", "_blank"));
+// Open the live site. When the admin is served standalone on its own port
+// (dev: :3001) "/" is the admin itself, so jump to the site on :3000.
+// In production the admin sits behind the site's /admin proxy where "/"
+// is already the site.
+$("#open-site").addEventListener("click", () => {
+  const standalone =
+    window.location.port === "3001" && window.location.hostname === "localhost";
+  const siteUrl = standalone
+    ? `${window.location.protocol}//${window.location.hostname}:3000`
+    : "/";
+  window.open(siteUrl, "_blank");
+});
 
 // Quick Add dropdown
 $("#quick-add-btn").addEventListener("click", (e) => {
@@ -1835,23 +2487,18 @@ $("#redo-btn").addEventListener("click", redo);
    ================================================================ */
 
 function getPreferredTheme() {
+  // Light-first: only an explicit stored choice enables dark; the OS
+  // preference never auto-switches the admin theme.
   const saved = localStorage.getItem("samithi-admin-theme");
   if (saved) return saved;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "light";
 }
 
 function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem("samithi-admin-theme", theme);
-  const thumb = $(".theme-toggle-thumb");
-  const label = $("#theme-label");
-  if (theme === "dark") {
-    thumb.textContent = "🌙";
-    label.textContent = "🌙";
-  } else {
-    thumb.textContent = "☀️";
-    label.textContent = "☀️";
-  }
+  // Toggle icons are owned by CSS (.theme-icon-light/.theme-icon-dark);
+  // never overwrite .theme-toggle-thumb content from JS.
 }
 
 // Apply theme immediately to avoid flash
@@ -2045,7 +2692,8 @@ function buildCommands() {
   const cmds = [
     { icon: "📊", label: "Dashboard", hint: "Overview", action: () => selectCollection(null) },
     { icon: "💾", label: "Save All Changes", kbd: "Ctrl+S", action: () => saveAll() },
-    { icon: "↩", label: "Undo", kbd: "Ctrl+Z", keywords: ["undo", "revert"], action: () => undo() },
+    { icon: "👤", label: "Account", keywords: ["account", "password", "logout", "sign out"], action: () => selectCollection("account") },
+    { icon: "⎋", label: "Sign Out", keywords: ["logout", "sign out", "exit"], action: () => doLogout() },    { icon: "↩", label: "Undo", kbd: "Ctrl+Z", keywords: ["undo", "revert"], action: () => undo() },
     { icon: "↪", label: "Redo", kbd: "Ctrl+Shift+Z", keywords: ["redo"], action: () => redo() },
     { icon: "☀️", label: "Toggle Dark Mode", action: () => { const t = document.documentElement.getAttribute("data-theme") || "light"; applyTheme(t === "dark" ? "light" : "dark"); } },
     { icon: "↗️", label: "View Live Site", action: () => window.open("/", "_blank") },
@@ -2135,7 +2783,10 @@ function showSpinner(label = "Saving...") {
   const overlay = el("div", { class: "spinner-overlay" });
   overlay.append(
     el("div", { style: { textAlign: "center" } },
-      el("div", { class: "spinner" }),
+      el("div", { class: "spinner-wrap" },
+        el("img", { class: "spinner-emblem", src: "_ui/img/sssso-emblem-192.png", alt: "" }),
+        el("div", { class: "spinner-ring" })
+      ),
       el("div", { class: "spinner-label" }, label)
     )
   );
@@ -2264,11 +2915,33 @@ async function handleImportFile(file, overlay) {
       return;
     }
 
+    // Schema validation before merging — a malformed import used to be
+    // savable straight to the live site.
+    const expected = new Set(COLLECTIONS.map((c) => c.name));
+    const warnings = [];
+    for (const key of Object.keys(data)) {
+      if (!expected.has(key)) {
+        warnings.push(`Unknown collection "${key}" skipped`);
+        continue;
+      }
+      if (key === "siteconfig") {
+        if (typeof data[key] !== "object" || data[key] === null || typeof data[key].siteConfig !== "object") {
+          toast(`siteconfig must be an object with a siteConfig object — import aborted`, "err");
+          return;
+        }
+        continue;
+      }
+      if (!Array.isArray(data[key])) {
+        toast(`Collection "${key}" must be an array — import aborted`, "err");
+        return;
+      }
+    }
+
     // Merge with existing store
     pushSnapshot();
     let imported = 0;
     for (const key of Object.keys(data)) {
-      if (store.hasOwnProperty(key)) {
+      if (expected.has(key)) {
         store[key] = data[key];
         imported++;
       }
@@ -2278,6 +2951,7 @@ async function handleImportFile(file, overlay) {
       toast("No matching collections found in file", "err");
       return;
     }
+    for (const w of warnings) toast(w, "err");
 
     markDirty();
     overlay.remove();
@@ -2346,10 +3020,14 @@ function getAutoVersions() {
 function saveAutoVersions(versions) {
   try {
     localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify(versions));
-  } catch (err) {
+  } catch {
     toast("Storage full — clearing old auto-saves", "err");
     const trimmed = versions.slice(-10);
-    localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify(trimmed));
+    try {
+      localStorage.setItem(VERSION_STORAGE_KEY, JSON.stringify(trimmed));
+    } catch {
+      // Truly full store (private mode etc.): drop this version entirely.
+    }
   }
 }
 
@@ -2364,7 +3042,7 @@ function getBackups() {
 function saveBackups(backups) {
   try {
     localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(backups));
-  } catch (err) {
+  } catch {
     toast("Storage full — try deleting some backups", "err");
   }
 }
@@ -2704,7 +3382,7 @@ document.addEventListener("click", (e) => {
 });
 
 // Auto-version on page unload if dirty
-window.addEventListener("beforeunload", (e) => {
+window.addEventListener("beforeunload", () => {
   if (dirty) {
     createAutoVersion("Auto-save on exit");
   }
@@ -2759,4 +3437,23 @@ addSwipeToClose($("#version-panel"), () => {
   $("#version-panel").classList.remove("open");
 });
 
-loadAll().catch((err) => toast("Failed to load: " + err.message, "err"));
+// Boot: a restored session resumes silently; a stored legacy token keeps
+// working without forcing the login screen (old bookmarks, e2e harness);
+// otherwise show sign-in first.
+if (authed && sessionMode) {
+  loadAll().catch((err) => {
+    toast("Failed to load: " + err.message, "err");
+    renderLogin($("#view"));
+  });
+} else if (sessionStorage.getItem("samithi_admin_token")) {
+  legacyMode = true;
+  authed = true;
+  loadAll().catch((err) => {
+    toast("Failed to load: " + err.message, "err");
+    renderLogin($("#view"));
+  });
+} else {
+  buildNav();
+  render();
+  updateUndoRedoButtons();
+}

@@ -43,6 +43,9 @@ next-env.d.ts
 # admin uploads
 /admin/uploads/
 
+# admin CMS runtime data (production datastore — do not track)
+/admin/data/
+
 # local opencode runtime scaffold (copied node_modules + global skills)
 /.opencode/
 
@@ -50,3 +53,11 @@ next-env.d.ts
 /design_output.md
 /design_output.txt
 /master_ds.txt
+
+# QA run artifacts (screenshots, console logs, reports)
+/qa-runs/
+/test-results/
+/playwright-report/
+
+# macOS noise
+.DS_Store

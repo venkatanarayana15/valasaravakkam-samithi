@@ -3,6 +3,85 @@
 Past rulings the agent MUST follow. Newest first. Each entry: decision,
 reason, date. Overturning an entry requires explicit user approval.
 
+## #16 — Answer engines are first-class citizens (2026-09-09)
+
+GEO stance: AI crawlers explicitly allowed in robots.txt; `/llms.txt`
+summarises the network for LLMs. AEO: FAQPage schema + speakable selectors
+on home and tenant pages. Rule: every Q&A must derive from shipped content
+(never invented); tenant pages use tenant-scoped facts only.
+
+## #15 — Multi-tenant SaaS conventions (2026-09-09)
+
+Single Catalyst project, shared tables, `samithi_id` on every content row;
+the function is the sole trust boundary (slug validated, every read
+filtered, writes session-checked — no direct table access from browsers).
+Slugs immutable, reserved list enforced. 5 theme presets via
+`[data-theme-preset]` + live CSS vars (`@theme`, never `inline`);
+every preset passes 4.5:1 in both modes (contrast rig before shipping).
+Logos fixed across presets. No public signup — owner invites only.
+
+## #15 — 2026 brand ramp: royal → primary → sky; purple removed (2026-09-06)
+
+Deep royal `#0846a8` anchors gradients, primary `#0d6efd` stays the
+interactive fill, sky `#38bdf8` replaces washed-out `#149ddd` as the
+decorative accent. Admin purple `#6a5cff` is REMOVED everywhere (violated
+the 6-color rule). Surfaces: `bg-surface` (#f6f8fb) replaces `#f7f9fc`.
+Every gradient in site + admin now flows within one hue family.
+
+## #16 — Legacy static site deleted (2026-09-06)
+
+Root `index.html` + sibling pages, `assets/` vendor tree, `CNAME` and the
+GitHub Pages workflow predated the Next.js migration and confused tooling.
+Single source of truth is `src/` now. GitHub Pages is NOT a deploy target.
+
+## #17 — Admin data files are runtime state, not source (2026-09-06)
+
+`admin/data/*.json` is the production datastore written by the CMS on every
+save; it is gitignored from now on. Fresh clones auto-seed via
+`admin/server.mjs` (runs `seed.mjs` when the data dir is empty). Schema
+changes go in `seed.mjs`, never by hand-editing tracked JSON.
+
+## #14 — App chrome follows the active theme; only photographic surfaces stay fixed (2026-09-05)
+
+Site header (both bars), bottom nav pill, and admin sidebar all switch
+light/dark with the theme — no permanently-navy chrome. Exempt: hero photo,
+map iframe, and imagery. Brand title uses the mode-aware static gradient;
+toggle affordances keep ≥44px targets and visible hover in both modes.
+
+## #13 — Light-first: OS preference never auto-darkens site or admin (2026-09-05)
+
+First paint is always light; dark applies only to an explicit stored choice
+(layout FOUC-guard, provider init, admin `getPreferredTheme`). Rationale:
+elder-first readability baseline + deterministic screenshots. Toggle still
+offers dark on both surfaces.
+
+## #12 — Admin boot lookups must be null-safe (2026-09-05)
+
+`applyTheme` wrote to a removed `#theme-label` and `render()` to a removed
+`#page-title`; either top-level throw kills the entire admin SPA (blank
+dashboard, add/delete "missing"). Rule: every `$()` against markup that can
+drift gets a guard; toggle icons are CSS-owned, JS never overwrites them.
+
+## #11 — Class-based dark mode is real: `@custom-variant dark` (2026-09-05)
+
+Tailwind v4 defaults `dark:` to `prefers-color-scheme`, which silently made
+the in-app toggle a no-op. `globals.css` pins `dark:` to `.dark` so the
+provider/toggle/FOUC-guard work as documented. Revert = delete one line.
+
+## #10 — All loading spinners centre the official SSSSO emblem (2026-09-05)
+
+`SaiLoader` (site) and `showSpinner` (admin) show the genuine emblem, static
+and unmodified, inside a spinning Sai-blue arc that halts under
+`prefers-reduced-motion`. Emblem `aria-hidden` where status text carries meaning.
+
+## #9 — Upcoming Events are twin-crest light cards, no photo backgrounds (2026-09-05)
+
+Emblem left + Centenary `100 years` logo right (square, unrounded), date pill,
+title, location, description. Centenary asset:
+`public/assets/img/sathya-sai-100-years-logo.png` (512px web resize of the
+user-supplied HQ; transparent). Calm slide carousel, 6s autoplay, off under
+reduced-motion. Event admin form drops `image`.
+
 ## #8 — Elder-first palette: fewer colors, stronger contrast (2026-09-05)
 
 Most users are elders. Rules: max 6 functional colors (primary, primary-dark,

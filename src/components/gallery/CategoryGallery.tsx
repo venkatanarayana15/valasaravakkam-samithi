@@ -3,19 +3,23 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BsDownload, BsZoomIn } from "react-icons/bs";
+import { BsZoomIn } from "react-icons/bs";
 import { BsChevronLeft } from "react-icons/bs";
 import type { GalleryCategory } from "@/lib/data";
+import { useSiteData } from "@/lib/site-data";
+import { tenantBasePath } from "@/lib/tenants";
 import Lightbox from "@/components/Lightbox";
 import TiltCard from "@/components/TiltCard";
+import DownloadButton from "@/components/DownloadButton";
 
 export default function CategoryGallery({ category }: { category: GalleryCategory }) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const { slug } = useSiteData();
 
   return (
     <>
       <Link
-        href="/gallery"
+        href={`${tenantBasePath(slug)}/gallery`}
         className="mb-6 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-bold text-white transition hover:bg-primary-dark"
       >
         <BsChevronLeft className="text-xl" />
@@ -27,9 +31,9 @@ export default function CategoryGallery({ category }: { category: GalleryCategor
           {category.label} Gallery
         </h1>
         <div className="mx-auto mt-3 flex items-center justify-center gap-2">
-          <span className="h-[2px] w-10 rounded-full bg-gradient-to-r from-transparent to-[#149ddd] sm:w-14" />
-          <span className="divider-dot h-2 w-2 rounded-full bg-[#149ddd]" />
-          <span className="h-[2px] w-10 rounded-full bg-gradient-to-l from-transparent to-[#149ddd] sm:w-14" />
+          <span className="h-[2px] w-10 rounded-full bg-gradient-to-r from-transparent to-[#38bdf8] sm:w-14" />
+          <span className="divider-dot h-2 w-2 rounded-full bg-[#38bdf8]" />
+          <span className="h-[2px] w-10 rounded-full bg-gradient-to-l from-transparent to-[#38bdf8] sm:w-14" />
         </div>
         <p className="mx-auto mt-4 max-w-2xl text-[15px] text-muted dark:text-gray-400">
           {category.description}
@@ -39,21 +43,24 @@ export default function CategoryGallery({ category }: { category: GalleryCategor
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:gap-6 lg:grid-cols-3 lg:gap-7">
         {category.images.map((image, i) => (
           <TiltCard key={image.src} maxTilt={9} scale={1.04}>
-            <button
-              type="button"
-              onClick={() => setLightboxIndex(i)}
-              className="shine group relative block w-full overflow-hidden rounded-xl shadow-md transition-shadow duration-300 hover:shadow-2xl hover:shadow-[#149ddd]/25"
-            >
-              <div className="relative aspect-[4/3] w-full">
-                <Image
-                  src={image.src}
-                  alt={image.title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="absolute inset-0 flex flex-col justify-between bg-black/0 p-2.5 opacity-0 transition duration-300 group-hover:bg-black/40 group-hover:opacity-100">
+            <div className="shine group relative block w-full overflow-hidden rounded-xl shadow-md transition-shadow duration-300 hover:shadow-2xl hover:shadow-[#1e64d8]/25">
+              <button
+                type="button"
+                aria-label={`View ${image.title} in lightbox`}
+                onClick={() => setLightboxIndex(i)}
+                className="relative block w-full cursor-pointer"
+              >
+                <div className="relative aspect-[4/3] w-full">
+                  <Image
+                    src={image.src}
+                    alt={image.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition duration-500 group-hover:scale-110"
+                  />
+                </div>
+              </button>
+              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-black/0 p-2.5 opacity-0 transition duration-300 group-hover:bg-black/40 group-hover:opacity-100">
                 <span className="tilt-pop self-start rounded bg-primary px-3 py-1 text-sm font-bold text-white">
                   {image.title}
                 </span>
@@ -61,21 +68,20 @@ export default function CategoryGallery({ category }: { category: GalleryCategor
                   <span className="tilt-pop rounded bg-black/60 px-2.5 py-1.5 text-sm text-white">
                     {image.description}
                   </span>
-                  <a
+                  <DownloadButton
                     href={image.src}
-                    download
-                    aria-label="Download image"
-                    onClick={(e) => e.stopPropagation()}
-                    className="tilt-pop flex h-10 w-10 items-center justify-center rounded-full bg-primary/80 text-lg text-white transition hover:bg-primary"
-                  >
-                    <BsDownload />
-                  </a>
+                    label={`Download ${image.title}`}
+                    className="tilt-pop pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/80 text-lg text-white transition hover:bg-primary"
+                  />
                 </div>
               </div>
-              <span className="tilt-pop absolute right-2.5 top-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-primary/80 text-white opacity-0 transition group-hover:opacity-100">
+              <span
+                aria-hidden="true"
+                className="tilt-pop pointer-events-none absolute right-2.5 top-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-primary/80 text-white opacity-0 transition group-hover:opacity-100"
+              >
                 <BsZoomIn />
               </span>
-            </button>
+            </div>
           </TiltCard>
         ))}
       </div>

@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { BsGeoAlt, BsTelephone, BsEnvelope } from "react-icons/bs";
 import { siteConfig as staticSiteConfig } from "@/lib/data";
 import { useSiteData } from "@/lib/site-data";
+import { tenantContactUrl } from "@/lib/tenants";
 import SectionTitle from "@/components/SectionTitle";
 import Reveal from "@/components/Reveal";
 import TiltCard from "@/components/TiltCard";
@@ -11,12 +12,13 @@ import TiltCard from "@/components/TiltCard";
 const FORMSUBMIT_URL = "https://formsubmit.co/8d83ef3758007b64d1254ddb0557f410";
 
 export default function ContactSection() {
-  const { siteConfig } = useSiteData();
+  const { siteConfig, slug } = useSiteData();
   const config = siteConfig ?? staticSiteConfig;
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   async function postToCatalyst(payload: Record<string, string>) {
-    const res = await fetch("/api/contact", {
+    // Absolute function URL on static hosting (Slate), same-origin rewrite in dev.
+    const res = await fetch(tenantContactUrl(slug), {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify(payload),
@@ -77,13 +79,13 @@ export default function ContactSection() {
           <div className="lg:col-span-5">
             <Reveal delay={100}>
               <TiltCard maxTilt={5} scale={1.01}>
-                <div className="rounded-xl bg-[#f7f9fc] p-4 shadow-sm dark:bg-[#1e293b] sm:p-6">
+                <div className="rounded-xl bg-surface p-4 shadow-sm dark:bg-[#1e293b] sm:p-6">
                 <div className="group flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md dark:hover:bg-[#273548]">
-                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#0d6efd] shadow transition group-hover:text-white group-hover:shadow-[#149ddd]/40 sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl" style={{ background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
+                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#1a56bd] shadow transition group-hover:text-white group-hover:shadow-[#1e64d8]/40 sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl" style={{ background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
                     <BsGeoAlt />
                   </span>
                   <div>
-                    <h3 className="text-lg font-semibold text-[#272829] dark:text-gray-100">Address</h3>
+                    <h3 className="text-lg font-semibold text-[#1f2937] dark:text-gray-100">Address</h3>
                     <p className="mt-1 text-sm leading-relaxed text-muted dark:text-gray-400">
                       {config.address}
                     </p>
@@ -91,23 +93,23 @@ export default function ContactSection() {
                 </div>
 
                 <div className="group mt-6 flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md dark:hover:bg-[#273548]">
-                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#0d6efd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.4s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
+                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#1a56bd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.4s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
                     <BsTelephone />
                   </span>
                   <div>
-                    <h3 className="text-lg font-semibold text-[#272829] dark:text-gray-100">Call Us</h3>
-                    <a href="tel:+919087951742" className="mt-1 block text-sm text-muted dark:text-gray-400 transition hover:text-primary">
+                    <h3 className="text-lg font-semibold text-[#1f2937] dark:text-gray-100">Call Us</h3>
+                    <a href={`tel:${config.phone.replace(/\D/g, "")}`} className="mt-1 block text-sm text-muted dark:text-gray-400 transition hover:text-primary">
                       {config.phone}
                     </a>
                   </div>
                 </div>
 
                 <div className="group mt-6 flex gap-4 rounded-xl p-2 transition duration-300 hover:bg-white hover:shadow-md dark:hover:bg-[#273548]">
-                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#0d6efd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.8s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
+                  <span className="animate-float-3d flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-[#1a56bd] shadow sm:h-12 sm:w-12 sm:rounded-xl sm:text-xl dark:bg-[#273548]" style={{ animationDelay: "0.8s", background: "linear-gradient(135deg,#fff,#f0f7ff)" }}>
                     <BsEnvelope />
                   </span>
                   <div>
-                    <h3 className="text-lg font-semibold text-[#272829] dark:text-gray-100">Email Us</h3>
+                    <h3 className="text-lg font-semibold text-[#1f2937] dark:text-gray-100">Email Us</h3>
                     <a href={`mailto:${config.email}`} className="mt-1 block break-all text-sm text-muted dark:text-gray-400 transition hover:text-primary">
                       {config.email}
                     </a>
@@ -159,7 +161,7 @@ export default function ContactSection() {
                       name="name"
                       id="name-field"
                       required
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0d6efd] focus:ring-2 focus:ring-[#0d6efd]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#1e64d8] focus:ring-2 focus:ring-[#1e64d8]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                   <div>
@@ -171,7 +173,7 @@ export default function ContactSection() {
                       name="email"
                       id="email-field"
                       required
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0d6efd] focus:ring-2 focus:ring-[#0d6efd]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#1e64d8] focus:ring-2 focus:ring-[#1e64d8]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -183,7 +185,7 @@ export default function ContactSection() {
                       name="subject"
                       id="subject-field"
                       required
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0d6efd] focus:ring-2 focus:ring-[#0d6efd]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#1e64d8] focus:ring-2 focus:ring-[#1e64d8]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -195,7 +197,7 @@ export default function ContactSection() {
                       id="message-field"
                       rows={7}
                       required
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#0d6efd] focus:ring-2 focus:ring-[#0d6efd]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#1e64d8] focus:ring-2 focus:ring-[#1e64d8]/40 dark:border-gray-600 dark:bg-[#0f172a] dark:text-gray-200"
                     />
                   </div>
                 </div>

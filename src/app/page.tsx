@@ -1,25 +1,17 @@
-import Hero from "@/components/home/Hero";
-import Stats from "@/components/home/Stats";
-import Activities from "@/components/home/Activities";
-import UpcomingEvents from "@/components/home/UpcomingEvents";
-import Memories from "@/components/home/Memories";
-import Services from "@/components/home/Services";
-import Coordinators from "@/components/home/Coordinators";
-import AboutSection from "@/components/home/AboutSection";
-import ContactSection from "@/components/home/ContactSection";
+import SamithiHome from "@/components/home/SamithiHome";
+import JsonLd from "@/components/JsonLd";
+import { buildHomeJsonLd, buildFaqJsonLd } from "@/lib/seo";
+import { getServerSiteData } from "@/lib/server-data";
 
-export default function Home() {
+export default async function Home() {
+  const data = await getServerSiteData();
+  const jsonLd = buildHomeJsonLd(data);
+
   return (
     <>
-      <Hero />
-      <Stats />
-      <Activities />
-      <UpcomingEvents />
-      <Memories />
-      <Services />
-      <Coordinators />
-      <AboutSection />
-      <ContactSection />
+      <JsonLd graph={jsonLd} id="jsonld-home" />
+      <JsonLd graph={buildFaqJsonLd()} id="jsonld-faq" />
+      <SamithiHome />
     </>
   );
 }

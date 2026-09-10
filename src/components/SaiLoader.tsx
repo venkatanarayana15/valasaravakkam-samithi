@@ -1,18 +1,22 @@
+import Image from "next/image";
+import { asset } from "@/lib/data";
+
 type SaiLoaderProps = {
   size?: "sm" | "md" | "lg";
   caption?: string;
 };
 
 const SIZES = {
-  sm: { ring: "h-8 w-8", om: "text-base" },
-  md: { ring: "h-12 w-12", om: "text-xl" },
-  lg: { ring: "h-16 w-16", om: "text-2xl" },
+  sm: { box: "h-10 w-10", emblem: 28 },
+  md: { box: "h-14 w-14", emblem: 40 },
+  lg: { box: "h-20 w-20", emblem: 56 },
 } as const;
 
 /**
- * Official loading indicator — Sarva Dharma ring in Sai blue around the
- * sacred Om. Ring rotation halts automatically under
- * prefers-reduced-motion (see globals.css). Server-safe: no hooks.
+ * Official loading indicator — the genuine SSSSO emblem centred inside a
+ * spinning Sai-blue arc. The emblem itself is never rounded, recoloured or
+ * animated; only the decorative ring spins, and it halts automatically
+ * under prefers-reduced-motion (see globals.css). Server-safe: no hooks.
  */
 export default function SaiLoader({ size = "md", caption }: SaiLoaderProps) {
   const s = SIZES[size];
@@ -22,17 +26,19 @@ export default function SaiLoader({ size = "md", caption }: SaiLoaderProps) {
       aria-label={caption || "Loading"}
       className="flex flex-col items-center justify-center gap-3"
     >
-      <span className="relative flex items-center justify-center">
+      <span className={`relative flex items-center justify-center ${s.box}`}>
         <span
           aria-hidden="true"
-          className={`${s.ring} animate-spin rounded-full border-[3px] border-slate-200 border-t-[#149ddd] dark:border-slate-700 dark:border-t-[#38bdf8]`}
+          className="absolute inset-0 animate-spin rounded-full border-[3px] border-slate-200 border-t-[#38bdf8] dark:border-slate-700 dark:border-t-[#38bdf8]"
         />
-        <span
+        <Image
+          src={asset("/assets/img/sssso-emblem-192.png")}
+          alt=""
           aria-hidden="true"
-          className={`absolute font-semibold text-[#149ddd] dark:text-[#38bdf8] ${s.om}`}
-        >
-          &#x0950;
-        </span>
+          width={s.emblem}
+          height={s.emblem}
+          className="object-contain"
+        />
       </span>
       {caption ? (
         <span className="text-sm text-muted dark:text-gray-400">{caption}</span>

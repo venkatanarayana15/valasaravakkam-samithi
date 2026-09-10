@@ -1,9 +1,19 @@
 #!/bin/bash
 # Start both services: admin API (:3001) + main site (:3000)
-# Usage: ./start.sh
+# Usage:
+#   ADMIN_TOKEN=<secret> ./start.sh   # required for any shared environment
+#   ./start.sh                        # local dev only — mutations stay open
 set -e
 
-# Start admin server in background
+if [ -z "$ADMIN_TOKEN" ]; then
+  echo "====================================================================="
+  echo " WARNING: ADMIN_TOKEN is not set. Every admin mutation (edit, save,"
+  echo " upload) is open to anyone who can reach port 3001."
+  echo " Start with: ADMIN_TOKEN=<long-random-string> ./start.sh"
+  echo "====================================================================="
+fi
+
+# Start admin server in background (inherits ADMIN_TOKEN)
 cd "$(dirname "$0")/admin"
 node server.mjs &
 ADMIN_PID=$!

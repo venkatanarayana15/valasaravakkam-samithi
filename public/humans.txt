@@ -1,0 +1,18 @@
+/* TEAM */
+Valasaravakkam Samithi — Sri Sathya Sai Seva Organisation, Chennai Metro West
+Organisation: Sri Sathya Sai Seva Organisation (SSSSO)
+Zone: Chennai Metro West
+Address: 17, Chintamani Vinayagar Koil St, Alwartirunagar, Chennai, Tamil Nadu 600087
+Email: valasaravakkamsamithi1@gmail.com
+Phone: +91 9087951742
+
+/* SITE */
+Built with: Next.js 16 (React 19), Tailwind CSS 4, TypeScript
+Hosting: Static/SSR Next.js site + self-hosted admin CMS (Node.js)
+Design: Valasaravakkam Samithi Youth
+Content: Samithi members and coordinators
+Language: English, with Tamil community context
+Locale: en_IN
+
+/* THANKS */
+Bhagawan Sri Sathya Sai Baba — Love All, Serve All. Help Ever, Hurt Never.

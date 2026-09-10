@@ -12,7 +12,45 @@ import {
   aboutSections as staticAboutSections,
 } from "./data";
 
+export const THEMES = ['theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5'] as const;
+export type Theme = (typeof THEMES)[number];
+
+export function asTheme(value: unknown): Theme {
+  return (typeof value === 'string' && (THEMES as readonly string[]).includes(value) ? value : 'theme-1') as Theme;
+}
+
+// Apply the tenant's preset to <html>. Unlisted values fall back to theme-1;
+// the attribute drives the [data-theme-preset] rules in globals.css.
+export function applyThemePreset(theme: unknown): void {
+  if (typeof document === 'undefined') return;
+  document.documentElement.dataset.themePreset = asTheme(theme);
+}
+
+// Empty tenant shell: rendered when the slug lookup fails (unknown or
+// suspended). All sections hide themselves on empty collections, so only
+// an explicit notice is shown — never another samithi's content.
+export function emptyTenant(slug: string, err: 'unknown' | 'suspended'): SiteData {
+  return {
+    ...FALLBACK,
+    slug,
+    tenantError: err,
+    upcomingEvents: [],
+    services: [],
+    stats: [],
+    activityLevels: [],
+    coordinators: [],
+    galleryCategories: [],
+    homeGalleryImages: [],
+    aboutSections: [],
+  };
+}
+
 export type SiteData = {
+  /** Tenant slug this payload belongs to (default site: 'valasaravakkam'). */
+  slug: string;
+  /** Set when the tenant lookup failed instead of rendering data. */
+  tenantError: null | 'unknown' | 'suspended';
+  theme: Theme;
   siteConfig: typeof staticSiteConfig;
   socialLinks: typeof staticSocialLinks;
   navLinks: typeof staticNavLinks;
@@ -24,11 +62,15 @@ export type SiteData = {
   galleryCategories: typeof staticGalleryCategories;
   homeGalleryImages: typeof staticHomeGalleryImages;
   aboutSections: typeof staticAboutSections;
+  // Managed in the CMS; token-gated server-side and not rendered publicly.
   members: unknown[];
   balvikas: unknown[];
 };
 
 export const FALLBACK: SiteData = {
+  slug: 'valasaravakkam',
+  tenantError: null,
+  theme: 'theme-1',
   siteConfig: staticSiteConfig,
   socialLinks: staticSocialLinks,
   navLinks: staticNavLinks,
@@ -67,7 +109,11 @@ export function mergeApi(api: ApiShape | null): SiteData {
         navLinks?: typeof staticNavLinks;
       }
     | undefined;
+  const samithi = api.samithi as { slug?: unknown; theme?: unknown } | undefined;
   return {
+    slug: typeof samithi?.slug === 'string' && samithi.slug ? samithi.slug : 'valasaravakkam',
+    tenantError: null,
+    theme: asTheme(samithi?.theme),
     siteConfig: sc?.siteConfig ? { ...staticSiteConfig, ...sc.siteConfig } : staticSiteConfig,
     socialLinks: Array.isArray(sc?.socialLinks) ? sc.socialLinks : staticSocialLinks,
     navLinks: Array.isArray(sc?.navLinks) ? sc.navLinks : staticNavLinks,
@@ -81,21 +127,5 @@ export function mergeApi(api: ApiShape | null): SiteData {
     aboutSections: pick(api, "about", staticAboutSections),
     members: pick(api, "members", [] as unknown[]),
     balvikas: pick(api, "balvikas", [] as unknown[]),
-  };
-}
-
-export function toApiShape(data: SiteData): ApiShape {
-  return {
-    siteconfig: { siteConfig: data.siteConfig, socialLinks: data.socialLinks, navLinks: data.navLinks },
-    stats: data.stats,
-    activities: data.activityLevels,
-    events: data.upcomingEvents,
-    services: data.services,
-    coordinators: data.coordinators,
-    gallery: data.galleryCategories,
-    homegallery: data.homeGalleryImages,
-    about: data.aboutSections,
-    members: data.members,
-    balvikas: data.balvikas,
   };
 }

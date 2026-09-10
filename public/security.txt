@@ -1,0 +1,13 @@
+# Security Policy — Valasaravakkam Samithi
+# Published: 2026-09-06
+# Preferred report contact: see Contact section on the site.
+# We prefer GPG-encrypted emails for sensitive reports; key available on request.
+
+Contact: valasaravakkamsamithi1@gmail.com
+Contact: https://www.valasaravakkamsamithi.linkpc.net#contact
+Policy: https://www.valasaravakkamsamithi.linkpc.net/security
+
+Acknowledgments: We thank researchers who report responsibly.
+
+# Explicit disclosure: no bug-bounty program is currently formalised.
+# Please allow reasonable time for fixes before public disclosure.

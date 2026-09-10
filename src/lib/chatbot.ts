@@ -1,4 +1,5 @@
 import type { SiteData } from "./data-shape";
+import { tenantBasePath } from "./tenants";
 
 export type ChatLink = { label: string; href: string };
 
@@ -32,6 +33,21 @@ function serviceText(data: SiteData, match: string): string | null {
   return found ? `${found.title}: ${found.description}` : null;
 }
 
+/**
+ * Build the "Class timings" answer from live CMS service descriptions — the
+ * first sentence of each service carries its schedule, so admin edits flow
+ * through to the chatbot instead of the old hardcoded list.
+ */
+function scheduleText(data: SiteData): string {
+  const lines = data.services
+    .map((s) => s.description.split(/(?<=[.!?])\s/)[0]?.trim())
+    .filter((s): s is string => Boolean(s));
+  if (lines.length === 0) {
+    return "Program schedules are updated regularly. Please contact us for the current timings.";
+  }
+  return ["Here are our regular schedules:", "", ...lines, "", "All are welcome to attend."].join("\n");
+}
+
 function coordinatorList(data: SiteData): string {
   const unique = new Map<string, string>();
   for (const c of data.coordinators) unique.set(`${c.name} — ${c.role}`, c.role);
@@ -40,6 +56,7 @@ function coordinatorList(data: SiteData): string {
 
 export function buildFaqs(data: SiteData): FaqEntry[] {
   const { siteConfig } = data;
+  const gal = (p: string) => `${tenantBasePath(data.slug)}${p}`;
   const bhajans = serviceText(data, "bhajan") ?? "Bhajans are held weekly in the Samithi.";
   const balvikas =
     serviceText(data, "balvikas") ?? "Balvikas classes are held every Sunday.";
@@ -71,18 +88,7 @@ export function buildFaqs(data: SiteData): FaqEntry[] {
       id: "timings",
       keywords: ["time", "timing", "timings", "when", "schedule", "hours", "days", "weekly", "daily"],
       phrases: ["what time", "class timings"],
-      text: [
-        "Here are our regular timings:",
-        "",
-        "Bhajans — every Saturday, 5:30 to 7:00 PM.",
-        "Balvikas — every Sunday, 1 hour.",
-        "Study Circle — every 3rd Saturday, 5:30 to 7:00 PM.",
-        "Temple Cleaning — every 3rd Sunday, 9:00 to 11:00 AM.",
-        "Narayana Seva — every month on the 20th.",
-        "Sai Protein — every month on the last Thursday.",
-        "",
-        "All are welcome to attend.",
-      ].join("\n"),
+      text: scheduleText(data),
       links: [{ label: "See all services", href: "#services" }],
       followUps: ["Tell me about Bhajans", "How to join", "Where are you located?"],
     },
@@ -105,7 +111,7 @@ export function buildFaqs(data: SiteData): FaqEntry[] {
       ]
         .filter(Boolean)
         .join("\n\n"),
-      links: [{ label: "Balvikas gallery", href: "/gallery/balvikas" }],
+      links: [{ label: "Balvikas gallery", href: gal("/gallery/balvikas") }],
       followUps: ["Class timings", "How to join", "Upcoming events"],
     },
     {
@@ -113,7 +119,7 @@ export function buildFaqs(data: SiteData): FaqEntry[] {
       keywords: ["cleaning", "temple", "clean", "seva", "sunday", "premises"],
       phrases: ["temple cleaning"],
       text: cleaning,
-      links: [{ label: "Temple cleaning gallery", href: "/gallery/temple-cleaning" }],
+      links: [{ label: "Temple cleaning gallery", href: gal("/gallery/temple-cleaning") }],
       followUps: ["How to join", "Class timings", "Contact us"],
     },
     {
@@ -207,7 +213,7 @@ export function buildFaqs(data: SiteData): FaqEntry[] {
       keywords: ["photo", "photos", "gallery", "images", "pictures", "memories", "videos", "albums"],
       phrases: ["show photos"],
       text: `You can browse ${data.galleryCategories.map((g) => g.label).join(", ")} in our gallery.`,
-      links: [{ label: "Open gallery", href: "/gallery" }],
+      links: [{ label: "Open gallery", href: gal("/gallery") }],
       followUps: ["Tell me about Balvikas", "Upcoming events", "How to join"],
     },
     {

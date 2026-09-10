@@ -26,10 +26,10 @@ export default function AboutSection() {
       <div className="relative z-10 mx-auto max-w-4xl px-4">
         <Reveal>
           <TiltCard maxTilt={3} scale={1.01}>
-            <div className="rounded-xl border border-black/5 bg-white/75 px-4 py-8 shadow-2xl backdrop-blur-md dark:border-gray-700 dark:bg-[#1e293b]/80 sm:px-6 sm:py-10 md:px-10">
+            <div className="rounded-xl border border-black/5 bg-white/80 px-4 py-8 shadow-2xl backdrop-blur-md dark:border-gray-700 dark:bg-[#1e293b]/85 sm:px-6 sm:py-10 md:px-10">
               <h2 className="text-gradient mb-6 text-center font-display text-[26px] font-bold uppercase sm:text-[32px]">
                 About
-              </h2>              <div className="space-y-4 text-sm leading-relaxed text-[#111] dark:text-gray-300 sm:space-y-5 sm:text-[15px] md:text-base">
+              </h2>              <div className="space-y-4 text-sm leading-relaxed text-[#1f2937] dark:text-gray-300 sm:space-y-5 sm:text-[15px] md:text-base">
               <p>
                 <em>
                   <strong>About Us</strong> – Valasaravakkam Samithi

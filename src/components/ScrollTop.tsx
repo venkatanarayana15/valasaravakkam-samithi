@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { BsArrowUpShort } from "react-icons/bs";
 
 export default function ScrollTop() {
@@ -13,14 +14,16 @@ export default function ScrollTop() {
   }, []);
 
   return (
-    <a
-      href="#hero"
+    <nav aria-label="Back to top">
+    <Link
+      href="/#hero"
       aria-label="Scroll to top"
       className={`fixed bottom-20 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-primary text-lg text-white shadow-lg transition-all hover:bg-primary-dark dark:bg-blue-600 dark:hover:bg-blue-500 sm:bottom-4 sm:z-50 sm:h-10 sm:w-10 ${
         visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
       }`}
     >
       <BsArrowUpShort />
-    </a>
+    </Link>
+    </nav>
   );
 }

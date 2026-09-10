@@ -1,0 +1,6 @@
+# Security Policy — Valasaravakkam Samithi (well-known)
+# RFC 9116 — mirrored from /security.txt for crawler discoverability.
+
+Contact: mailto:valasaravakkamsamithi1@gmail.com
+Contact: https://www.valasaravakkamsamithi.linkpc.net#contact
+Policy: https://www.valasaravakkamsamithi.linkpc.net/security

@@ -32,6 +32,7 @@ function ServiceCard({ service }: { service: Service }) {
       <div
         role="button"
         tabIndex={0}
+        aria-label={`Service: ${service.title}`}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
         onKeyDown={(e) => {
@@ -41,7 +42,7 @@ function ServiceCard({ service }: { service: Service }) {
           }
         }}
         className={`shine group flex h-full cursor-pointer gap-3 rounded-xl p-4 transition duration-300 hover:shadow-2xl hover:shadow-black/10 sm:gap-4 sm:rounded-2xl sm:p-6 ${
-          open ? "bg-white shadow-xl ring-1 ring-[#0d6efd]/40 dark:bg-[#1e293b] dark:ring-blue-500/30" : "bg-white/60 dark:bg-[#1e293b]/60"
+          open ? "bg-white shadow-xl ring-1 ring-[#1e64d8]/40 dark:bg-[#1e293b] dark:ring-blue-500/30" : "bg-white/70 dark:bg-[#1e293b]/70"
         }`}
       >
         {/* 3D animated icon tile */}
@@ -49,20 +50,20 @@ function ServiceCard({ service }: { service: Service }) {
           <div
             className="animate-float-3d flex h-12 w-12 items-center justify-center rounded-xl text-xl text-white shadow-lg transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110 sm:h-14 sm:w-14 sm:rounded-2xl sm:text-2xl md:h-16 md:w-16"
             style={{
-              background: "linear-gradient(135deg, #149ddd, #0d6efd)",
-              boxShadow: "0 10px 24px -6px rgba(13, 110, 253, 0.5)",
+              background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))",
+              boxShadow: "0 10px 24px -6px color-mix(in srgb, var(--color-primary) 50%, transparent)",
             }}
           >
             {iconMap[service.icon]}
           </div>
         </div>
 
-        <div className="flex-1">            <h4
-              className="tilt-pop-2 text-lg font-semibold text-[#272829] dark:text-gray-100 transition-colors group-hover:text-primary-dark"
+        <div className="flex-1">            <h3
+              className="tilt-pop-2 text-lg font-semibold text-[#1f2937] transition-colors group-hover:text-primary-dark dark:text-gray-100 dark:group-hover:text-[#7dd3fc]"
             style={{ display: "inline-block" }}
           >
             {service.title}
-          </h4>
+          </h3>
           <div
             className={`mt-2 overflow-hidden text-[15px] leading-relaxed text-muted transition-all duration-500 ${
               open ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
@@ -71,7 +72,7 @@ function ServiceCard({ service }: { service: Service }) {
             <p>{service.description}</p>
           </div>
           <span
-            className={`mt-2 inline-block text-xs font-bold uppercase tracking-widest text-[#0a58ca] dark:text-blue-400 transition ${
+            className={`mt-2 inline-block text-xs font-bold uppercase tracking-widest text-[#1a56bd] dark:text-blue-400 transition ${
               open ? "opacity-100" : "opacity-0"
             }`}
           >
@@ -98,7 +99,7 @@ export default function Services() {
         </Reveal>
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {list.map((service, i) => (
-            <Reveal key={service.title} delay={i * 100}>
+            <Reveal key={`${service.title}-${i}`} delay={i * 100}>
               <ServiceCard service={service} />
             </Reveal>
           ))}
