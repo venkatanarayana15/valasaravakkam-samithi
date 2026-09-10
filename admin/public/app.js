@@ -127,8 +127,10 @@ async function getToken() {
 }
 
 function authHeaders(extra = {}) {
+  // Session transport: X-Session-Token. NEVER Authorization: Bearer — the
+  // Catalyst gateway intercepts Bearer as its own OAuth and 401s.
   if (sessionMode && session && session.token) {
-    return { ...extra, Authorization: `Bearer ${session.token}` };
+    return { ...extra, "X-Session-Token": session.token };
   }
   const token = sessionStorage.getItem("samithi_admin_token") || "";
   return token ? { ...extra, Authorization: `Bearer ${token}` } : extra;

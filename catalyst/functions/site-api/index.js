@@ -10,8 +10,8 @@
  *   GET  /samithis            → public directory: active slugs + names + districts (no emails)
  *   POST /contact?samithi=<slug> → validate + store message + notify that samithi's inbox
  *   POST /auth/login          → {login, password} → session {token, samithi_id, name, role}
- *   GET  /auth/me             → identity for a Bearer session (no signup exists anywhere)
- *   POST /auth/logout         → invalidate the Bearer session
+ *   GET  /auth/me             → identity for a session (no signup exists anywhere)
+ *   POST /auth/logout         → invalidate the session
  *   POST /auth/change-password → self-service rotation (session + old or first-login temp)
  *   Owner-only: POST /samithis, PUT /samithis/:slug, POST /convenors,
  *               PUT /convenors/:id, GET /convenors (no hashes),
@@ -82,7 +82,7 @@ function corsHeaders(req) {
       'Access-Control-Allow-Origin': origin,
       Vary: 'Origin',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Session-Token',
       'Access-Control-Max-Age': '86400',
     };
   }
@@ -304,9 +304,18 @@ function sha256hex(s) {
 function parseWhen(v) {
   if (!v) return NaN;
   if (v instanceof Date) return v.getTime();
-  // Catalyst datetime "YYYY-MM-DD HH:mm:ss:SSS" → ISO.
-  const iso = String(v).replace(' ', 'T').replace(/:(\d{3})$/, '.$1');
-  return Date.parse(iso);
+  // Catalyst datetime "YYYY-MM-DD HH:mm:ss[:SSS]" (no zone) — treat as UTC,
+  // matching catalystDateTime() below.
+  let s = String(v).replace(' ', 'T').replace(/:(\d{3})$/, '.$1');
+  if (!/([zZ]|UTC|[+-]\d{2}:?\d{2})$/.test(s)) s += 'Z';
+  return Date.parse(s);
+}
+
+// Catalyst datetime columns accept "YYYY-MM-DD HH:mm:ss" (UTC, no millis,
+// no zone suffix — ISO strings and locale strings are rejected).
+function catalystDateTime(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
 }
 
 function randomToken() {
@@ -336,20 +345,24 @@ async function audit(ds, actor, action, samithiId, detail) {
   }
 }
 
-// Resolve the calling convenor from Authorization: Bearer <token>.
+// Session transport: X-Session-Token (raw hex token, no Bearer prefix).
+// NEVER Authorization: the Catalyst gateway intercepts Bearer tokens as its
+// own OAuth and 401s before the function runs (INVALID_TOKEN).
+const SESSION_HEADER = 'x-session-token';
+
+// Resolve the calling convenor from the session header.
 // Returns { convenor } or { error, code }. Owner rows (role=owner,
 // samithi_id='*') pass every tenant check.
 async function requireAuth(ds, req, needOwner) {
-  const header = req.headers.authorization || '';
-  const m = header.match(/^Bearer\s+(.+)$/i);
-  if (!m) return { error: 'missing session', code: 401 };
+  const token = (req.headers[SESSION_HEADER] || '').trim();
+  if (!token) return { error: 'missing session', code: 401 };
   let sessions;
   try {
     sessions = await readAllRows(ds, TABLES.sessions);
   } catch {
     return { error: 'auth unavailable', code: 503 };
   }
-  const digest = sha256hex(m[1].trim());
+  const digest = sha256hex(token);
   const session = sessions.find((s) => s.token_hash === digest);
   if (!session || Number.isNaN(parseWhen(session.expires_at)) || parseWhen(session.expires_at) < Date.now()) {
     return { error: 'invalid or expired session', code: 401 };
@@ -416,11 +429,17 @@ async function handleLogin(ds, res, body) {
     return;
   }
   const token = randomToken();
-  await ds.table(TABLES.sessions).insertRow({
-    token_hash: sha256hex(token),
-    convenor_id: String(user.ROWID),
-    expires_at: new Date(Date.now() + SESSION_TTL_MS).toISOString(),
-  });
+  try {
+    await ds.table(TABLES.sessions).insertRow({
+      token_hash: sha256hex(token),
+      convenor_id: String(user.ROWID),
+      expires_at: catalystDateTime(new Date(Date.now() + SESSION_TTL_MS)),
+    });
+  } catch (e) {
+    console.error('session store failed:', e && e.message ? e.message : e);
+    sendJson(res, 500, { error: 'could not create session' });
+    return;
+  }
   try {
     await ds.table(TABLES.convenors).updateRow({ ROWID: user.ROWID, last_login: new Date().toISOString() });
   } catch {
@@ -954,8 +973,7 @@ module.exports = async (req, res) => {
       }
       try {
         const sessions = await readAllRows(adminApp.datastore(), TABLES.sessions);
-        const header = req.headers.authorization || '';
-        const digest = sha256hex(header.replace(/^Bearer\s+/i, '').trim());
+        const digest = sha256hex((req.headers[SESSION_HEADER] || '').trim());
         for (const s of sessions.filter((x) => x.token_hash === digest)) {
           try {
             await adminApp.datastore().table(TABLES.sessions).deleteRow(s.ROWID);

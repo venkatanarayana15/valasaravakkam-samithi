@@ -1,6 +1,6 @@
 {
   "functions": {
-    "folder_path": "functions",
+    "source": "functions",
     "targets": ["site-api"]
   }
 }

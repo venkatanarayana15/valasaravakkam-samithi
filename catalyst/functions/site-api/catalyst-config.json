@@ -1,3 +1,1 @@
-{
-  "type": "advancedio"
-}
+{"deployment":{"env_variables":{},"name":"site-api","stack":"node16","type":"advancedio"},"execution":{"main":"index.js"}}

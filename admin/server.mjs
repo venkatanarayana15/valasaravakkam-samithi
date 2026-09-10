@@ -131,11 +131,12 @@ function devTheme() {
 }
 
 function devSession(req) {
-  const m = (req.headers.authorization || "").match(/^Bearer\s+(.+)$/i);
-  if (!m) return null;
-  const s = devSessions.get(m[1].trim());
+  // Same transport as production (X-Session-Token, never Authorization).
+  const token = (req.headers["x-session-token"] || "").trim();
+  if (!token) return null;
+  const s = devSessions.get(token);
   if (!s || s.expires < Date.now()) {
-    devSessions.delete(m[1].trim());
+    devSessions.delete(token);
     return null;
   }
   return s;
@@ -187,8 +188,8 @@ async function handleDevApi(req, res, pathname) {
     return;
   }
   if (req.method === "POST" && pathname === "/api/auth/logout") {
-    const m = (req.headers.authorization || "").match(/^Bearer\s+(.+)$/i);
-    if (m) devSessions.delete(m[1].trim());
+    const t = (req.headers["x-session-token"] || "").trim();
+    if (t) devSessions.delete(t);
     send(res, 200, { ok: true });
     return;
   }
