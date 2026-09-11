@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { SiteDataProvider } from "@/lib/site-data";
 import SamithiHome from "@/components/home/SamithiHome";
 import JsonLd from "@/components/JsonLd";
-import { buildHomeJsonLd, buildFaqJsonLd } from "@/lib/seo";
+import { buildHomeJsonLd, buildFaqJsonLd, buildTenantOrg } from "@/lib/seo";
 import { getServerSiteData } from "@/lib/server-data";
 import { KNOWN_SLUGS, tenantApiBase, tenantSiteUrl } from "@/lib/tenants";
-import { mergeApi } from "@/lib/data-shape";
+import { mergeApi, type SiteData } from "@/lib/data-shape";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -70,6 +70,9 @@ export default async function SamithiPage({ params }: Props) {
   // Best-effort server snapshot for JSON-LD/SEO (client refreshes live).
   // Only attempted when a function backend is configured — otherwise the
   // relative URL would hang the prerender with nothing listening.
+  // Every /s/<slug> page derives its Organization/LocalBusiness identity
+  // from its OWN DB record (via buildTenantOrg) — never the homepage's.
+  let data: SiteData | null = null;
   let jsonLd = null;
   if (tenantApiBase()) {
     try {
@@ -77,14 +80,18 @@ export default async function SamithiPage({ params }: Props) {
         next: { revalidate: 60 },
         signal: AbortSignal.timeout(8000),
       });
-      if (res.ok) jsonLd = buildHomeJsonLd(mergeApi(await res.json()));
+      if (res.ok) {
+        data = mergeApi(await res.json());
+        jsonLd = buildHomeJsonLd(data, buildTenantOrg(data));
+      }
     } catch {
       // Client boot covers data; SEO falls back to generic metadata above.
     }
   }
   if (!jsonLd) {
     try {
-      jsonLd = buildHomeJsonLd(await getServerSiteData());
+      data = await getServerSiteData();
+      jsonLd = buildHomeJsonLd(data, buildTenantOrg(data));
     } catch {
       jsonLd = null;
     }
@@ -93,7 +100,20 @@ export default async function SamithiPage({ params }: Props) {
   return (
     <SiteDataProvider slug={safe}>
       {jsonLd ? <JsonLd graph={jsonLd} id={`jsonld-${safe}`} /> : null}
-      <JsonLd graph={buildFaqJsonLd(`${prettyName(safe)} Samithi`)} id={`jsonld-faq-${safe}`} />
+      <JsonLd
+        graph={buildFaqJsonLd(
+          `${prettyName(safe)} Samithi`,
+          data
+            ? {
+                phone: data.siteConfig?.phone,
+                email: data.siteConfig?.email,
+                address: data.siteConfig?.address,
+                tagline: data.siteConfig?.tagline,
+              }
+            : undefined,
+        )}
+        id={`jsonld-faq-${safe}`}
+      />
       <SamithiHome />
     </SiteDataProvider>
   );

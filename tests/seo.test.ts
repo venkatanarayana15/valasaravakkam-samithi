@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildHomeJsonLd, buildGalleryJsonLd, SITE_URL } from "@/lib/seo";
+import { buildHomeJsonLd, buildGalleryJsonLd, buildTenantOrg, SITE_URL } from "@/lib/seo";
 
 describe("SITE_URL", () => {
   it("has no trailing slash (safe to concatenate paths)", () => {
@@ -54,6 +54,59 @@ describe("buildHomeJsonLd", () => {
     // data so JSON.parse round-trips it exactly.
     const ev = graph.find((n) => n["@type"] === "Event") as { name: string };
     expect(ev.name).toContain("</script>");
+  });
+});
+
+describe("buildTenantOrg", () => {
+  it("derives identity from the tenant record, never the default samithi", () => {
+    const org = buildTenantOrg({
+      slug: "porur",
+      siteConfig: { name: "Porur Samithi", phone: "+91 9876543210", email: "porur@gmail.com", address: "1, Main Rd, Porur, Chennai, Tamil Nadu 600116" },
+      socialLinks: [
+        { href: "https://www.facebook.com/porur/" },
+        { href: "#" },
+        { href: "" },
+      ],
+    });
+    expect(org.id).toBe(`${SITE_URL}/s/porur#organization`);
+    expect(org.name).toBe("Porur Samithi");
+    expect(org.telephone).toBe("+91 9876543210");
+    expect(org.email).toBe("porur@gmail.com");
+    expect(org.sameAs).toEqual(["https://www.facebook.com/porur/"]);
+  });
+
+  it("falls back to the slug-derived name when a tenant is un-configured", () => {
+    const org = buildTenantOrg({ slug: "adyar", siteConfig: {} });
+    expect(org.name).toBe("Adyar Samithi");
+    expect(org.telephone).toBeUndefined();
+    expect(org.email).toBeUndefined();
+  });
+});
+
+describe("buildHomeJsonLd(tenant)", () => {
+  it("publishes the tenant's own contact/address in the LocalBusiness node", () => {
+    const tenant = buildTenantOrg({
+      slug: "porur",
+      siteConfig: { name: "Porur Samithi", phone: "+91 9876543210", email: "porur@gmail.com", address: "1, Main Rd, Porur, Chennai, Tamil Nadu 600116" },
+    });
+    const graph = buildHomeJsonLd({ upcomingEvents: [] }, tenant);
+    const org = graph.find((n) => Array.isArray(n["@type"]) && (n["@type"] as string[]).includes("Organization"));
+    expect(org!["@id"]).toBe(`${SITE_URL}/s/porur#organization`);
+    expect(org!.name).toBe("Porur Samithi");
+    expect(org!.telephone).toBe("+91 9876543210");
+    const addr = org!.address as { "@type": string; postalCode?: string; addressLocality?: string; streetAddress?: string };
+    expect(addr["@type"]).toBe("PostalAddress");
+    expect(addr.postalCode).toBe("600116");
+    expect(addr.addressLocality).toBe("Chennai");
+    expect(addr.streetAddress).toContain("Porur");
+  });
+
+  it("links Events to the tenant URL and identity", () => {
+    const tenant = buildTenantOrg({ slug: "adyar", siteConfig: { name: "Adyar Samithi" } });
+    const graph = buildHomeJsonLd({ upcomingEvents: [{ title: "Bhajans" }] }, tenant);
+    const ev = graph.find((n) => n["@type"] === "Event") as { url: string; organizer: { "@id": string } };
+    expect(ev.url).toContain("/s/adyar");
+    expect(ev.organizer["@id"]).toBe(`${SITE_URL}/s/adyar#organization`);
   });
 });
 
