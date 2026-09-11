@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import fs from "node:fs";
 
 const ADMIN_TARGET = process.env.ADMIN_TARGET || "http://localhost:3001";
 // Catalyst function base (…/server/site-api/execute). When set, /api/site and
@@ -9,8 +10,11 @@ const usingCatalyst = Boolean(CATALYST_API);
 const siteApiTarget = usingCatalyst ? `${CATALYST_API}/site` : `${ADMIN_TARGET}/api/site`;
 const contactApiTarget = usingCatalyst ? `${CATALYST_API}/contact` : `${ADMIN_TARGET}/api/contact`;
 
-// Set NEXT_STATIC_EXPORT=1 only for the Slate production build.
+// Set NEXT_STATIC_EXPORT=1 only for local static-export verification.
+// On Slate's nextjs runtime the build runs as `npm run build:slate` but the
+// platform expects a standard SSR build (.next/standalone), not out/.
 const isStaticExport = process.env.NEXT_STATIC_EXPORT === "1";
+const isSlate = fs.existsSync("/catalyst") || process.env.SLATE === "1";
 
 const rewrites = [
   {
@@ -116,17 +120,12 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Don't advertise the framework version in `X-Powered-By`.
   poweredByHeader: false,
-  // Static export for Catalyst Slate hosting: NEXT_STATIC_EXPORT=1 at build
-  // time. Dev and `npm start` (default) keep the Node server + rewrites.
-  // NOTE: output:"export" ignores rewrites()/headers() below, so they are
-  // only attached in server mode — casualties of static hosting, all
-  // replaced by absolute function URLs + Slate-side headers.
-  ...(isStaticExport
+  // Slate nextjs adapter expects a standard SSR build (.next/standalone),
+  // not a static export (out/). Detect Slate and emit standalone there;
+  // local `npm run build:slate` keeps the export path for out/ verification.
+  ...(isSlate
     ? {
-        output: "export" as const,
-        images: { unoptimized: true },
-      }
-    : {
+        output: "standalone" as const,
         images: {
           remotePatterns: [
             {
@@ -135,18 +134,33 @@ const nextConfig: NextConfig = {
             },
           ],
         },
-        async rewrites() {
-          return rewrites;
-        },
-        async headers() {
-          return [
-            {
-              source: "/(.*)",
-              headers: securityHeaders,
-            },
-          ];
-        },
-      }),
+      }
+    : isStaticExport
+      ? {
+          output: "export" as const,
+          images: { unoptimized: true },
+        }
+      : {
+          images: {
+            remotePatterns: [
+              {
+                protocol: "https",
+                hostname: "*.zohostratus.in",
+              },
+            ],
+          },
+          async rewrites() {
+            return rewrites;
+          },
+          async headers() {
+            return [
+              {
+                source: "/(.*)",
+                headers: securityHeaders,
+              },
+            ];
+          },
+        }),
 };
 
 export default nextConfig;
