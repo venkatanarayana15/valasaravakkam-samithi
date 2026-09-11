@@ -174,7 +174,7 @@ describe("upload hardening", () => {
     // Either accepted with a sanitized random name or rejected — never a traversal.
     if (res.ok) {
       const json = (await res.json()) as { url?: string };
-      expect(json.url).toMatch(/^\/uploads\/[\w.-]+$/);
+      expect(json.url).toMatch(/^\/uploads\/(?:[\w-]+\/)?[\w.-]+$/);
       expect(json.url).not.toContain("..");
     } else {
       expect([400, 403]).toContain(res.status);

@@ -1,6 +1,6 @@
 import { siteConfig, services as staticServices, stats as staticStats } from "./data";
 import { SITE_URL } from "./seo";
-import { KNOWN_SLUGS } from "./tenants";
+import { KNOWN_SLUGS, tenantApiBase } from "./tenants";
 
 /**
  * llms.txt content (https://llmstxt.org convention) — a markdown summary of
@@ -10,7 +10,8 @@ import { KNOWN_SLUGS } from "./tenants";
  * Tenant-aware note: this file describes the network; per-samithi facts live
  * on each /s/<slug> page (title, H1, address, LocalBusiness JSON-LD).
  */
-export function buildLlmsTxt(): string {
+export function buildLlmsTxt(samithis?: { slug: string; name: string; district?: string }[]): string {
+  const slugs = samithis && samithis.length ? samithis.map((s) => s.slug) : KNOWN_SLUGS;
   const lines: string[] = [];
   lines.push(`# ${siteConfig.name}`);
   lines.push("");
@@ -47,12 +48,32 @@ export function buildLlmsTxt(): string {
   lines.push(
     "Each samithi has its own website under /s/<slug> with its own name,",
     "events, gallery and contact details on the shared template.",
-    "Known sites:",
+    samithis && samithis.length ? `Live directory (${slugs.length} samithis):` : "Known sites:",
   );
   lines.push("");
-  for (const slug of KNOWN_SLUGS) {
-    lines.push(`- ${SITE_URL}/s/${slug}`);
+  if (samithis && samithis.length) {
+    for (const s of samithis) {
+      lines.push(`- ${s.name} (${s.slug}${s.district ? `, ${s.district}` : ""}): ${SITE_URL}/s/${s.slug}`);
+    }
+  } else {
+    for (const slug of slugs) {
+      lines.push(`- ${SITE_URL}/s/${slug}`);
+    }
   }
   lines.push("");
   return lines.join("\n");
+}
+
+export async function fetchLlmsSamithis(): Promise<{ slug: string; name: string; district?: string }[] | null> {
+  const base = tenantApiBase();
+  if (!base) return null;
+  try {
+    const res = await fetch(`${base}/samithis`, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    const j = (await res.json()) as { samithis?: { slug: string; name: string; district?: string }[] };
+    if (!Array.isArray(j.samithis)) return null;
+    return j.samithis;
+  } catch {
+    return null;
+  }
 }

@@ -1499,9 +1499,15 @@ function editGalleryItem(index) {
         const file = e.target.files[0];
         if (!file) return;
         try {
-          const res = await fetch(API + "/upload", {
+          const target = uploadUrl();
+          if (!target) return;
+          const res = await fetch(target.url, {
             method: "POST",
-            headers: authHeaders({ "Content-Type": "application/octet-stream", "X-Filename": file.name }),
+            headers: authHeaders({
+              "Content-Type": "application/octet-stream",
+              "X-Filename": file.name,
+              "X-Samithi-Id": target.samithi,
+            }),
             body: await file.arrayBuffer(),
           });
           const json = await res.json();
@@ -2028,6 +2034,28 @@ function humanize(key) {
 
 /* ---------- Image upload field ---------- */
 
+function uploadTarget() {
+  if (sessionMode) {
+    if (isOwner()) {
+      if (!activeSamithi) {
+        toast("Pick a samithi in Owner Console first", "err");
+        return null;
+      }
+      return activeSamithi;
+    }
+    return session.samithi_id || null;
+  }
+  return "valasaravakkam";
+}
+
+function uploadUrl() {
+  const target = uploadTarget();
+  if (!target) return null;
+  // Owner uploads must carry the target explicitly; convenors are fixed.
+  const q = sessionMode && isOwner() ? `?samithi=${encodeURIComponent(target)}` : "";
+  return { url: API + "/upload" + q, samithi: target };
+}
+
 function uploadField(key, item) {
   const box = el("div", { class: "field" });
   const label = el("label", null, `${humanize(key)} (upload)`);
@@ -2039,9 +2067,15 @@ function uploadField(key, item) {
       if (!file) return;
       const body = await file.arrayBuffer();
       try {
-        const res = await fetch(API + "/upload", {
+        const target = uploadUrl();
+        if (!target) return;
+        const res = await fetch(target.url, {
           method: "POST",
-          headers: authHeaders({ "Content-Type": "application/octet-stream", "X-Filename": file.name }),
+          headers: authHeaders({
+            "Content-Type": "application/octet-stream",
+            "X-Filename": file.name,
+            "X-Samithi-Id": target.samithi,
+          }),
           body,
         });
         const json = await res.json();

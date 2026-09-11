@@ -29,6 +29,7 @@
 const catalyst = require('zcatalyst-sdk-node');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const path = require('path');
 
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 const LOGIN_FAIL_LIMIT = 5;
@@ -316,6 +317,12 @@ function parseWhen(v) {
 function catalystDateTime(d) {
   const p = (n) => String(n).padStart(2, '0');
   return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+}
+
+function sanitizeFilename(name) {
+  const base = path.basename(name || '').replace(/[^\w.\-]/g, '_');
+  if (!base || base === '.' || base === '..') return `upload-${Date.now()}.bin`;
+  return base;
 }
 
 function randomToken() {
@@ -1082,6 +1089,84 @@ module.exports = async (req, res) => {
       }
       await handleGetMessages(adminApp.datastore(), res, auth.convenor, parsedUrl, { ...cors, ...cache });
       return;
+    }
+    // ---- Upload: per-samithi isolated, Stratus-backed ----
+    if (req.method === 'POST' && path === '/upload') {
+      const auth = await requireAuth(adminApp.datastore(), req, false);
+      if (auth.error) {
+        sendJson(res, auth.code, { error: auth.error }, cors);
+        return;
+      }
+      const me = auth.convenor;
+      let targetSamithi = me.samithi_id;
+      if (me.role === 'owner') {
+        const q = parsedUrl.searchParams.get('samithi');
+        const h = req.headers['x-samithi-id'];
+        targetSamithi = (q || h || '').toLowerCase().trim();
+        if (!targetSamithi || targetSamithi === '*') {
+          sendJson(res, 400, { error: 'samithi context required for owner upload' }, cors);
+          return;
+        }
+        if (!SLUG_RE.test(targetSamithi) || RESERVED_SLUGS.has(targetSamithi)) {
+          sendJson(res, 400, { error: 'invalid samithi' }, cors);
+          return;
+        }
+        const tenants = await readAllRows(adminApp.datastore(), TABLES.samithis);
+        const t = tenants.find((x) => x.slug === targetSamithi);
+        if (!t) {
+          sendJson(res, 404, { error: 'unknown samithi' }, cors);
+          return;
+        }
+        if ((t.status || 'active') !== 'active') {
+          sendJson(res, 403, { error: 'suspended' }, cors);
+          return;
+        }
+      } else {
+        if (!targetSamithi || targetSamithi === '*') {
+          sendJson(res, 403, { error: 'no samithi assigned' }, cors);
+          return;
+        }
+      }
+      const filename = sanitizeFilename(req.headers['x-filename'] || req.headers['x_filename'] || '');
+      const ext = path.extname(filename).toLowerCase();
+      const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+      if (!allowed.includes(ext)) {
+        sendJson(res, 400, { error: 'Only jpg/jpeg/png/gif/webp allowed (SVG is rejected for security)' }, cors);
+        return;
+      }
+      const raw = await getBody(req);
+      const buf = Buffer.isBuffer(raw) ? raw : Buffer.from(raw);
+      if (buf.length === 0) {
+        sendJson(res, 400, { error: 'empty file' }, cors);
+        return;
+      }
+      if (buf.length > 10 * 1024 * 1024) {
+        sendJson(res, 400, { error: 'file too large (max 10MB)' }, cors);
+        return;
+      }
+      const magicOk =
+        (ext === '.png' && buf.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]))) ||
+        (ext === '.gif' && buf.subarray(0, 3).toString('latin1') === 'GIF') ||
+        ((ext === '.jpg' || ext === '.jpeg') && buf[0] === 0xff && buf[1] === 0xd8) ||
+        (ext === '.webp' && buf.subarray(0, 4).toString('latin1') === 'RIFF');
+      if (!magicOk) {
+        sendJson(res, 400, { error: 'File content does not match its extension' }, cors);
+        return;
+      }
+      const key = `${targetSamithi}/${Date.now()}-${crypto.randomBytes(4).toString('hex')}${ext}`;
+      const mimeMap = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp' };
+      try {
+        const bucket = adminApp.stratus().bucket('samithi-assets');
+        await bucket.putObject(key, buf, { contentType: mimeMap[ext] || 'application/octet-stream', overwrite: true });
+        const url = `https://samithi-assets-development.zohostratus.in/${key}`;
+        await audit(adminApp.datastore(), me.login, 'upload', targetSamithi, key);
+        sendJson(res, 200, { url, key, filename: path.basename(key) }, cors);
+        return;
+      } catch (e) {
+        console.error('stratus upload failed:', e && e.message ? e.message : e);
+        sendJson(res, 500, { error: 'upload failed' }, cors);
+        return;
+      }
     }
     // ---- Tenant content CRUD (admin SPA writes here, never direct tables) ----
     if ((req.method === 'GET' || req.method === 'PUT') && path.startsWith('/content')) {

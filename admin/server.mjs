@@ -450,18 +450,49 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // ---- Upload image ----
+    // ---- Upload image — per-samithi isolated (dev parity with Stratus) ----
     if (req.method === "POST" && pathname === "/api/upload") {
-      const filename = sanitizeFilename(req.headers["x-filename"]);
+      // Determine target samithi for isolation (same rules as the Catalyst function).
+      let targetSamithi = "valasaravakkam";
+      const sess = devSession(req);
+      if (sess) {
+        if (sess.role === "owner") {
+          let q = null;
+          try {
+            q = new URL(req.url, `http://${req.headers.host || "localhost"}`).searchParams.get("samithi");
+          } catch {}
+          const h = req.headers["x-samithi-id"];
+          const want = (q || h || "").toString().toLowerCase().trim();
+          if (want) {
+            if (!/^[a-z0-9-]{1,64}$/.test(want)) {
+              send(res, 400, { error: "invalid samithi" });
+              return;
+            }
+            targetSamithi = want;
+          } else {
+            send(res, 400, { error: "samithi context required for owner upload" });
+            return;
+          }
+        } else {
+          targetSamithi = sess.samithi_id || "valasaravakkam";
+        }
+      }
+      const filename = sanitizeFilename(req.headers["x-filename"] || req.headers["x_filename"] || "");
       const ext = path.extname(filename).toLowerCase();
-      // SVG is rejected: it can carry scripts and would execute same-origin in
-      // an admin's browser. Raster formats only.
       const allowed = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
       if (!allowed.includes(ext)) {
         send(res, 400, { error: "Only jpg/jpeg/png/gif/webp allowed (SVG is rejected for security)" });
         return;
       }
       const body = await readBody(req);
+      if (body.length === 0) {
+        send(res, 400, { error: "empty file" });
+        return;
+      }
+      if (body.length > 10 * 1024 * 1024) {
+        send(res, 400, { error: "file too large (max 10MB)" });
+        return;
+      }
       const magicOk =
         (ext === ".png" && body.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]))) ||
         (ext === ".gif" && body.subarray(0, 3).toString("latin1") === "GIF") ||
@@ -473,8 +504,10 @@ const server = http.createServer(async (req, res) => {
         return;
       }
       const name = `${Date.now()}-${crypto.randomBytes(4).toString("hex")}${ext}`;
-      fs.writeFileSync(path.join(UPLOAD_DIR, name), body);
-      send(res, 200, { url: `/uploads/${name}`, filename: name });
+      const dir = path.join(UPLOAD_DIR, targetSamithi);
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, name), body);
+      send(res, 200, { url: `/uploads/${targetSamithi}/${name}`, filename: name, samithi_id: targetSamithi });
       return;
     }
 

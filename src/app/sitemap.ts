@@ -1,8 +1,24 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
 import { galleryCategories } from "@/lib/data";
-import { KNOWN_SLUGS } from "@/lib/tenants";
+import { KNOWN_SLUGS, tenantApiBase } from "@/lib/tenants";
 export const dynamic = "force-static";
+export const revalidate = 3600;
+
+async function liveSlugs(): Promise<string[]> {
+  const base = tenantApiBase();
+  if (!base) return KNOWN_SLUGS;
+  try {
+    const res = await fetch(`${base}/samithis`, { next: { revalidate: 3600 } });
+    if (!res.ok) return KNOWN_SLUGS;
+    const j = (await res.json()) as { samithis?: { slug: string }[] };
+    if (!Array.isArray(j.samithis)) return KNOWN_SLUGS;
+    const slugs = j.samithis.map((s) => s.slug).filter(Boolean);
+    return slugs.length ? slugs : KNOWN_SLUGS;
+  } catch {
+    return KNOWN_SLUGS;
+  }
+}
 
 // SEO note:
 // - Home and gallery are the highest-value indexable surfaces.
@@ -19,8 +35,9 @@ function yearAgo() {
   d.setFullYear(d.getFullYear() - 1);
   return d;
 }
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const slugs = await liveSlugs();
   return [
     {
       url: SITE_URL,
@@ -78,20 +95,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly" as const,
       priority: 0.5,
     },
-    // Multi-tenant samithi pages (extend KNOWN_SLUGS + rebuild on new samithi).
+    // Multi-tenant samithi pages — live list when the function is reachable,
+    // otherwise the built-in KNOWN_SLUGS (never empty, so crawlers always
+    // have something to index).
     {
       url: `${SITE_URL}/samithis`,
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.9,
     },
-    ...KNOWN_SLUGS.map((slug) => ({
+    ...slugs.map((slug) => ({
       url: `${SITE_URL}/s/${slug}`,
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.95,
     })),
-    ...KNOWN_SLUGS.flatMap((slug) =>
+    ...slugs.flatMap((slug) =>
       galleryCategories.map((c) => ({
         url: `${SITE_URL}/s/${slug}/gallery/${c.slug}`,
         lastModified: weekAgo(),
@@ -99,5 +118,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.6,
       })),
     ),
+    // llms.txt — the GEO entry point for answer engines; list it so the
+    // sitemap advertises it alongside the HTML pages.
+    {
+      url: `${SITE_URL}/llms.txt`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.4,
+    },
   ];
 }

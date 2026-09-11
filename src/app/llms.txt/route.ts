@@ -1,11 +1,11 @@
-import { buildLlmsTxt } from "@/lib/llms";
+import { buildLlmsTxt, fetchLlmsSamithis } from "@/lib/llms";
 
-// Static-friendly: content is compiled from shipped constants (no fetch),
-// so this works identically in server and static-export (Slate) builds.
-export const dynamic = "force-static";
+// Revalidate hourly so new samithis appear in the LLM index without a rebuild.
+export const revalidate = 3600;
 
 export async function GET() {
-  return new Response(buildLlmsTxt(), {
+  const live = await fetchLlmsSamithis();
+  return new Response(buildLlmsTxt(live || undefined), {
     status: 200,
     headers: {
       "Content-Type": "text/plain; charset=utf-8",

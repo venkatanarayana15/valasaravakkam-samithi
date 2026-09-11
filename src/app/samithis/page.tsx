@@ -39,9 +39,26 @@ export default async function SamithisDirectory() {
   const list = await getDirectory();
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
+      <label htmlFor="samithi-search" className="sr-only">
+        Search samithis
+      </label>
+      <input
+        id="samithi-search"
+        type="search"
+        placeholder="Search by samithi or district…"
+        className="mx-auto mb-8 block w-full max-w-xl rounded-full border border-slate-200 bg-white px-5 py-3 text-sm placeholder:text-slate-400 focus:border-[#1e64d8] focus:outline-none focus:ring-2 focus:ring-[#1e64d8]/40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+  // Client-side filter without extra JS framework: the list is small,
+      // so a tiny inline script that hides non-matching <li> is enough and
+      // keeps the page fully indexable (all links rendered server-side).
+      />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `addEventListener('DOMContentLoaded',function(){var q=document.getElementById('samithi-search');var items=[...document.querySelectorAll('ul li')];if(!q)return;q.addEventListener('input',function(){var v=q.value.toLowerCase().trim();items.forEach(function(li){var t=li.textContent.toLowerCase();li.style.display=!v||t.includes(v)?'':"none"})})})`,
+        }}
+      />
       <SectionTitle
         title="Find Your Samithi"
-        description="Every samithi on this network, sharing one template and one motto — Love All, Serve All."
+        description="Every samithi on this network, sharing one template and one motto — Love All, Serve All. Type a name like “Porur” to filter instantly."
         level={1}
       />
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
