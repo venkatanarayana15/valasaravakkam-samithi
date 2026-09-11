@@ -24,13 +24,23 @@ function moveDir(src, dest) {
 }
 
 async function main() {
+  // On Slate's nextjs runtime the build runs as `npm run build:slate` but the
+  // platform expects a standard Next.js SSR build (.next), not a static export
+  // (out/). Detect Slate by its build directory and do a normal SSR build
+  // there; locally keep the static export for `out/` verification.
+  const isSlate = fs.existsSync("/catalyst") || process.env.SLATE === "1";
   const hadApi = fs.existsSync(API_DIR);
   try {
-    // Drop stale build artifacts: .next/dev type validators reference the
-    // stashed route and would fail type-checking otherwise.
     for (const dir of [path.join(ROOT, ".next"), path.join(ROOT, "out")]) {
       if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
     }
+    if (isSlate) {
+      console.log("[build:slate] Slate nextjs detected — running SSR build (no export, no api stash)");
+      execSync("npx next build", { cwd: ROOT, stdio: "inherit" });
+      console.log("[build:slate] SSR build ready in .next — Slate nextjs adapter will deploy it");
+      return;
+    }
+    // Local static-export path (verifies out/ content for SEO pre-render).
     if (hadApi) {
       if (fs.existsSync(STASH_DIR)) fs.rmSync(STASH_DIR, { recursive: true, force: true });
       moveDir(API_DIR, STASH_DIR);
