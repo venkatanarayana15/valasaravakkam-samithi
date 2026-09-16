@@ -10,30 +10,26 @@
   /* Plain @theme (not inline): --color-* stay live CSS variables so the
      theme presets below can override them per [data-theme-preset].
      Fonts still resolve (Poppins/Raleway vars). */
-  /* ---- Sai-facing palette (2026 refresh, lightened) ----
-     Primary family: brand #1e64d8 → deep #1a56bd → #164bbd, with an airy
-     decorative ramp #3b93f7 → #5aa9f9 → #8cc8fb. Every text/background pair
-     below holds ≥ 4.5:1 in its mode (white-on-primary = 4.5:1).
-     Sky #38bdf8 and light blues are decorative only: never body text or small
-     fills on light backgrounds. Dark mode keeps the pale sky ramp for accent text.
-  
-     Accent family: warm cymru gold #d97706 used sparingly for highlight/cta glows,
-     never as body copy. Neutral family deepened for a calmer, more editorial feel.
+  /* ---- Spiritual + Ethical palette (2026, lightened) ----
+    Primary: deep violet #7C3AED with white on-primary (≥4.5:1)
+    Secondary: soft lavender #A78BFA, warm gold accent #A16207
+    Backgrounds: airy lilac #FAF5FF / warm cream #FDF8F3
+    All text/background pairs ≥4.5:1 in both light and dark.
   */
-  --color-primary: #1e64d8;
-  --color-primary-dark: #1a56bd;
-  --color-primary-darker: #164bbd;
-  --color-royal: #4d9ef8;
-  --color-accent: #38bdf8;
-  --color-accent-warm: #d97706;
-  --color-surface: #f6f8fb;
-  --color-surface-deep: #e7ecf4;
-  --color-sidebar: #040b14;
-  --color-sidebar-deep: #02050a;
-  --color-muted: #475569;
-  --color-muted-soft: #64748b;
-  --color-border: rgba(15, 23, 42, 0.08);
-  --color-border-strong: rgba(15, 23, 42, 0.16);
+  --color-primary: #7C3AED;
+  --color-primary-dark: #6D28D9;
+  --color-primary-darker: #5B21B6;
+  --color-royal: #A78BFA;
+  --color-accent: #A16207;
+  --color-accent-warm: #D97706;
+  --color-surface: #FAF5FF;
+  --color-surface-deep: #EDE9FE;
+  --color-sidebar: #0B1120;
+  --color-sidebar-deep: #020617;
+  --color-muted: #4B5563;
+  --color-muted-soft: #6B7280;
+  --color-border: rgba(124, 58, 237, 0.15);
+  --color-border-strong: rgba(124, 58, 237, 0.25);
   --font-sans: var(--font-poppins);
   --font-display: var(--font-raleway);
   --radius-card: 1.25rem;
@@ -208,7 +204,7 @@ section[id] {
    .text-gradient-hero, which always uses the pale Sai-blue ramp.
 --------------------------------------------------------------------------- */
 .text-gradient {
-  background-image: linear-gradient(90deg, #1d5fd2, #1e64d8 45%, #1a56bd 70%, #1d5fd2);
+  background-image: linear-gradient(90deg, #6D28D9, #7C3AED 45%, #5B21B6 70%, #6D28D9);
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
@@ -216,7 +212,7 @@ section[id] {
   animation: gradient-pan 9s ease-in-out infinite;
 }
 .dark .text-gradient {
-  background-image: linear-gradient(90deg, #7dd3fc, #4facfe 40%, #7dd3fc 70%, #38bdf8);
+  background-image: linear-gradient(90deg, #C4B5FD, #A78BFA 40%, #C4B5FD 70%, #A78BFA);
   animation: gradient-pan-dark 9s ease-in-out infinite;
 }
 .text-gradient-static {
@@ -268,7 +264,7 @@ section[id] {
 }
 .dark[data-theme-preset="theme-2"] .text-gradient,
 .dark[data-theme-preset="theme-2"] .text-gradient-static {
-  background-image: linear-gradient(90deg, #f0c94a, #d97706);
+  background-image: linear-gradient(90deg, #FCD34D, #FBBF24);
 }
 /* theme-3 — Emerald */
 [data-theme-preset="theme-3"] {
