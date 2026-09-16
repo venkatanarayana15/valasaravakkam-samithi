@@ -127,12 +127,7 @@ const nextConfig: NextConfig = {
     ? {
         output: "standalone" as const,
         images: {
-          remotePatterns: [
-            {
-              protocol: "https",
-              hostname: "*.zohostratus.in",
-            },
-          ],
+          unoptimized: true,
         },
       }
     : isStaticExport
